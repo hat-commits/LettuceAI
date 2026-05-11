@@ -62,6 +62,43 @@ pub fn effective_streaming_enabled_with_override(
     effective_streaming_enabled(credential, should_stream) && stream_allowed
 }
 
+fn sanitize_outbound_messages(messages_for_api: &[Value]) -> Vec<Value> {
+    messages_for_api
+        .iter()
+        .map(|message| sanitize_outbound_message(message))
+        .collect()
+}
+
+fn sanitize_outbound_message(message: &Value) -> Value {
+    let Some(message_obj) = message.as_object() else {
+        return message.clone();
+    };
+
+    let role = message_obj.get("role").cloned().unwrap_or(Value::Null);
+    let content = message_obj.get("content").cloned().unwrap_or(Value::Null);
+    let mut sanitized = serde_json::Map::from_iter([
+        ("role".to_string(), role.clone()),
+        ("content".to_string(), content),
+    ]);
+
+    if let Some(name) = message_obj.get("name").cloned() {
+        sanitized.insert("name".to_string(), name);
+    }
+    if let Some(tool_calls) = message_obj.get("tool_calls").cloned() {
+        sanitized.insert("tool_calls".to_string(), tool_calls);
+    }
+    if let Some(tool_call_id) = message_obj.get("tool_call_id").cloned() {
+        sanitized.insert("tool_call_id".to_string(), tool_call_id);
+    }
+    if role.as_str() == Some("system") {
+        if let Some(visible_in_chat) = message_obj.get("visible_in_chat").cloned() {
+            sanitized.insert("visible_in_chat".to_string(), visible_in_chat);
+        }
+    }
+
+    Value::Object(sanitized)
+}
+
 // ---------------------------------------------------------------------------
 // Prompt-caching helpers
 // ---------------------------------------------------------------------------
@@ -153,6 +190,7 @@ pub fn build_chat_request(
 ) -> BuiltRequest {
     let base_url = provider_base_url(credential);
     let adapter = adapter_for(credential);
+    let sanitized_messages_for_api = sanitize_outbound_messages(messages_for_api);
     let llama_streaming_enabled = extra_body_fields
         .as_ref()
         .and_then(|fields| fields.get("llamaStreamingEnabled"))
@@ -166,7 +204,7 @@ pub fn build_chat_request(
     let headers = adapter.headers(api_key, credential.headers.as_ref());
     let mut body = adapter.body(
         model_name,
-        messages_for_api,
+        &sanitized_messages_for_api,
         system_prompt,
         temperature,
         top_p,
@@ -375,6 +413,113 @@ mod tests {
         assert!(!body.contains_key("min_p"));
         assert!(!body.contains_key("typical_p"));
         assert!(!body.contains_key("parallel_tool_calls"));
+    }
+
+    #[test]
+    fn strips_internal_message_fields_from_non_system_messages() {
+        let credential = credential("mistral");
+
+        let built = build_chat_request(
+            &credential,
+            "test-key",
+            "mistral-small-latest",
+            &vec![
+                json!({
+                    "role": "user",
+                    "content": "hello",
+                    "visible_in_chat": true,
+                    "uiExpanded": true
+                }),
+                json!({
+                    "role": "assistant",
+                    "content": "hi",
+                    "visible_in_chat": false
+                }),
+            ],
+            None,
+            Some(0.7),
+            Some(0.95),
+            128,
+            None,
+            false,
+            None,
+            None,
+            None,
+            None,
+            None,
+            false,
+            None,
+            None,
+            false,
+            None,
+        );
+
+        let messages = built
+            .body
+            .get("messages")
+            .and_then(Value::as_array)
+            .expect("request body should contain messages");
+
+        let user_message = messages[0].as_object().expect("user message should be an object");
+        assert_eq!(user_message.get("role"), Some(&json!("user")));
+        assert_eq!(user_message.get("content"), Some(&json!("hello")));
+        assert!(!user_message.contains_key("visible_in_chat"));
+        assert!(!user_message.contains_key("uiExpanded"));
+
+        let assistant_message = messages[1]
+            .as_object()
+            .expect("assistant message should be an object");
+        assert_eq!(assistant_message.get("role"), Some(&json!("assistant")));
+        assert_eq!(assistant_message.get("content"), Some(&json!("hi")));
+        assert!(!assistant_message.contains_key("visible_in_chat"));
+    }
+
+    #[test]
+    fn keeps_visible_system_message_metadata_for_adapter_translation() {
+        let credential = credential("mistral");
+
+        let built = build_chat_request(
+            &credential,
+            "test-key",
+            "mistral-small-latest",
+            &vec![json!({
+                "role": "system",
+                "content": "Stay in character.",
+                "visible_in_chat": true,
+                "uiExpanded": true
+            })],
+            None,
+            Some(0.7),
+            Some(0.95),
+            128,
+            None,
+            false,
+            None,
+            None,
+            None,
+            None,
+            None,
+            false,
+            None,
+            None,
+            false,
+            None,
+        );
+
+        let messages = built
+            .body
+            .get("messages")
+            .and_then(Value::as_array)
+            .expect("request body should contain messages");
+        let system_message = messages[0]
+            .as_object()
+            .expect("system message should be an object");
+        assert_eq!(system_message.get("role"), Some(&json!("system")));
+        assert_eq!(
+            system_message.get("visible_in_chat"),
+            Some(&json!(true))
+        );
+        assert!(!system_message.contains_key("uiExpanded"));
     }
 
     #[test]

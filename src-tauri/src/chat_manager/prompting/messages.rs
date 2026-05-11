@@ -102,14 +102,12 @@ pub fn push_user_or_assistant_message_with_context(
         let content = build_multimodal_content(&text, &message.attachments);
         target.push(json!({
             "role": message.role,
-            "content": content,
-            "visible_in_chat": message.visible_in_chat
+            "content": content
         }));
     } else {
         target.push(json!({
             "role": message.role,
-            "content": text,
-            "visible_in_chat": message.visible_in_chat
+            "content": text
         }));
     }
 }
