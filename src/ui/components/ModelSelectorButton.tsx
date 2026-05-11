@@ -4,6 +4,7 @@ import { BottomMenu } from "./BottomMenu";
 import { cn, typography, interactive } from "../design-tokens";
 import type { Model } from "../../core/storage/schemas";
 import { useI18n } from "../../core/i18n/context";
+import GroqIcon from "../../assets/groq.svg";
 
 // Provider icons - matching the character settings
 function getProviderIcon(providerId: string) {
@@ -34,6 +35,8 @@ function getProviderIcon(providerId: string) {
           <path d="M3.428 0v4.963h4.963V0zM15.61 0v4.963h4.964V0zM3.428 7.036V12h4.963V7.036zm6.09 0V12h4.964V7.036zm6.092 0V12h4.964V7.036zm-6.092 7.035v4.963h4.964v-4.963zm6.092 0v4.963h4.964v-4.963zM3.428 19.036V24h4.963v-4.964zm6.09 0V24h4.964v-4.964zm6.092 0V24h4.964v-4.964z" />
         </svg>
       );
+    case "groq":
+      return <img src={GroqIcon} alt="Groq" className={iconClass} />;
     default:
       return <Cpu className={iconClass + " text-white/50"} />;
   }

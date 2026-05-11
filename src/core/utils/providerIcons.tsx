@@ -19,6 +19,7 @@ import OllamaIcon from "../../assets/ollama_light.png";
 import LMStudioIcon from "../../assets/lmstudio_light.png";
 import LlamaCppIcon from "../../assets/llama-cpp.svg";
 import IntenserpIcon from "../../assets/intenserp.png";
+import GroqIcon from "../../assets/groq.svg";
 
 const ICON_MAP: Record<string, ReactElement> = {
   openai: <img src={OpenAIIcon} alt="OpenAI" className="h-6 w-6" />,
@@ -32,6 +33,7 @@ const ICON_MAP: Record<string, ReactElement> = {
   moonshot: <img src={MoonShotAIIcon} alt="Moonshot AI" className="h-6 w-6" />,
   gemini: <img src={GeminiIcon} alt="Gemini" className="h-6 w-6" />,
   qwen: <img src={QwenIcon} alt="Qwen" className="h-6 w-6" />,
+  groq: <img src={GroqIcon} alt="Groq" className="h-6 w-6" />,
   featherless: <img src={FeatherlessIcon} alt="Featherless" className="h-6 w-6" />,
   nvidia: <img src={NvidiaIcon} alt="NVIDIA" className="h-6 w-6" />,
   chutes: <img src={ChutesAIIcon} alt="Chutes" className="h-6 w-6" />,
