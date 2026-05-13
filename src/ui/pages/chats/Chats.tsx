@@ -42,12 +42,7 @@ export function ChatPage() {
   const [exporting, setExporting] = useState(false);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const [exportTarget, setExportTarget] = useState<Character | null>(null);
-  const [chatpkgImportTarget, setChatpkgImportTarget] = useState<Character | null>(null);
-  const [pendingChatpkgImport, setPendingChatpkgImport] = useState<{
-    path: string;
-    info: any;
-  } | null>(null);
-  const [importingChatpkg, setImportingChatpkg] = useState(false);
+  const [, setImportingChatpkg] = useState(false);
   const [latestSessionByCharacter, setLatestSessionByCharacter] = useState<
     Record<string, { id: string; updatedAt: number; archived: boolean }>
   >({});
@@ -230,40 +225,20 @@ export function ChatPage() {
 
   const openImportChatpkg = async (character: Character) => {
     try {
-      const picked = await storageBridge.chatpkgPickFile();
+      const picked = await storageBridge.jsonlPickFile();
       if (!picked) return;
-      const info = await storageBridge.chatpkgInspect(picked.path);
-      if (info?.type !== "single_chat") {
-        alert("This package is not a single chat package.");
-        return;
-      }
-      setChatpkgImportTarget(character);
-      setPendingChatpkgImport({ path: picked.path, info });
       setSelectedCharacter(null);
-    } catch (err) {
-      console.error("Failed to inspect chat package:", err);
-      alert(typeof err === "string" ? err : "Failed to inspect chat package");
-    }
-  };
-
-  const handleImportChatpkg = async () => {
-    if (!chatpkgImportTarget || !pendingChatpkgImport) return;
-    try {
       setImportingChatpkg(true);
-      const result = await storageBridge.chatpkgImport(pendingChatpkgImport.path, {
-        targetCharacterId: chatpkgImportTarget.id,
+      const result = await storageBridge.jsonlImport(picked.path, {
+        targetCharacterId: character.id,
       });
-      setChatpkgImportTarget(null);
-      setPendingChatpkgImport(null);
       const importedSessionId = result?.sessionId;
       if (typeof importedSessionId === "string" && importedSessionId.length > 0) {
-        navigate(
-          `/chat/${chatpkgImportTarget.id}?sessionId=${encodeURIComponent(importedSessionId)}`,
-        );
+        navigate(`/chat/${character.id}?sessionId=${encodeURIComponent(importedSessionId)}`);
       }
     } catch (err) {
-      console.error("Failed to import chat package:", err);
-      alert(typeof err === "string" ? err : "Failed to import chat package");
+      console.error("Failed to import chat:", err);
+      alert(typeof err === "string" ? err : "Failed to import chat");
     } finally {
       setImportingChatpkg(false);
     }
@@ -423,50 +398,7 @@ export function ChatPage() {
         exporting={exporting}
       />
 
-      <BottomMenu
-        isOpen={chatpkgImportTarget != null && pendingChatpkgImport != null}
-        onClose={() => {
-          if (importingChatpkg) return;
-          setChatpkgImportTarget(null);
-          setPendingChatpkgImport(null);
-        }}
-        title={t("chats.importChatPackage")}
-      >
-        <div className="space-y-4">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white/70">
-            Format:{" "}
-            {pendingChatpkgImport?.info?.source?.format === "sillytavern"
-              ? "SillyTavern format (.jsonl)"
-              : "Chat package / JSONL"}
-          </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white/80">
-            {pendingChatpkgImport?.info?.characterId ? (
-              pendingChatpkgImport.info.characterId === chatpkgImportTarget?.id ? (
-                <p>{t("chats.characterSpecificMatches")}</p>
-              ) : (
-                <p>
-                  {t("chats.characterSpecificMismatch", { name: chatpkgImportTarget?.name ?? "" })}
-                </p>
-              )
-            ) : (
-              <p>
-                {t("chats.nonCharacterSpecificImport", { name: chatpkgImportTarget?.name ?? "" })}
-              </p>
-            )}
-          </div>
-          <button
-            onClick={() => {
-              void handleImportChatpkg();
-            }}
-            disabled={importingChatpkg}
-            className="w-full rounded-xl border border-emerald-500/30 bg-emerald-500/20 py-3 text-sm font-medium text-emerald-200 transition hover:bg-emerald-500/30 disabled:opacity-50"
-          >
-            {importingChatpkg ? t("common.buttons.importing") : t("common.buttons.import")}
-          </button>
-        </div>
-      </BottomMenu>
-
-      {/* Delete Confirmation */}
+{/* Delete Confirmation */}
       <BottomMenu
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}

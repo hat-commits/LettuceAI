@@ -10,7 +10,6 @@ import {
   Search,
   X,
   Download,
-  User,
 } from "lucide-react";
 import { useLocation, useParams } from "react-router-dom";
 
@@ -24,7 +23,7 @@ import {
 import { storageBridge } from "../../../core/storage/files";
 import { typography, radius, cn, colors, interactive } from "../../design-tokens";
 import { WindowControlButtons, useDragRegionProps, hasCustomWindowControls } from "../../components/App/TopNav";
-import { BottomMenu, MenuButton, MenuButtonGroup, MenuDivider } from "../../components";
+import { BottomMenu } from "../../components";
 import { Routes, useNavigationManager } from "../../navigation";
 import { useI18n } from "../../../core/i18n/context";
 
@@ -52,8 +51,7 @@ export function ChatHistoryPage() {
   const [deleteTarget, setDeleteTarget] = useState<SessionPreview | null>(null);
   const [renameTarget, setRenameTarget] = useState<SessionPreview | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
-  const [exportTarget, setExportTarget] = useState<SessionPreview | null>(null);
-  const [exporting, setExporting] = useState(false);
+  const [, setExporting] = useState(false);
   const [groupPages, setGroupPages] = useState<Record<string, number>>({});
   const [query, setQuery] = useState(() => {
     const storageKey = characterId ? `chatHistoryQuery:${characterId}` : "chatHistoryQuery";
@@ -158,41 +156,21 @@ export function ChatHistoryPage() {
     }
   }, []);
 
-  const handleExportChatpkg = useCallback(
-    async (includeCharacterId: boolean) => {
-      if (!exportTarget) return;
+  const handleExportJsonl = useCallback(
+    async (session: SessionPreview) => {
       try {
         setExporting(true);
-        const path = await storageBridge.chatpkgExportSingleChat(
-          exportTarget.id,
-          includeCharacterId,
-        );
-        setExportTarget(null);
+        const path = await storageBridge.jsonlExportSingleChat(session.id);
         alert(t("chats.history.chatPackageExportedTo", { path }));
       } catch (err) {
-        console.error("Failed to export chat package:", err);
+        console.error("Failed to export chat:", err);
         alert(typeof err === "string" ? err : t("chats.history.failedExportChatPackage"));
       } finally {
         setExporting(false);
       }
     },
-    [exportTarget],
+    [t],
   );
-
-  const handleExportSillyTavern = useCallback(async () => {
-    if (!exportTarget) return;
-    try {
-      setExporting(true);
-      const path = await storageBridge.chatpkgExportSingleChatSillyTavern(exportTarget.id);
-      setExportTarget(null);
-      alert(t("chats.history.sillyTavernExportedTo", { path }));
-    } catch (err) {
-      console.error("Failed to export SillyTavern chat:", err);
-      alert(typeof err === "string" ? err : t("chats.history.failedExportSillyTavern"));
-    } finally {
-      setExporting(false);
-    }
-  }, [exportTarget]);
 
   const filteredSessions = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -466,7 +444,7 @@ export function ChatHistoryPage() {
                           session={session}
                           onSelect={() => go(Routes.chatSession(characterId!, session.id))}
                           onDelete={() => setDeleteTarget(session)}
-                          onExport={() => setExportTarget(session)}
+                          onExport={() => void handleExportJsonl(session)}
                           onRename={() => setRenameTarget(session)}
                           isBusy={busyIds.has(session.id)}
                         />
@@ -606,61 +584,7 @@ export function ChatHistoryPage() {
         </div>
       </BottomMenu>
 
-      <BottomMenu
-        isOpen={exportTarget != null}
-        onClose={() => setExportTarget(null)}
-        title={t("chats.exportChatPackage")}
-      >
-        <div className="rounded-xl border border-fg/10 bg-fg/4 p-3">
-          <p className={cn(typography.bodySmall.size, "truncate font-semibold text-fg/90")}>
-            {exportTarget?.title || t("chats.untitledChat")}
-          </p>
-          {exportTarget ? (
-            <p className={cn(typography.caption.size, "mt-0.5 text-fg/45")}>
-              {formatTimeAgo(exportTarget.updatedAt)}
-            </p>
-          ) : null}
-        </div>
-
-        <MenuDivider />
-
-        <MenuButtonGroup>
-          <MenuButton
-            icon={User}
-            title={exporting ? t("common.buttons.exporting") : t("chats.characterSpecificExport")}
-            description={t("chats.characterSpecificExportDesc")}
-            color="from-blue-500 to-cyan-600"
-            disabled={!exportTarget || exporting}
-            onClick={() => {
-              void handleExportChatpkg(true);
-            }}
-          />
-          <MenuButton
-            icon={Download}
-            title={
-              exporting ? t("common.buttons.exporting") : t("chats.nonCharacterSpecificExport")
-            }
-            description={t("chats.nonCharacterSpecificExportDesc")}
-            color="from-indigo-500 to-blue-600"
-            disabled={!exportTarget || exporting}
-            onClick={() => {
-              void handleExportChatpkg(false);
-            }}
-          />
-          <MenuButton
-            icon={Download}
-            title={exporting ? t("common.buttons.exporting") : t("chats.history.sillyTavernFormat")}
-            description={t("chats.history.sillyTavernFormatDesc")}
-            color="from-emerald-500 to-teal-600"
-            disabled={!exportTarget || exporting}
-            onClick={() => {
-              void handleExportSillyTavern();
-            }}
-          />
-        </MenuButtonGroup>
-      </BottomMenu>
-
-      <BottomMenu
+<BottomMenu
         isOpen={deleteTarget != null}
         onClose={() => setDeleteTarget(null)}
         title={t("chats.deleteChat")}

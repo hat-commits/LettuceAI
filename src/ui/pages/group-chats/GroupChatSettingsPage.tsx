@@ -15,7 +15,6 @@ import {
   RefreshCw,
   Download,
   Upload,
-  Users,
   Volume2,
   VolumeX,
   BookOpen,
@@ -91,9 +90,7 @@ export function GroupChatSettingsPage() {
   const [savingBackground, setSavingBackground] = useState(false);
   const [showCloneOptions, setShowCloneOptions] = useState(false);
   const [showBranchOptions, setShowBranchOptions] = useState(false);
-  const [showChatpkgExportMenu, setShowChatpkgExportMenu] = useState(false);
   const [showChatpkgImportMapMenu, setShowChatpkgImportMapMenu] = useState(false);
-  const [showChatpkgImportConfirmMenu, setShowChatpkgImportConfirmMenu] = useState(false);
   const [pendingChatpkgImport, setPendingChatpkgImport] = useState<{
     path: string;
     info: any;
@@ -200,91 +197,77 @@ export function GroupChatSettingsPage() {
     }
   };
 
-  const handleExportGroupChatpkg = async (includeSnapshots: boolean) => {
+  const handleExportGroupChatpkg = async () => {
     if (!session) return;
     try {
-      const path = await storageBridge.chatpkgExportGroupChat(session.id, includeSnapshots);
-      setShowChatpkgExportMenu(false);
-      alert(`Group chat package exported to:\n${path}`);
+      const path = await storageBridge.jsonlExportGroupChat(session.id);
+      alert(`Group chat exported to:\n${path}`);
     } catch (err) {
-      console.error("Failed to export group chat package:", err);
-      alert(typeof err === "string" ? err : "Failed to export group chat package");
+      console.error("Failed to export group chat:", err);
+      alert(typeof err === "string" ? err : "Failed to export group chat");
     }
   };
 
   const handleOpenImportGroupChatpkg = async () => {
     try {
-      const picked = await storageBridge.chatpkgPickFile();
+      const picked = await storageBridge.jsonlPickFile();
       if (!picked) return;
-      const info = await storageBridge.chatpkgInspect(picked.path);
+      const info = await storageBridge.jsonlInspect(picked.path);
       if (info?.type !== "group_chat") {
-        alert("This package is not a group chat package.");
+        alert("This file is not a group chat (JSONL).");
         return;
       }
 
       const participants = Array.isArray(info?.participants) ? info.participants : [];
       const initialMap: Record<string, string> = {};
       for (const participant of participants) {
-        const participantId =
-          (typeof participant?.id === "string" && participant.id) ||
-          (typeof participant?.characterId === "string" && participant.characterId) ||
-          null;
-        if (!participantId) continue;
-        const participantCharacterId =
-          typeof participant?.characterId === "string" ? participant.characterId : null;
-        if (participant?.resolved && participantCharacterId) {
-          initialMap[participantId] = participantCharacterId;
-          continue;
-        }
-        const displayName =
-          typeof participant?.characterDisplayName === "string"
-            ? participant.characterDisplayName
-            : "Unknown";
+        const speakerName = typeof participant?.name === "string" ? participant.name : null;
+        if (!speakerName) continue;
         const byName = availableCharacters.find(
-          (c) => c.name.trim().toLowerCase() === displayName.trim().toLowerCase(),
+          (c) => c.name.trim().toLowerCase() === speakerName.trim().toLowerCase(),
         );
-        if (byName) initialMap[participantId] = byName.id;
+        if (byName) initialMap[speakerName] = byName.id;
       }
 
       setPendingChatpkgImport({ path: picked.path, info });
       setChatpkgParticipantMap(initialMap);
 
-      const unresolved = participants.some((participant: any) => {
-        const participantId =
-          (typeof participant?.id === "string" && participant.id) ||
-          (typeof participant?.characterId === "string" && participant.characterId) ||
-          null;
-        if (!participantId) return false;
-        return !initialMap[participantId];
-      });
-      if (unresolved) setShowChatpkgImportMapMenu(true);
-      else setShowChatpkgImportConfirmMenu(true);
+      const unresolved = participants.some(
+        (p: any) => typeof p?.name === "string" && !initialMap[p.name],
+      );
+      if (unresolved) {
+        setShowChatpkgImportMapMenu(true);
+      } else {
+        await runGroupImport(picked.path, initialMap);
+      }
     } catch (err) {
-      console.error("Failed to inspect group chat package:", err);
-      alert(typeof err === "string" ? err : "Failed to inspect group chat package");
+      console.error("Failed to inspect group chat:", err);
+      alert(typeof err === "string" ? err : "Failed to inspect group chat");
     }
   };
 
-  const handleImportGroupChatpkg = async () => {
-    if (!pendingChatpkgImport) return;
+  const runGroupImport = async (path: string, map: Record<string, string>) => {
     try {
       setImportingChatpkg(true);
-      const result = await storageBridge.chatpkgImport(pendingChatpkgImport.path, {
-        participantCharacterMap: chatpkgParticipantMap,
-      });
+      const result = await storageBridge.jsonlImport(path, { participantCharacterMap: map });
       setPendingChatpkgImport(null);
       setShowChatpkgImportMapMenu(false);
-      setShowChatpkgImportConfirmMenu(false);
+      setChatpkgParticipantMap({});
       const importedSessionId = result?.sessionId;
       if (typeof importedSessionId === "string" && importedSessionId.length > 0) {
         navigate(Routes.groupChat(importedSessionId));
       }
     } catch (err) {
-      console.error("Failed to import group chat package:", err);
-      alert(typeof err === "string" ? err : "Failed to import group chat package");
+      console.error("Failed to import group chat:", err);
+      alert(typeof err === "string" ? err : "Failed to import group chat");
     } finally {
       setImportingChatpkg(false);
     }
+  };
+
+  const handleImportGroupChatpkg = async () => {
+    if (!pendingChatpkgImport) return;
+    await runGroupImport(pendingChatpkgImport.path, chatpkgParticipantMap);
   };
 
   // Loading state
@@ -832,7 +815,7 @@ export function GroupChatSettingsPage() {
             />
             <div className={spacing.field}>
               <button
-                onClick={() => setShowChatpkgExportMenu(true)}
+                onClick={() => void handleExportGroupChatpkg()}
                 className={cn(
                   "group flex w-full min-h-14 items-center justify-between",
                   radius.md,
@@ -1294,85 +1277,7 @@ export function GroupChatSettingsPage() {
         </MenuSection>
       </BottomMenu>
 
-      <BottomMenu
-        isOpen={showChatpkgExportMenu}
-        onClose={() => setShowChatpkgExportMenu(false)}
-        title={t("groupChats.sessionSettings.exportChatPackageTitle")}
-      >
-        <MenuSection>
-          <div className={spacing.field}>
-            <button
-              onClick={() => {
-                void handleExportGroupChatpkg(true);
-              }}
-              className={cn(
-                "group flex w-full items-center justify-between p-4",
-                radius.md,
-                "border text-left",
-                interactive.transition.default,
-                interactive.active.scale,
-                "border-fg/10 bg-surface-el/85 hover:border-fg/20 hover:bg-fg/10",
-              )}
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div
-                  className={cn(
-                    "flex h-10 w-10 items-center justify-center",
-                    radius.full,
-                    "border border-fg/15 bg-fg/10 text-fg/80",
-                  )}
-                >
-                  <Users className="h-4 w-4" />
-                </div>
-                <div className="min-w-0">
-                  <p className={cn(typography.body.size, typography.body.weight, "text-fg")}>
-                    {t("groupChats.sessionSettings.includeCharacterSnapshots")}
-                  </p>
-                  <p className={cn(typography.caption.size, "text-fg/50 mt-0.5")}>
-                    {t("groupChats.sessionSettings.includeCharacterSnapshotsDesc")}
-                  </p>
-                </div>
-              </div>
-            </button>
-
-            <button
-              onClick={() => {
-                void handleExportGroupChatpkg(false);
-              }}
-              className={cn(
-                "group flex w-full items-center justify-between p-4",
-                radius.md,
-                "border text-left",
-                interactive.transition.default,
-                interactive.active.scale,
-                "border-fg/10 bg-surface-el/85 hover:border-fg/20 hover:bg-fg/10",
-              )}
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div
-                  className={cn(
-                    "flex h-10 w-10 items-center justify-center",
-                    radius.full,
-                    "border border-fg/15 bg-fg/10 text-fg/80",
-                  )}
-                >
-                  <Download className="h-4 w-4" />
-                </div>
-                <div className="min-w-0">
-                  <p className={cn(typography.body.size, typography.body.weight, "text-fg")}>
-                    {t("groupChats.sessionSettings.sessionOnly")}
-                  </p>
-                  <p className={cn(typography.caption.size, "text-fg/50 mt-0.5")}>
-                    {t("groupChats.sessionSettings.sessionOnlyDesc")}
-                  </p>
-                </div>
-              </div>
-            </button>
-          </div>
-        </MenuSection>
-      </BottomMenu>
-
-      <BottomMenu
+<BottomMenu
         isOpen={showChatpkgImportMapMenu}
         onClose={() => {
           if (importingChatpkg) return;
@@ -1389,15 +1294,8 @@ export function GroupChatSettingsPage() {
               : []
             ).map((participant: any, idx: number) => {
               const participantKey =
-                (typeof participant?.id === "string" && participant.id) ||
-                (typeof participant?.characterId === "string" && participant.characterId) ||
-                `${idx}`;
-              const displayName =
-                typeof participant?.characterDisplayName === "string"
-                  ? participant.characterDisplayName
-                  : typeof participant?.displayName === "string"
-                    ? participant.displayName
-                    : "Unknown";
+                (typeof participant?.name === "string" && participant.name) || `${idx}`;
+              const displayName = participantKey;
               const currentValue = chatpkgParticipantMap[participantKey] || "";
               return (
                 <div key={participantKey} className="rounded-xl border border-fg/10 bg-fg/5 p-3">
@@ -1437,43 +1335,15 @@ export function GroupChatSettingsPage() {
           </div>
           <button
             onClick={() => {
-              setShowChatpkgImportMapMenu(false);
-              setShowChatpkgImportConfirmMenu(true);
+              void handleImportGroupChatpkg();
             }}
-            className="mt-4 w-full rounded-xl border border-emerald-500/30 bg-emerald-500/20 py-3 text-sm font-medium text-emerald-200 hover:bg-emerald-500/30"
+            disabled={importingChatpkg}
+            className="mt-4 w-full rounded-xl border border-emerald-500/30 bg-emerald-500/20 py-3 text-sm font-medium text-emerald-200 hover:bg-emerald-500/30 disabled:opacity-50"
           >
-            {t("groupChats.sessionSettings.continue")}
+            {importingChatpkg
+              ? t("groupChats.sessionSettings.importing")
+              : t("common.buttons.import")}
           </button>
-        </MenuSection>
-      </BottomMenu>
-
-      <BottomMenu
-        isOpen={showChatpkgImportConfirmMenu}
-        onClose={() => {
-          if (importingChatpkg) return;
-          setShowChatpkgImportConfirmMenu(false);
-          setPendingChatpkgImport(null);
-          setChatpkgParticipantMap({});
-        }}
-        title={t("groupChats.sessionSettings.importChatPackageTitle")}
-      >
-        <MenuSection>
-          <div className="space-y-4">
-            <div className="rounded-xl border border-fg/10 bg-fg/5 p-3 text-sm text-fg/80">
-              {t("groupChats.sessionSettings.importChatPackageDesc")}
-            </div>
-            <button
-              onClick={() => {
-                void handleImportGroupChatpkg();
-              }}
-              disabled={importingChatpkg}
-              className="w-full rounded-xl border border-emerald-500/30 bg-emerald-500/20 py-3 text-sm font-medium text-emerald-200 transition hover:bg-emerald-500/30 disabled:opacity-50"
-            >
-              {importingChatpkg
-                ? t("groupChats.sessionSettings.importing")
-                : t("common.buttons.import")}
-            </button>
-          </div>
         </MenuSection>
       </BottomMenu>
     </div>

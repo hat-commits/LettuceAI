@@ -302,7 +302,6 @@ export function ChatSettingsContent({
     useState<AdvancedModelSettings | null>(null);
   const [showSessionAdvancedMenu, setShowSessionAdvancedMenu] = useState(false);
   const [showParameterSupport, setShowParameterSupport] = useState(false);
-  const [showChatpkgImportMenu, setShowChatpkgImportMenu] = useState(false);
   const [sessionAdvancedDraft, setSessionAdvancedDraft] = useState<AdvancedModelSettings>(
     createDefaultAdvancedModelSettings(),
   );
@@ -312,11 +311,7 @@ export function ChatSettingsContent({
   const [showAuthorNoteMenu, setShowAuthorNoteMenu] = useState(false);
   const [selectedPersonaForActions, setSelectedPersonaForActions] = useState<Persona | null>(null);
   const [messageCount, setMessageCount] = useState<number>(0);
-  const [pendingChatpkgImport, setPendingChatpkgImport] = useState<{
-    path: string;
-    info: any;
-  } | null>(null);
-  const [importingChatpkg, setImportingChatpkg] = useState(false);
+  const [, setImportingChatpkg] = useState(false);
   const personaForAvatar = useMemo(() => {
     if (!currentSession) return null;
     if (currentSession.personaDisabled || currentSession.personaId === "") return null;
@@ -619,41 +614,23 @@ export function ChatSettingsContent({
   const handleOpenImportChatpkg = useCallback(async () => {
     if (!characterId) return;
     try {
-      const picked = await storageBridge.chatpkgPickFile();
+      const picked = await storageBridge.jsonlPickFile();
       if (!picked) return;
-      const info = await storageBridge.chatpkgInspect(picked.path);
-      if (info?.type !== "single_chat") {
-        alert("This package is not a single chat package.");
-        return;
-      }
-      setPendingChatpkgImport({ path: picked.path, info });
-      setShowChatpkgImportMenu(true);
-    } catch (error) {
-      console.error("Failed to inspect chat package:", error);
-      alert(typeof error === "string" ? error : "Failed to inspect chat package");
-    }
-  }, [characterId]);
-
-  const handleImportChatpkg = useCallback(async () => {
-    if (!characterId || !pendingChatpkgImport) return;
-    try {
       setImportingChatpkg(true);
-      const result = await storageBridge.chatpkgImport(pendingChatpkgImport.path, {
+      const result = await storageBridge.jsonlImport(picked.path, {
         targetCharacterId: characterId,
       });
-      setShowChatpkgImportMenu(false);
-      setPendingChatpkgImport(null);
       const importedSessionId = result?.sessionId;
       if (typeof importedSessionId === "string" && importedSessionId.length > 0) {
         navigate(Routes.chatSession(characterId, importedSessionId), { replace: true });
       }
     } catch (error) {
-      console.error("Failed to import chat package:", error);
-      alert(typeof error === "string" ? error : "Failed to import chat package");
+      console.error("Failed to import chat:", error);
+      alert(typeof error === "string" ? error : "Failed to import chat");
     } finally {
       setImportingChatpkg(false);
     }
-  }, [characterId, navigate, pendingChatpkgImport]);
+  }, [characterId, navigate]);
 
   const avatarDisplay = useMemo(() => {
     if (avatarUrl && isImageLike(avatarUrl)) {
@@ -1349,49 +1326,6 @@ export function ChatSettingsContent({
         providerId={currentModel?.providerId ?? "openai"}
         modelPath={currentModel?.name}
       />
-
-      {/* Parameter Support */}
-      <BottomMenu
-        isOpen={showChatpkgImportMenu}
-        onClose={() => {
-          if (importingChatpkg) return;
-          setShowChatpkgImportMenu(false);
-          setPendingChatpkgImport(null);
-        }}
-        title={t("chats.importChatPackage")}
-      >
-        <MenuSection>
-          <div className="space-y-4">
-            <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white/70">
-              Format:{" "}
-              {pendingChatpkgImport?.info?.source?.format === "sillytavern"
-                ? "SillyTavern format (.jsonl)"
-                : "Chat package / JSONL"}
-            </div>
-            <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white/80">
-              {pendingChatpkgImport?.info?.characterId ? (
-                pendingChatpkgImport.info.characterId === characterId ? (
-                  <p>{t("chats.characterSpecificMatches")}</p>
-                ) : (
-                  <p>{t("chats.characterSpecificMismatch", { name: currentCharacter.name })}</p>
-                )
-              ) : (
-                <p>{t("chats.nonCharacterSpecificImport", { name: currentCharacter.name })}</p>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                void handleImportChatpkg();
-              }}
-              disabled={importingChatpkg}
-              className="w-full rounded-xl border border-emerald-500/30 bg-emerald-500/20 py-3 text-sm font-medium text-emerald-200 hover:bg-emerald-500/30 disabled:opacity-50"
-            >
-              {importingChatpkg ? t("common.buttons.importing") : t("common.buttons.import")}
-            </button>
-          </div>
-        </MenuSection>
-      </BottomMenu>
 
       {/* Parameter Support */}
       <BottomMenu
