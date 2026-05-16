@@ -4,7 +4,6 @@ import {
   Reorder,
   motion,
   useDragControls,
-  useMotionValue,
   type PanInfo,
 } from "framer-motion";
 import { useParams } from "react-router-dom";
@@ -2272,7 +2271,6 @@ export function EditPromptTemplate() {
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const sidebarRef = useRef<HTMLDivElement>(null);
   const entryTextareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
   const activeEntryIdRef = useRef<string | null>(null);
   const entriesRef = useRef<SystemPromptEntry[]>([]);
@@ -2330,48 +2328,6 @@ export function EditPromptTemplate() {
   const canReset = isAppDefault && Boolean(id);
 
   const usesEntryEditor = true;
-  const quickInsertY = useMotionValue(0);
-  const [scrollListenerMounted, setScrollListenerMounted] = useState(false);
-
-  // Trigger scroll listener setup after component mounts
-  useEffect(() => {
-    setScrollListenerMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!scrollListenerMounted) return;
-
-    const getScrollParent = (node: HTMLElement | null): HTMLElement | null => {
-      let current = node?.parentElement ?? null;
-      while (current) {
-        const style = getComputedStyle(current);
-        const overflowY = style.overflowY;
-        if (
-          (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") &&
-          current.scrollHeight > current.clientHeight
-        ) {
-          return current;
-        }
-        current = current.parentElement;
-      }
-      return null;
-    };
-
-    const target = sidebarRef.current;
-    if (!target) return;
-
-    const scrollParent = getScrollParent(target);
-
-    const handleScroll = () => {
-      const scrollTop = scrollParent ? scrollParent.scrollTop : window.scrollY;
-      quickInsertY.set(scrollTop);
-    };
-
-    const options: AddEventListenerOptions = { passive: true };
-    (scrollParent ?? window).addEventListener("scroll", handleScroll, options);
-    handleScroll();
-    return () => (scrollParent ?? window).removeEventListener("scroll", handleScroll, options);
-  }, [scrollListenerMounted, quickInsertY]);
 
   const promptTypeDefinitions = useMemo(() => {
     return new Map<PromptType, PromptTypeDefinition>(
@@ -3557,71 +3513,6 @@ export function EditPromptTemplate() {
               </div>
             </div>
 
-            {/* Desktop Sidebar - Quick Insert */}
-            <motion.div
-              ref={sidebarRef}
-              style={{ y: quickInsertY }}
-              className="hidden lg:block w-80 shrink-0 space-y-4 self-start relative z-20"
-            >
-              <div className={cn(radius.lg, "border border-fg/10 bg-fg/5 p-4")}>
-                <h3 className="text-sm font-medium text-fg mb-1">Quick Insert</h3>
-                <p className="text-xs text-fg/40 mb-3">Click to insert at cursor</p>
-
-                <div className="space-y-1.5 max-h-[60vh] overflow-y-auto">
-                  {variables.map((v) => {
-                    const isRequired = requiredVariables.includes(v.variable);
-                    const isMissing = missingVariables.includes(v.variable);
-                    return (
-                      <button
-                        key={v.variable}
-                        onClick={() => insertVariable(v.variable)}
-                        className={cn(
-                          "w-full text-left p-2",
-                          radius.md,
-                          "border",
-                          isMissing
-                            ? "border-danger/30 bg-danger/10"
-                            : isRequired
-                              ? "border-warning/30 bg-warning/10"
-                              : "border-fg/10 bg-fg/5",
-                          interactive.transition.fast,
-                          "hover:bg-fg/10",
-                        )}
-                      >
-                        <div className="flex items-center gap-2">
-                          {isRequired && (
-                            <span
-                              className={cn(
-                                "text-xs",
-                                isMissing ? "text-danger/80" : "text-warning/80",
-                              )}
-                            >
-                              ★
-                            </span>
-                          )}
-                            <code
-                              className={cn(
-                                "text-xs font-medium",
-                                isMissing ? "text-danger/80" : "text-accent/80",
-                              )}
-                            >
-                              {v.variable}
-                            </code>
-                          </div>
-                        <p className="text-[10px] text-fg/40 mt-0.5">{v.description}</p>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="flex items-start gap-2 mt-3 pt-3 border-t border-fg/10">
-                  <span className="text-fg/30 text-xs mt-0.5">ⓘ</span>
-                  <p className="text-xs text-fg/40 leading-relaxed">
-                    Variables are replaced with actual values when the prompt is used.
-                  </p>
-                </div>
-              </div>
-            </motion.div>
           </div>
         </div>
       </main>
