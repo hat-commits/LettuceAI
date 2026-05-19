@@ -9,6 +9,11 @@ on:
         description: "Direct HTTPS URL to the Linux release tar.gz asset"
         required: true
         type: string
+      asset_sha256:
+        description: "Expected SHA256 of the Linux release tar.gz asset"
+        required: false
+        default: ""
+        type: string
       variant:
         description: "Linux desktop variant to package"
         required: true
@@ -46,7 +51,8 @@ jobs:
             '${{ inputs.asset_url }}' \
             '${{ inputs.variant }}' \
             aur-out \
-            '${{ inputs.pkgrel }}'
+            '${{ inputs.pkgrel }}' \
+            '${{ inputs.asset_sha256 }}'
 
       - name: Load package metadata
         run: cat aur-out/aur-package.env >> "$GITHUB_ENV"

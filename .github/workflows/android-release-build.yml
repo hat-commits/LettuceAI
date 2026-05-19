@@ -434,13 +434,23 @@ jobs:
             zip -9 "$GITHUB_WORKSPACE/dist-artifacts/android-apk-bundle.zip" -@ < "$GITHUB_WORKSPACE/dist-artifacts/apk-file-list.txt"
           )
 
+      - name: Write Android SHA256 checksums
+        run: |
+          bash scripts/write-sha256-sidecars.sh \
+            dist-artifacts/SHA256SUMS-android.txt \
+            dist-artifacts/android-universal-release.apk \
+            dist-artifacts/android-apk-bundle.zip
+
       - name: Upload Android artifacts to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.prepare_release.outputs.tag }}
           files: |
             dist-artifacts/android-universal-release.apk
+            dist-artifacts/android-universal-release.apk.sha256
             dist-artifacts/android-apk-bundle.zip
+            dist-artifacts/android-apk-bundle.zip.sha256
+            dist-artifacts/SHA256SUMS-android.txt
           fail_on_unmatched_files: true
 
   cleanup_release_on_failure:

@@ -345,14 +345,26 @@ jobs:
           test -n "${DEB_PATH}"
           cp "${DEB_PATH}" dist-artifacts/lettuceai-linux-x86_64-cpu.deb
 
+      - name: Write Linux CPU SHA256 checksums
+        run: |
+          bash scripts/write-sha256-sidecars.sh \
+            dist-artifacts/SHA256SUMS-linux-cpu.txt \
+            dist-artifacts/linux-cpu.zip \
+            dist-artifacts/lettuceai-linux-x86_64-cpu.deb \
+            dist-artifacts/lettuceai-linux-x86_64-cpu.tar.gz
+
       - name: Upload Linux CPU artifacts to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.prepare_release.outputs.tag }}
           files: |
             dist-artifacts/linux-cpu.zip
+            dist-artifacts/linux-cpu.zip.sha256
             dist-artifacts/lettuceai-linux-x86_64-cpu.deb
+            dist-artifacts/lettuceai-linux-x86_64-cpu.deb.sha256
             dist-artifacts/lettuceai-linux-x86_64-cpu.tar.gz
+            dist-artifacts/lettuceai-linux-x86_64-cpu.tar.gz.sha256
+            dist-artifacts/SHA256SUMS-linux-cpu.txt
           fail_on_unmatched_files: true
 
   linux_cuda:
@@ -494,14 +506,26 @@ jobs:
           test -n "${DEB_PATH}"
           cp "${DEB_PATH}" dist-artifacts/lettuceai-linux-x86_64-cuda.deb
 
+      - name: Write Linux CUDA SHA256 checksums
+        run: |
+          bash scripts/write-sha256-sidecars.sh \
+            dist-artifacts/SHA256SUMS-linux-cuda.txt \
+            dist-artifacts/linux-cuda.zip \
+            dist-artifacts/lettuceai-linux-x86_64-cuda.deb \
+            dist-artifacts/lettuceai-linux-x86_64-cuda.tar.gz
+
       - name: Upload Linux CUDA artifacts to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.prepare_release.outputs.tag }}
           files: |
             dist-artifacts/linux-cuda.zip
+            dist-artifacts/linux-cuda.zip.sha256
             dist-artifacts/lettuceai-linux-x86_64-cuda.deb
+            dist-artifacts/lettuceai-linux-x86_64-cuda.deb.sha256
             dist-artifacts/lettuceai-linux-x86_64-cuda.tar.gz
+            dist-artifacts/lettuceai-linux-x86_64-cuda.tar.gz.sha256
+            dist-artifacts/SHA256SUMS-linux-cuda.txt
           fail_on_unmatched_files: true
 
   linux_vulkan:
@@ -641,14 +665,26 @@ jobs:
           test -n "${DEB_PATH}"
           cp "${DEB_PATH}" dist-artifacts/lettuceai-linux-x86_64-vulkan.deb
 
+      - name: Write Linux Vulkan SHA256 checksums
+        run: |
+          bash scripts/write-sha256-sidecars.sh \
+            dist-artifacts/SHA256SUMS-linux-vulkan.txt \
+            dist-artifacts/linux-vulkan.zip \
+            dist-artifacts/lettuceai-linux-x86_64-vulkan.deb \
+            dist-artifacts/lettuceai-linux-x86_64-vulkan.tar.gz
+
       - name: Upload Linux Vulkan artifacts to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.prepare_release.outputs.tag }}
           files: |
             dist-artifacts/linux-vulkan.zip
+            dist-artifacts/linux-vulkan.zip.sha256
             dist-artifacts/lettuceai-linux-x86_64-vulkan.deb
+            dist-artifacts/lettuceai-linux-x86_64-vulkan.deb.sha256
             dist-artifacts/lettuceai-linux-x86_64-vulkan.tar.gz
+            dist-artifacts/lettuceai-linux-x86_64-vulkan.tar.gz.sha256
+            dist-artifacts/SHA256SUMS-linux-vulkan.txt
           fail_on_unmatched_files: true
 
   windows_cpu:
@@ -772,14 +808,40 @@ jobs:
             Copy-Item $nsis.FullName 'dist-artifacts/lettuceai-windows-x64-cpu-setup.exe'
           }
 
+      - name: Write Windows CPU SHA256 checksums
+        shell: pwsh
+        run: |
+          $artifacts = @(
+            'dist-artifacts/windows-cpu.zip',
+            'dist-artifacts/lettuceai-windows-x64-cpu.msi',
+            'dist-artifacts/lettuceai-windows-x64-cpu-setup.exe'
+          )
+          $summary = 'dist-artifacts/SHA256SUMS-windows-cpu.txt'
+          if (Test-Path $summary) {
+            Remove-Item $summary
+          }
+          foreach ($artifact in $artifacts) {
+            if (!(Test-Path $artifact)) {
+              throw "artifact not found: $artifact"
+            }
+            $hash = (Get-FileHash -Path $artifact -Algorithm SHA256).Hash.ToLowerInvariant()
+            $name = Split-Path $artifact -Leaf
+            "$hash  $name" | Out-File -FilePath $summary -Encoding ascii -Append
+            "$hash  $name" | Out-File -FilePath "$artifact.sha256" -Encoding ascii
+          }
+
       - name: Upload Windows CPU artifacts to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.prepare_release.outputs.tag }}
           files: |
             dist-artifacts/windows-cpu.zip
+            dist-artifacts/windows-cpu.zip.sha256
             dist-artifacts/lettuceai-windows-x64-cpu.msi
+            dist-artifacts/lettuceai-windows-x64-cpu.msi.sha256
             dist-artifacts/lettuceai-windows-x64-cpu-setup.exe
+            dist-artifacts/lettuceai-windows-x64-cpu-setup.exe.sha256
+            dist-artifacts/SHA256SUMS-windows-cpu.txt
           fail_on_unmatched_files: true
 
   windows_cuda:
@@ -920,14 +982,40 @@ jobs:
             Copy-Item $nsis.FullName 'dist-artifacts/lettuceai-windows-x64-cuda-setup.exe'
           }
 
+      - name: Write Windows CUDA SHA256 checksums
+        shell: pwsh
+        run: |
+          $artifacts = @(
+            'dist-artifacts/windows-cuda.zip',
+            'dist-artifacts/lettuceai-windows-x64-cuda.msi',
+            'dist-artifacts/lettuceai-windows-x64-cuda-setup.exe'
+          )
+          $summary = 'dist-artifacts/SHA256SUMS-windows-cuda.txt'
+          if (Test-Path $summary) {
+            Remove-Item $summary
+          }
+          foreach ($artifact in $artifacts) {
+            if (!(Test-Path $artifact)) {
+              throw "artifact not found: $artifact"
+            }
+            $hash = (Get-FileHash -Path $artifact -Algorithm SHA256).Hash.ToLowerInvariant()
+            $name = Split-Path $artifact -Leaf
+            "$hash  $name" | Out-File -FilePath $summary -Encoding ascii -Append
+            "$hash  $name" | Out-File -FilePath "$artifact.sha256" -Encoding ascii
+          }
+
       - name: Upload Windows CUDA artifacts to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.prepare_release.outputs.tag }}
           files: |
             dist-artifacts/windows-cuda.zip
+            dist-artifacts/windows-cuda.zip.sha256
             dist-artifacts/lettuceai-windows-x64-cuda.msi
+            dist-artifacts/lettuceai-windows-x64-cuda.msi.sha256
             dist-artifacts/lettuceai-windows-x64-cuda-setup.exe
+            dist-artifacts/lettuceai-windows-x64-cuda-setup.exe.sha256
+            dist-artifacts/SHA256SUMS-windows-cuda.txt
           fail_on_unmatched_files: true
 
   windows_vulkan:
@@ -1167,14 +1255,40 @@ jobs:
             Copy-Item $nsis.FullName 'dist-artifacts/lettuceai-windows-x64-vulkan-setup.exe'
           }
 
+      - name: Write Windows Vulkan SHA256 checksums
+        shell: pwsh
+        run: |
+          $artifacts = @(
+            'dist-artifacts/windows-vulkan.zip',
+            'dist-artifacts/lettuceai-windows-x64-vulkan.msi',
+            'dist-artifacts/lettuceai-windows-x64-vulkan-setup.exe'
+          )
+          $summary = 'dist-artifacts/SHA256SUMS-windows-vulkan.txt'
+          if (Test-Path $summary) {
+            Remove-Item $summary
+          }
+          foreach ($artifact in $artifacts) {
+            if (!(Test-Path $artifact)) {
+              throw "artifact not found: $artifact"
+            }
+            $hash = (Get-FileHash -Path $artifact -Algorithm SHA256).Hash.ToLowerInvariant()
+            $name = Split-Path $artifact -Leaf
+            "$hash  $name" | Out-File -FilePath $summary -Encoding ascii -Append
+            "$hash  $name" | Out-File -FilePath "$artifact.sha256" -Encoding ascii
+          }
+
       - name: Upload Windows Vulkan artifacts to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.prepare_release.outputs.tag }}
           files: |
             dist-artifacts/windows-vulkan.zip
+            dist-artifacts/windows-vulkan.zip.sha256
             dist-artifacts/lettuceai-windows-x64-vulkan.msi
+            dist-artifacts/lettuceai-windows-x64-vulkan.msi.sha256
             dist-artifacts/lettuceai-windows-x64-vulkan-setup.exe
+            dist-artifacts/lettuceai-windows-x64-vulkan-setup.exe.sha256
+            dist-artifacts/SHA256SUMS-windows-vulkan.txt
           fail_on_unmatched_files: true
 
   macos_cpu:
@@ -1244,18 +1358,30 @@ jobs:
           CPU_DMG=$(ls src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg | head -n 1)
           cp "$CPU_DMG" dist-artifacts/macos-${{ matrix.artifact_suffix }}-cpu.dmg
 
+      - name: Write macOS CPU SHA256 checksums
+        run: |
+          bash scripts/write-sha256-sidecars.sh \
+            dist-artifacts/SHA256SUMS-macos-${{ matrix.artifact_suffix }}-cpu.txt \
+            dist-artifacts/macos-${{ matrix.artifact_suffix }}-app.zip \
+            dist-artifacts/macos-${{ matrix.artifact_suffix }}-cpu.dmg
+
       - name: Upload macOS app zip to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.prepare_release.outputs.tag }}
-          files: dist-artifacts/macos-${{ matrix.artifact_suffix }}-app.zip
+          files: |
+            dist-artifacts/macos-${{ matrix.artifact_suffix }}-app.zip
+            dist-artifacts/macos-${{ matrix.artifact_suffix }}-app.zip.sha256
           fail_on_unmatched_files: true
 
       - name: Upload macOS dmg to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.prepare_release.outputs.tag }}
-          files: dist-artifacts/macos-${{ matrix.artifact_suffix }}-cpu.dmg
+          files: |
+            dist-artifacts/macos-${{ matrix.artifact_suffix }}-cpu.dmg
+            dist-artifacts/macos-${{ matrix.artifact_suffix }}-cpu.dmg.sha256
+            dist-artifacts/SHA256SUMS-macos-${{ matrix.artifact_suffix }}-cpu.txt
           fail_on_unmatched_files: true
 
   macos_metal:
@@ -1327,18 +1453,30 @@ jobs:
           METAL_DMG=$(ls src-tauri/target-metal/${{ matrix.target }}/release/bundle/dmg/*.dmg | head -n 1)
           cp "$METAL_DMG" dist-artifacts/macos-${{ matrix.artifact_suffix }}-metal.dmg
 
+      - name: Write macOS Metal SHA256 checksums
+        run: |
+          bash scripts/write-sha256-sidecars.sh \
+            dist-artifacts/SHA256SUMS-macos-${{ matrix.artifact_suffix }}-metal.txt \
+            dist-artifacts/macos-${{ matrix.artifact_suffix }}-metal-app.zip \
+            dist-artifacts/macos-${{ matrix.artifact_suffix }}-metal.dmg
+
       - name: Upload macOS Metal app zip to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.prepare_release.outputs.tag }}
-          files: dist-artifacts/macos-${{ matrix.artifact_suffix }}-metal-app.zip
+          files: |
+            dist-artifacts/macos-${{ matrix.artifact_suffix }}-metal-app.zip
+            dist-artifacts/macos-${{ matrix.artifact_suffix }}-metal-app.zip.sha256
           fail_on_unmatched_files: true
 
       - name: Upload macOS Metal dmg to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.prepare_release.outputs.tag }}
-          files: dist-artifacts/macos-${{ matrix.artifact_suffix }}-metal.dmg
+          files: |
+            dist-artifacts/macos-${{ matrix.artifact_suffix }}-metal.dmg
+            dist-artifacts/macos-${{ matrix.artifact_suffix }}-metal.dmg.sha256
+            dist-artifacts/SHA256SUMS-macos-${{ matrix.artifact_suffix }}-metal.txt
           fail_on_unmatched_files: true
 
   cleanup_release_on_failure:
