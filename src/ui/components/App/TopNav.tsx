@@ -559,6 +559,13 @@ export function TopNav({
         navigate("/");
         return;
       }
+      const templateMatch = basePath.match(
+        /^\/settings\/characters\/([^/]+)\/templates(?:\/.+)?$/,
+      );
+      if (templateMatch) {
+        navigate(`/settings/characters/${templateMatch[1]}/edit`);
+        return;
+      }
       const mapped = resolveBackTarget(currentPath);
       if (mapped && mapped.startsWith("/settings")) {
         navigate(mapped);
