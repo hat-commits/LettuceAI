@@ -433,6 +433,14 @@ struct GgufModelMeta {
     key_length: Option<u64>,
     /// Per-head value dimension (used for MLA KV cache sizing)
     value_length: Option<u64>,
+    /// Total routed experts per MoE layer (e.g. 8 for Mixtral, 60 for Qwen3-MoE)
+    expert_count: Option<u64>,
+    /// Routed experts actually executed per token (top-k)
+    expert_used_count: Option<u64>,
+    /// Shared (always-on) experts per layer (DeepSeek V2/V3)
+    expert_shared_count: Option<u64>,
+    /// Per-expert FFN hidden dim (usually smaller than dense feed_forward_length)
+    expert_feed_forward_length: Option<u64>,
     /// Number of metadata KV pairs declared in header (for truncation detection)
     metadata_kv_count: u64,
     /// Number of KV pairs actually parsed before buffer ran out
@@ -649,6 +657,10 @@ fn parse_gguf_meta(data: &[u8]) -> Option<GgufModelMeta> {
     let key_kv_lora_rank = format!("{}.attention.kv_lora_rank", arch);
     let key_key_length = format!("{}.attention.key_length", arch);
     let key_value_length = format!("{}.attention.value_length", arch);
+    let key_expert_count = format!("{}.expert_count", arch);
+    let key_expert_used_count = format!("{}.expert_used_count", arch);
+    let key_expert_shared_count = format!("{}.expert_shared_count", arch);
+    let key_expert_ffn = format!("{}.expert_feed_forward_length", arch);
 
     reader.pos = start_pos;
     let mut parsed: u64 = 0;
@@ -700,6 +712,18 @@ fn parse_gguf_meta(data: &[u8]) -> Option<GgufModelMeta> {
         } else if key == key_value_length {
             meta.value_length = reader.read_value_as_u64(value_type);
             meta.value_length.is_some()
+        } else if key == key_expert_count {
+            meta.expert_count = reader.read_value_as_u64(value_type);
+            meta.expert_count.is_some()
+        } else if key == key_expert_used_count {
+            meta.expert_used_count = reader.read_value_as_u64(value_type);
+            meta.expert_used_count.is_some()
+        } else if key == key_expert_shared_count {
+            meta.expert_shared_count = reader.read_value_as_u64(value_type);
+            meta.expert_shared_count.is_some()
+        } else if key == key_expert_ffn {
+            meta.expert_feed_forward_length = reader.read_value_as_u64(value_type);
+            meta.expert_feed_forward_length.is_some()
         } else {
             reader.skip_value(value_type).is_some()
         };
@@ -760,22 +784,33 @@ pub struct RunabilityFileInput {
 fn quant_quality_score(quant: &str) -> f64 {
     match quant.to_uppercase().as_str() {
         "F32" | "BF16" | "F16" => 100.0,
+        "UD-Q8_K_XL" => 96.0,
         "Q8_K" | "Q8_K_S" | "Q8_K_L" | "Q8_K_XL" => 95.0,
-        "Q8_0" => 90.0, // Legacy 8-bit
+        "UD-Q6_K_XL" => 92.0,
+        "Q8_0" => 90.0,
         "Q6_K" | "Q6_K_S" | "Q6_K_L" | "Q6_K_XL" => 90.0,
+        "UD-Q5_K_XL" => 88.0,
         "Q5_K_M" | "Q5_K_L" | "Q5_K_XL" | "Q5_K" => 85.0,
         "Q5_K_S" => 80.0,
-        "Q5_0" | "Q5_1" => 70.0, // Legacy 5-bit (−10)
+        "UD-Q4_K_XL" => 82.0,
+        "Q5_0" | "Q5_1" => 70.0,
         "Q4_K_M" | "Q4_K_L" | "Q4_K_XL" | "Q4_K" => 75.0,
         "Q4_K_S" => 70.0,
-        "IQ4_XS" | "IQ4_NL" => 72.0, // I-quant 4-bit (↑ from 65)
-        "Q4_0" | "Q4_1" => 60.0,     // Legacy 4-bit (−10)
+        "IQ4_XS" | "IQ4_NL" => 72.0,
+        "Q4_0" | "Q4_1" => 60.0,
+        "UD-Q3_K_XL" => 70.0,
         "Q3_K_M" | "Q3_K_L" | "Q3_K_XL" | "Q3_K" => 60.0,
         "Q3_K_S" => 50.0,
-        "IQ3_M" | "IQ3_S" => 52.0, // I-quant 3-bit (↑ from 45)
+        "UD-IQ3_XXS" => 60.0,
+        "IQ3_M" | "IQ3_S" => 52.0,
         "IQ3_XS" | "IQ3_XXS" => 45.0,
+        "UD-Q2_K_XL" => 55.0,
         "Q2_K" | "Q2_K_S" | "Q2_K_M" | "Q2_K_L" | "Q2_K_XL" => 35.0,
+        "UD-IQ2_M" => 50.0,
+        "UD-IQ2_XXS" => 40.0,
         "IQ2_M" | "IQ2_S" | "IQ2_XS" | "IQ2_XXS" => 25.0,
+        "UD-IQ1_M" => 30.0,
+        "UD-IQ1_S" => 22.0,
         "IQ1_M" | "IQ1_S" => 15.0,
         "MXFP4_MOE" => 70.0,
         _ => 50.0,
@@ -857,11 +892,29 @@ fn score_label(score: u32) -> String {
     .to_string()
 }
 
-/// Compute buffer overhead: scratch/work RAM for matrix multiplications.
-/// Safe heuristic: max(model_size × 5%, 200MB).
-fn compute_overhead(model_size: u64) -> u64 {
-    let five_pct = (model_size as f64 * 0.05) as u64;
-    five_pct.max(200_000_000) // 200MB minimum
+fn is_moe(meta: &GgufModelMeta) -> bool {
+    meta.expert_count.unwrap_or(0) > 0 && meta.expert_used_count.unwrap_or(0) > 0
+}
+
+fn active_weight_ratio(meta: &GgufModelMeta) -> f64 {
+    if !is_moe(meta) {
+        return 1.0;
+    }
+    let expert_count = meta.expert_count.unwrap_or(0).max(1) as f64;
+    let used = meta.expert_used_count.unwrap_or(0) as f64;
+    let shared = meta.expert_shared_count.unwrap_or(0) as f64;
+    let active_experts = used + shared;
+    let total_experts = expert_count + shared;
+    let attn_frac = 0.10_f64;
+    let ffn_frac = 1.0 - attn_frac;
+    let active_ffn = ffn_frac * (active_experts / total_experts.max(1.0));
+    (attn_frac + active_ffn).clamp(0.05, 1.0)
+}
+
+fn compute_overhead(model_size: u64, active_ratio: f64) -> u64 {
+    let active_size = (model_size as f64 * active_ratio.clamp(0.05, 1.0)) as u64;
+    let five_pct = (active_size as f64 * 0.05) as u64;
+    five_pct.max(200_000_000)
 }
 
 /// Core scoring for a single configuration. All parameters are concrete values.
@@ -875,8 +928,9 @@ fn score_configuration(
     available_ram: u64,
     total_available: u64,
     available_vram: u64,
+    active_ratio: f64,
 ) -> (u32, bool, bool, u32, u32, u32, &'static str) {
-    let overhead = compute_overhead(model_size);
+    let overhead = compute_overhead(model_size, active_ratio);
     let total_needed = model_size
         .saturating_add(kv_cache_bytes)
         .saturating_add(overhead);
@@ -1042,6 +1096,7 @@ fn compute_scores(
         .and_then(kv_base_per_token)
         .map(|base| (base * 2.0 * effective_ctx as f64) as u64) // F16 = 2.0 bytes
         .unwrap_or(0);
+    let active_ratio = meta.map(active_weight_ratio).unwrap_or(1.0);
 
     files
         .iter()
@@ -1053,6 +1108,7 @@ fn compute_scores(
                 ram,
                 total_available,
                 vram,
+                active_ratio,
             );
             RunabilityScore {
                 filename: file.filename.clone(),
@@ -1082,11 +1138,18 @@ pub struct ModelArchInfo {
     pub kv_lora_rank: Option<u64>,
     pub key_length: Option<u64>,
     pub value_length: Option<u64>,
+    pub expert_count: Option<u64>,
+    pub expert_used_count: Option<u64>,
+    pub expert_shared_count: Option<u64>,
+    pub expert_feed_forward_length: Option<u64>,
+    pub is_moe: bool,
+    pub active_weight_ratio: Option<f64>,
     pub incomplete_parse: bool,
 }
 
 impl From<&GgufModelMeta> for ModelArchInfo {
     fn from(m: &GgufModelMeta) -> Self {
+        let moe = is_moe(m);
         Self {
             architecture: m.architecture.clone(),
             block_count: m.block_count,
@@ -1100,6 +1163,12 @@ impl From<&GgufModelMeta> for ModelArchInfo {
             kv_lora_rank: m.kv_lora_rank,
             key_length: m.key_length,
             value_length: m.value_length,
+            expert_count: m.expert_count,
+            expert_used_count: m.expert_used_count,
+            expert_shared_count: m.expert_shared_count,
+            expert_feed_forward_length: m.expert_feed_forward_length,
+            is_moe: moe,
+            active_weight_ratio: if moe { Some(active_weight_ratio(m)) } else { None },
             incomplete_parse: m.parsed_kv_count < m.metadata_kv_count,
         }
     }
@@ -1161,8 +1230,9 @@ fn calculate_optimal_context(
     model_weight_bytes: u64,
     bytes_per_token: f64, // kv_base × bytes_per_value (accounts for GQA/MLA + KV quant)
     model_max_ctx: u64,
+    active_ratio: f64,
 ) -> u64 {
-    let overhead = compute_overhead(model_weight_bytes);
+    let overhead = compute_overhead(model_weight_bytes, active_ratio);
     let remaining = budget_bytes
         .saturating_sub(model_weight_bytes)
         .saturating_sub(overhead);
@@ -1194,9 +1264,10 @@ fn max_context_for(
     bpv: f64,
     total_available: u64,
     model_max_ctx: u64,
+    active_ratio: f64,
 ) -> u64 {
     let safety = dynamic_safety_reserve(total_available);
-    let overhead = compute_overhead(model_size);
+    let overhead = compute_overhead(model_size, active_ratio);
     let available = total_available
         .saturating_sub(model_size)
         .saturating_sub(overhead)
@@ -1220,6 +1291,7 @@ fn build_recommendation(
     let total_available = resolve_total_available(available_ram, available_vram, unified);
     let kv_base = meta.and_then(kv_base_per_token);
     let model_max_ctx = meta.and_then(|m| m.context_length).unwrap_or(8192);
+    let active_ratio = meta.map(active_weight_ratio).unwrap_or(1.0);
     // SWA cap: for sliding window architectures, KV cache doesn't grow past window size
     let kv_ctx_cap = meta.and_then(|m| {
         let arch = m.architecture.as_deref().unwrap_or("llama").to_lowercase();
@@ -1241,9 +1313,9 @@ fn build_recommendation(
         let qq = quant_quality_score(&file.quantization);
         let (max_f16, max_q8, max_q4) = if let Some(base) = kv_base {
             (
-                max_context_for(file.size, base, 2.0, total_available, model_max_ctx),
-                max_context_for(file.size, base, 1.0, total_available, model_max_ctx),
-                max_context_for(file.size, base, 0.5, total_available, model_max_ctx),
+                max_context_for(file.size, base, 2.0, total_available, model_max_ctx, active_ratio),
+                max_context_for(file.size, base, 1.0, total_available, model_max_ctx, active_ratio),
+                max_context_for(file.size, base, 0.5, total_available, model_max_ctx, active_ratio),
             )
         } else {
             (model_max_ctx, model_max_ctx, model_max_ctx)
@@ -1259,9 +1331,15 @@ fn build_recommendation(
         let bytes_per_token_q8 = kv_base.map(|b| b * bpv_q8).unwrap_or(0.0);
 
         let optimal_gpu_ctx = if file.size <= vram_budget {
-            calculate_optimal_context(vram_budget, file.size, bytes_per_token_q8, model_max_ctx)
+            calculate_optimal_context(
+                vram_budget,
+                file.size,
+                bytes_per_token_q8,
+                model_max_ctx,
+                active_ratio,
+            )
         } else {
-            0 // Model doesn't fit in VRAM
+            0
         };
 
         let optimal_ram_ctx = calculate_optimal_context(
@@ -1269,6 +1347,7 @@ fn build_recommendation(
             file.size,
             bytes_per_token_q8,
             model_max_ctx,
+            active_ratio,
         );
 
         file_recs.push(FileRecommendation {
@@ -1286,7 +1365,7 @@ fn build_recommendation(
         // Try each KV type, find the best scoring configuration for this file
         for &(kv_name, bpv) in KV_TYPES {
             let max_ctx = if let Some(base) = kv_base {
-                max_context_for(file.size, base, bpv, total_available, model_max_ctx)
+                max_context_for(file.size, base, bpv, total_available, model_max_ctx, active_ratio)
             } else {
                 model_max_ctx
             };
@@ -1308,6 +1387,7 @@ fn build_recommendation(
                 available_ram,
                 total_available,
                 available_vram,
+                active_ratio,
             );
 
             if best.as_ref().is_none_or(|b| score > b.score) {
@@ -1354,6 +1434,7 @@ fn build_recommendation(
                     available_ram,
                     total_available,
                     available_vram,
+                    active_ratio,
                 );
                 if score > best.as_ref().map_or(0, |b| b.score) {
                     best = Some(BestRecommendation {
@@ -1438,6 +1519,9 @@ fn extract_quantization(filename: &str) -> String {
     ];
     for p in &patterns {
         if upper.contains(p) {
+            if upper.contains(&format!("UD-{p}")) {
+                return format!("UD-{p}");
+            }
             return p.to_string();
         }
     }
@@ -2302,11 +2386,11 @@ async fn fetch_gguf_meta(
                 app,
                 "hf_browser",
                 format!(
-                    "GGUF header truncated ({}/{} KVs parsed), retrying with 5MB",
+                    "GGUF header truncated ({}/{} KVs parsed), retrying with 10MB",
                     m.parsed_kv_count, m.metadata_kv_count
                 ),
             );
-            let retry = fetch_gguf_range(&client, &url, 5_242_879).await;
+            let retry = fetch_gguf_range(&client, &url, 10_485_759).await;
             if let Some(ref r) = retry {
                 log_gguf_meta(app, r);
                 return retry;
@@ -2469,6 +2553,7 @@ pub async fn hf_compute_local_runability(
         ),
     );
 
+    let active_ratio = meta.as_ref().map(active_weight_ratio).unwrap_or(1.0);
     let (score, fits_in_ram, fits_in_vram, memory_score, gpu_score, kv_score, gpu_mode) =
         score_configuration(
             file_size,
@@ -2477,6 +2562,7 @@ pub async fn hf_compute_local_runability(
             available_ram,
             total_available,
             available_vram,
+            active_ratio,
         );
 
     Ok(LocalRunabilityResult {
