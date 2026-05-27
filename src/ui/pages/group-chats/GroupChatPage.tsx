@@ -27,6 +27,7 @@ import { splitThinkTags } from "../../../core/utils/thinkTags";
 
 import { Routes } from "../../navigation";
 import { useBeetrootRain } from "../chats/components/BeetrootRain";
+import { getChatColumnLayout } from "../chats/utils/chatColumnLayout";
 import { useBeetrootEasterEgg } from "../chats/hooks/useBeetrootEasterEgg";
 import { BottomMenu, MenuButton } from "../../components/BottomMenu";
 import {
@@ -1599,7 +1600,10 @@ export function GroupChatPage() {
         className="relative z-10 flex h-full flex-col"
       >
         {/* Header */}
-        <div className="relative z-20 shrink-0">
+        <div
+          className={`relative z-20 shrink-0 ${chatAppearance.chatColumnFullShell ? getChatColumnLayout(chatAppearance).className : ""}`}
+          style={chatAppearance.chatColumnFullShell ? getChatColumnLayout(chatAppearance).style : undefined}
+        >
           <GroupChatHeader
             session={session}
             characters={groupCharacters}
@@ -1620,8 +1624,9 @@ export function GroupChatPage() {
           className="relative flex-1 overflow-y-auto px-2 pb-2"
         >
           <div
-            className={`${chatAppearance.messageGap === "tight" ? "space-y-2" : chatAppearance.messageGap === "relaxed" ? "space-y-6" : "space-y-4"} pb-6 pt-4`}
+            className={`${getChatColumnLayout(chatAppearance).className} ${chatAppearance.messageGap === "tight" ? "space-y-2" : chatAppearance.messageGap === "relaxed" ? "space-y-6" : "space-y-4"} pb-6 pt-4`}
             style={{
+              ...getChatColumnLayout(chatAppearance).style,
               backgroundColor: backgroundImageData
                 ? theme.contentOverlay || "transparent"
                 : "transparent",
@@ -1707,7 +1712,13 @@ export function GroupChatPage() {
         </AnimatePresence>
 
         {/* Footer */}
-        <div className="relative z-20 shrink-0" style={{ paddingBottom: footerBottomOffset }}>
+        <div
+          className={`relative z-20 shrink-0 ${chatAppearance.chatColumnFullShell ? getChatColumnLayout(chatAppearance).className : ""}`}
+          style={{
+            paddingBottom: footerBottomOffset,
+            ...(chatAppearance.chatColumnFullShell ? getChatColumnLayout(chatAppearance).style : {}),
+          }}
+        >
           <GroupChatFooter
             draft={draft}
             setDraft={setDraft}
