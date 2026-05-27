@@ -4,6 +4,7 @@ import type { ChatAppearanceSettings } from "../../../../../core/storage/schemas
 import { cn } from "../../../../design-tokens";
 import { Switch } from "../../../../components/Switch";
 import { NumberInput } from "../../../../components/NumberInput";
+import { WidgetSlotEditor } from "../widgets/editor/WidgetSlotEditor";
 import { normalizeHexColor } from "../../../../../core/utils/imageAnalysis";
 import { useI18n } from "../../../../../core/i18n/context";
 
@@ -519,6 +520,30 @@ export function ChatAppearanceForm({
               onReset={resetFor("chatWidgetCenterMode")}
             />
           )}
+        {settings.chatColumnWidth !== "full" && settings.chatWidgetAreaEnabled && (
+          <div className="flex flex-col gap-3 pt-1">
+            <WidgetSlotEditor
+              label="Left slot"
+              nodes={settings.chatWidgetSlots.left}
+              onChange={(left) =>
+                onUpdate("chatWidgetSlots", {
+                  ...settings.chatWidgetSlots,
+                  left,
+                })
+              }
+            />
+            <WidgetSlotEditor
+              label="Right slot"
+              nodes={settings.chatWidgetSlots.right}
+              onChange={(right) =>
+                onUpdate("chatWidgetSlots", {
+                  ...settings.chatWidgetSlots,
+                  right,
+                })
+              }
+            />
+          </div>
+        )}
         </div>
       </div>
     );
