@@ -4,8 +4,6 @@ use lettuceai_lib::storage_manager::media::{
     validate_avatar_filename, validate_simple_id, validate_single_component,
 };
 
-
-
 #[test]
 fn validate_simple_id_rejects_traversal() {
     assert!(validate_simple_id("../escape", "id").is_err());
@@ -27,4 +25,3 @@ fn validate_single_component_rejects_path_segments() {
     assert!(validate_single_component("/tmp/x", "file", true).is_err());
     assert!(validate_single_component("ok-name.png", "file", true).is_ok());
 }
-

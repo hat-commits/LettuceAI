@@ -42,7 +42,10 @@ fn normalize_request_path(request_path: Option<&str>) -> String {
     }
 }
 
-fn maybe_bearer(builder: reqwest::RequestBuilder, api_key: Option<&str>) -> reqwest::RequestBuilder {
+fn maybe_bearer(
+    builder: reqwest::RequestBuilder,
+    api_key: Option<&str>,
+) -> reqwest::RequestBuilder {
     match api_key.map(str::trim).filter(|value| !value.is_empty()) {
         Some(value) => builder.header(AUTHORIZATION, format!("Bearer {}", value)),
         None => builder,
@@ -64,7 +67,11 @@ pub async fn generate_speech(
     let reference_id = voice_id.trim();
     let request = FishSpeechRequest {
         text,
-        reference_id: if reference_id.is_empty() { None } else { Some(reference_id) },
+        reference_id: if reference_id.is_empty() {
+            None
+        } else {
+            Some(reference_id)
+        },
         format: "mp3",
     };
 
@@ -78,11 +85,16 @@ pub async fn generate_speech(
     )
     .send()
     .await
-    .map_err(|e| crate::utils::err_msg(module_path!(), line!(), format!("Request failed: {}", e)))?;
+    .map_err(|e| {
+        crate::utils::err_msg(module_path!(), line!(), format!("Request failed: {}", e))
+    })?;
 
     if !response.status().is_success() {
         let status = response.status();
-        let body = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+        let body = response
+            .text()
+            .await
+            .unwrap_or_else(|_| "Unknown error".to_string());
         return Err(crate::utils::err_msg(
             module_path!(),
             line!(),
@@ -90,9 +102,17 @@ pub async fn generate_speech(
         ));
     }
 
-    response.bytes().await.map(|bytes| bytes.to_vec()).map_err(|e| {
-        crate::utils::err_msg(module_path!(), line!(), format!("Failed to read audio: {}", e))
-    })
+    response
+        .bytes()
+        .await
+        .map(|bytes| bytes.to_vec())
+        .map_err(|e| {
+            crate::utils::err_msg(
+                module_path!(),
+                line!(),
+                format!("Failed to read audio: {}", e),
+            )
+        })
 }
 
 pub async fn verify_server(base_url: Option<&str>, api_key: Option<&str>) -> Result<bool, String> {
@@ -101,6 +121,8 @@ pub async fn verify_server(base_url: Option<&str>, api_key: Option<&str>) -> Res
     let response = maybe_bearer(client.get(&url), api_key)
         .send()
         .await
-        .map_err(|e| crate::utils::err_msg(module_path!(), line!(), format!("Request failed: {}", e)))?;
+        .map_err(|e| {
+            crate::utils::err_msg(module_path!(), line!(), format!("Request failed: {}", e))
+        })?;
     Ok(response.status().is_success())
 }

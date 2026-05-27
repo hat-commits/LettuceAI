@@ -3936,4 +3936,3 @@ fn build_debug_vars(
         "author_note_present": session.author_note.as_deref().map(|value| !value.trim().is_empty()).unwrap_or(false),
     })
 }
-

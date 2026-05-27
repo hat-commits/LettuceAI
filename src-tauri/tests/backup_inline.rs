@@ -6,8 +6,6 @@ use lettuceai_lib::storage_manager::backup::{
 };
 use std::path::PathBuf;
 
-
-
 #[test]
 fn sanitize_media_archive_name_accepts_safe_paths() {
     assert_eq!(
@@ -73,4 +71,3 @@ fn disable_dynamic_memory_preserves_imported_settings() {
     assert_eq!(settings["dynamicMemory"]["contextEnrichmentEnabled"], false);
     assert_eq!(settings["groupDynamicMemory"]["enabled"], true);
 }
-

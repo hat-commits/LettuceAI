@@ -268,4 +268,3 @@ impl ProviderAdapter for AnthropicAdapter {
         models
     }
 }
-

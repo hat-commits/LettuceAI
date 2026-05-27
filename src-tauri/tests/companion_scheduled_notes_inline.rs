@@ -5,8 +5,6 @@ use lettuceai_lib::storage_manager::companion_scheduled_notes::{
     next_occurrence_after_ms, resolve_local_datetime, CompanionScheduledNote,
 };
 
-
-
 fn note(
     available_at: u64,
     recurrence: &str,
@@ -29,8 +27,7 @@ fn note(
 
 fn ms(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> u64 {
     local_datetime_to_ms(
-        resolve_local_datetime(year, month, day, hour, minute, 0, 0)
-            .expect("valid local datetime"),
+        resolve_local_datetime(year, month, day, hour, minute, 0, 0).expect("valid local datetime"),
     )
 }
 
@@ -74,4 +71,3 @@ fn next_occurrence_advances_weekly() {
         .unwrap();
     assert_eq!(next, ms(2026, 5, 8, 9, 0));
 }
-

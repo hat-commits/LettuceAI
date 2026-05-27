@@ -240,4 +240,3 @@ pub fn get_system_role(provider_id: &ProviderId) -> Cow<'static, str> {
     };
     adapter_for(&cred).system_role()
 }
-

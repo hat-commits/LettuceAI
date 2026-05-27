@@ -1,10 +1,10 @@
 //! Gathered from inline tests in src/chat_manager/persistence/storage.rs.
 
 use lettuceai_lib::chat_manager::persistence::storage::resolve_credential_for_model;
-use lettuceai_lib::chat_manager::types::{AdvancedModelSettings, Model, ProviderCredential, Settings};
+use lettuceai_lib::chat_manager::types::{
+    AdvancedModelSettings, Model, ProviderCredential, Settings,
+};
 use serde_json::Value;
-
-
 
 fn mk_model(provider_id: &str, provider_label: &str, name: &str) -> Model {
     Model {
@@ -138,4 +138,3 @@ fn resolves_explicit_model_provider_credential_id_first() {
     let picked = resolve_credential_for_model(&settings, &model).map(|c| c.id.clone());
     assert_eq!(picked.as_deref(), Some("c2"));
 }
-

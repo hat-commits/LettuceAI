@@ -1110,4 +1110,3 @@ fn parse_models_list(payload: &Value) -> Vec<ModelInfo> {
     }
     models
 }
-

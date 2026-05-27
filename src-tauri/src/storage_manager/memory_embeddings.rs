@@ -92,6 +92,123 @@ fn parse_supersedes(raw: Option<String>) -> Vec<String> {
         .unwrap_or_default()
 }
 
+fn accepts_companion_shared_session_kind(conn: &Connection) -> Result<bool, String> {
+    conn.execute_batch("SAVEPOINT memory_embeddings_session_kind_probe")
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+
+    let result = conn.execute(
+        "INSERT INTO memory_embeddings (
+            session_id, session_kind, memory_id, embedding, embedding_dim, text,
+            created_at, last_accessed_at, updated_at
+         ) VALUES (
+            '__constraint_probe__', 'companion_shared', '__constraint_probe__', X'', 0, '',
+            0, 0, 0
+         )",
+        [],
+    );
+
+    let rollback_result =
+        conn.execute_batch("ROLLBACK TO memory_embeddings_session_kind_probe; RELEASE memory_embeddings_session_kind_probe");
+
+    if let Err(err) = rollback_result {
+        return Err(crate::utils::err_to_string(module_path!(), line!(), err));
+    }
+
+    match result {
+        Ok(_) => Ok(true),
+        Err(err) => {
+            let message = err.to_string();
+            if message.contains("CHECK constraint failed") && message.contains("session_kind") {
+                Ok(false)
+            } else {
+                Err(crate::utils::err_to_string(module_path!(), line!(), err))
+            }
+        }
+    }
+}
+
+pub fn ensure_companion_shared_session_kind(conn: &mut Connection) -> Result<bool, String> {
+    if accepts_companion_shared_session_kind(conn)? {
+        return Ok(false);
+    }
+
+    let tx = conn
+        .transaction()
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+
+    tx.execute_batch(
+        r#"
+        DROP TABLE IF EXISTS memory_embeddings_v67;
+
+        ALTER TABLE memory_embeddings RENAME TO memory_embeddings_v67;
+
+        CREATE TABLE memory_embeddings (
+          session_id          TEXT NOT NULL,
+          session_kind        TEXT NOT NULL CHECK (session_kind IN ('session', 'group_session', 'companion_shared')),
+          memory_id           TEXT NOT NULL,
+          embedding           BLOB NOT NULL,
+          embedding_dim       INTEGER NOT NULL,
+          embedding_model     TEXT,
+          text                TEXT NOT NULL,
+          token_count         INTEGER NOT NULL DEFAULT 0,
+          category            TEXT,
+          importance_score    REAL NOT NULL DEFAULT 1.0,
+          persistence_importance REAL NOT NULL DEFAULT 1.0,
+          prompt_importance   REAL NOT NULL DEFAULT 1.0,
+          volatility          REAL NOT NULL DEFAULT 0.4,
+          is_cold             INTEGER NOT NULL DEFAULT 0,
+          is_pinned           INTEGER NOT NULL DEFAULT 0,
+          access_count        INTEGER NOT NULL DEFAULT 0,
+          fact_signature      TEXT,
+          fact_polarity       INTEGER,
+          source_role         TEXT,
+          source_message_id   TEXT,
+          superseded_by       TEXT,
+          superseded_at       INTEGER,
+          supersedes_json     TEXT,
+          canonical_entities_json TEXT,
+          observed_at         INTEGER,
+          observed_time_precision TEXT,
+          created_at          INTEGER NOT NULL,
+          last_accessed_at    INTEGER NOT NULL,
+          updated_at          INTEGER NOT NULL,
+          PRIMARY KEY (session_id, session_kind, memory_id)
+        );
+
+        INSERT INTO memory_embeddings (
+          session_id, session_kind, memory_id, embedding, embedding_dim, embedding_model, text,
+          token_count, category, importance_score, persistence_importance, prompt_importance,
+          volatility, is_cold, is_pinned, access_count, fact_signature, fact_polarity,
+          source_role, source_message_id, superseded_by, superseded_at, supersedes_json,
+          canonical_entities_json, observed_at, observed_time_precision, created_at,
+          last_accessed_at, updated_at
+        )
+        SELECT
+          session_id, session_kind, memory_id, embedding, embedding_dim, embedding_model, text,
+          token_count, category, importance_score, persistence_importance, prompt_importance,
+          volatility, is_cold, is_pinned, access_count, fact_signature, fact_polarity,
+          source_role, source_message_id, superseded_by, superseded_at, supersedes_json,
+          canonical_entities_json, observed_at, observed_time_precision, created_at,
+          last_accessed_at, updated_at
+        FROM memory_embeddings_v67;
+
+        DROP TABLE memory_embeddings_v67;
+
+        CREATE INDEX IF NOT EXISTS idx_memory_embeddings_session
+          ON memory_embeddings (session_id, session_kind);
+
+        CREATE INDEX IF NOT EXISTS idx_memory_embeddings_session_cold
+          ON memory_embeddings (session_id, session_kind, is_cold);
+        "#,
+    )
+    .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+
+    tx.commit()
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+
+    Ok(true)
+}
+
 pub fn parse_legacy_json(raw: &str) -> Vec<MemoryEmbedding> {
     serde_json::from_str(raw).unwrap_or_default()
 }

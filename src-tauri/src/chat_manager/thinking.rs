@@ -154,4 +154,3 @@ pub fn normalize_thinking_content(
     split.reasoning = split.reasoning.trim().to_string();
     split
 }
-

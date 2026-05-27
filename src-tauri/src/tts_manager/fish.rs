@@ -48,7 +48,11 @@ pub async fn fetch_voices(api_key: &str) -> Result<Vec<ProviderVoice>, String> {
     let response = client
         .get(format!("{API_BASE}/model"))
         .header(AUTHORIZATION, format!("Bearer {}", api_key))
-        .query(&[("self", "true"), ("page_size", "100"), ("sort_by", "created_at")])
+        .query(&[
+            ("self", "true"),
+            ("page_size", "100"),
+            ("sort_by", "created_at"),
+        ])
         .send()
         .await
         .map_err(|e| {
@@ -93,7 +97,10 @@ pub async fn fetch_voices(api_key: &str) -> Result<Vec<ProviderVoice>, String> {
                 labels.insert("languages".to_string(), model.languages.join(", "));
             }
             if !model.description.trim().is_empty() {
-                labels.insert("description".to_string(), model.description.trim().to_string());
+                labels.insert(
+                    "description".to_string(),
+                    model.description.trim().to_string(),
+                );
             }
             labels.insert("category".to_string(), "library".to_string());
             labels.insert("engine".to_string(), "fish".to_string());
@@ -163,7 +170,11 @@ pub async fn generate_speech(
         },
     };
 
-    let resolved_model = if model.trim().is_empty() { "s2-pro" } else { model };
+    let resolved_model = if model.trim().is_empty() {
+        "s2-pro"
+    } else {
+        model
+    };
     let client = reqwest::Client::new();
     let response = client
         .post(format!("{API_BASE}/v1/tts"))
@@ -190,13 +201,17 @@ pub async fn generate_speech(
         ));
     }
 
-    response.bytes().await.map(|bytes| bytes.to_vec()).map_err(|e| {
-        crate::utils::err_msg(
-            module_path!(),
-            line!(),
-            format!("Failed to read audio: {}", e),
-        )
-    })
+    response
+        .bytes()
+        .await
+        .map(|bytes| bytes.to_vec())
+        .map_err(|e| {
+            crate::utils::err_msg(
+                module_path!(),
+                line!(),
+                format!("Failed to read audio: {}", e),
+            )
+        })
 }
 
 fn parse_speed_from_prompt(prompt: &str) -> Option<f32> {

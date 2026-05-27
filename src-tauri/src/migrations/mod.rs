@@ -7,7 +7,7 @@ use crate::storage_manager::settings::{read_settings_typed, write_settings_typed
 use crate::utils::log_info;
 
 /// Current migration version
-pub const CURRENT_MIGRATION_VERSION: u32 = 67;
+pub const CURRENT_MIGRATION_VERSION: u32 = 68;
 
 pub fn run_migrations(app: &AppHandle) -> Result<(), String> {
     log_info(app, "migrations", "Starting migration check");
@@ -707,6 +707,16 @@ pub fn run_migrations(app: &AppHandle) -> Result<(), String> {
         );
         migrate_v66_to_v67(app)?;
         version = 67;
+    }
+
+    if version < 68 {
+        log_info(
+            app,
+            "migrations",
+            "Running migration v67 -> v68: Repair memory_embeddings session_kind constraint",
+        );
+        migrate_v67_to_v68(app)?;
+        version = 68;
     }
 
     // Update the stored version
@@ -3824,6 +3834,20 @@ fn migrate_v66_to_v67(app: &AppHandle) -> Result<(), String> {
             [],
         )
         .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    }
+
+    Ok(())
+}
+
+fn migrate_v67_to_v68(app: &AppHandle) -> Result<(), String> {
+    let mut conn = crate::storage_manager::db::open_db(app)?;
+
+    if crate::storage_manager::memory_embeddings::ensure_companion_shared_session_kind(&mut conn)? {
+        log_info(
+            app,
+            "migrations",
+            "Rebuilt memory_embeddings to allow companion_shared session_kind",
+        );
     }
 
     Ok(())

@@ -635,4 +635,3 @@ fn extract_openai_calls(node: &Value, out: &mut Vec<ToolCall>) {
         extract_openai_calls(delta, out);
     }
 }
-

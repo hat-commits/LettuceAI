@@ -549,7 +549,6 @@ fn extract_reasoning_from_value(v: &Value) -> Option<String> {
     None
 }
 
-
 fn extract_image_data_urls_from_value(v: &Value, out: &mut Vec<String>) {
     // OpenAI-style streaming: choices[].delta.images[].image_url.url
     if let Some(choices) = v.get("choices").and_then(|c| c.as_array()) {

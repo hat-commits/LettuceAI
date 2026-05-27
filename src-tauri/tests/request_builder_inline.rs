@@ -5,8 +5,6 @@ use lettuceai_lib::chat_manager::types::ProviderCredential;
 use serde_json::{json, Value};
 use std::collections::HashMap;
 
-
-
 fn credential(provider_id: &str) -> ProviderCredential {
     ProviderCredential {
         id: format!("{provider_id}-cred"),
@@ -345,4 +343,3 @@ fn keeps_openai_prompt_cache_retention_internal_key() {
     assert_eq!(body.get("prompt_cache_retention"), Some(&json!("24h")));
     assert!(!body.contains_key("promptCachingTtl"));
 }
-

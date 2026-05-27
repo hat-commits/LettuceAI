@@ -115,4 +115,3 @@ pub fn calculate_openrouter_request_cost(
         authoritative_total_cost: input.authoritative_total_cost,
     })
 }
-

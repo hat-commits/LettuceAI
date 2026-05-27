@@ -1432,7 +1432,6 @@ fn calculate_text_colors(colors: &[GradientColor]) -> (String, String) {
     }
 }
 
-
 fn rgb_to_hsv(r: u8, g: u8, b: u8) -> (f64, f64, f64) {
     let r = r as f64 / 255.0;
     let g = g as f64 / 255.0;

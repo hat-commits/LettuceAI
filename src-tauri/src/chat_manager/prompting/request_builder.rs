@@ -338,4 +338,3 @@ pub fn build_chat_request(
 pub fn system_role_for(credential: &ProviderCredential) -> std::borrow::Cow<'static, str> {
     adapter_for(credential).system_role()
 }
-

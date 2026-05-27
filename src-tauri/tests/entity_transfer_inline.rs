@@ -7,8 +7,6 @@ use lettuceai_lib::storage_manager::entity_transfer::{
 use serde_json::{json, Map as JsonMap, Value as JsonValue};
 use unified_entity_card::{create_character_uec, UecKind};
 
-
-
 #[test]
 fn normalize_uec_for_read_accepts_v1_schema() {
     let card = json!({
@@ -354,4 +352,3 @@ fn parse_uec_character_expands_v2_scene_variants_into_scenes() {
         Some("scene-3")
     );
 }
-

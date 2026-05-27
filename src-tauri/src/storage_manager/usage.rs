@@ -130,7 +130,6 @@ pub async fn storage_reset_database(app: tauri::AppHandle) -> Result<(), String>
     }
     crate::embedding::reset_download_state().await;
 
-
     Ok(())
 }
 

@@ -179,4 +179,3 @@ pub fn extract_error_message(payload: &Value) -> Option<String> {
         None
     }
 }
-

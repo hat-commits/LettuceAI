@@ -120,4 +120,3 @@ impl Default for AbortRegistry {
         Self::new()
     }
 }
-

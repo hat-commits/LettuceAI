@@ -617,10 +617,7 @@ fn parse_gguf_meta(data: &[u8]) -> Option<GgufModelMeta> {
 
     let magic = reader.read_bytes(4)?;
     if magic != b"GGUF" {
-        log_warn_global(
-            "gguf_parser",
-            format!("magic mismatch: got {:02x?}", magic),
-        );
+        log_warn_global("gguf_parser", format!("magic mismatch: got {:02x?}", magic));
         return None;
     }
 
@@ -1329,7 +1326,11 @@ impl From<&GgufModelMeta> for ModelArchInfo {
             expert_shared_count: m.expert_shared_count,
             expert_feed_forward_length: m.expert_feed_forward_length,
             is_moe: moe,
-            active_weight_ratio: if moe { Some(active_weight_ratio(m)) } else { None },
+            active_weight_ratio: if moe {
+                Some(active_weight_ratio(m))
+            } else {
+                None
+            },
             incomplete_parse: m.architecture.is_none()
                 || m.block_count.is_none()
                 || m.embedding_length.is_none()
@@ -1487,9 +1488,30 @@ fn build_recommendation(
         let qq = quant_quality_score(&file.quantization);
         let (max_f16, max_q8, max_q4) = if let Some(base) = kv_base {
             (
-                max_context_for(file.size, base, 2.0, total_available, model_max_ctx, active_ratio),
-                max_context_for(file.size, base, 1.0, total_available, model_max_ctx, active_ratio),
-                max_context_for(file.size, base, 0.5, total_available, model_max_ctx, active_ratio),
+                max_context_for(
+                    file.size,
+                    base,
+                    2.0,
+                    total_available,
+                    model_max_ctx,
+                    active_ratio,
+                ),
+                max_context_for(
+                    file.size,
+                    base,
+                    1.0,
+                    total_available,
+                    model_max_ctx,
+                    active_ratio,
+                ),
+                max_context_for(
+                    file.size,
+                    base,
+                    0.5,
+                    total_available,
+                    model_max_ctx,
+                    active_ratio,
+                ),
             )
         } else {
             (model_max_ctx, model_max_ctx, model_max_ctx)
@@ -1539,7 +1561,14 @@ fn build_recommendation(
         // Try each KV type, find the best scoring configuration for this file
         for &(kv_name, bpv) in KV_TYPES {
             let max_ctx = if let Some(base) = kv_base {
-                max_context_for(file.size, base, bpv, total_available, model_max_ctx, active_ratio)
+                max_context_for(
+                    file.size,
+                    base,
+                    bpv,
+                    total_available,
+                    model_max_ctx,
+                    active_ratio,
+                )
             } else {
                 model_max_ctx
             };

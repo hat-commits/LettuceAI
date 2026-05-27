@@ -422,6 +422,8 @@ pub fn init_db(_app: &tauri::AppHandle, conn: &Connection) -> Result<(), String>
           superseded_at       INTEGER,
           supersedes_json     TEXT,
           canonical_entities_json TEXT,
+          observed_at         INTEGER,
+          observed_time_precision TEXT,
           created_at          INTEGER NOT NULL,
           last_accessed_at    INTEGER NOT NULL,
           updated_at          INTEGER NOT NULL,

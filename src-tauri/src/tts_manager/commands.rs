@@ -557,7 +557,10 @@ pub async fn audio_provider_refresh_voices(
             return Err(crate::utils::err_msg(
                 module_path!(),
                 line!(),
-                format!("Voice refresh not supported for provider type: {}", provider_type),
+                format!(
+                    "Voice refresh not supported for provider type: {}",
+                    provider_type
+                ),
             ))
         }
     };
@@ -766,7 +769,11 @@ pub async fn tts_preview(
                 let data = fish_speech::generate_speech(
                     base_url.as_deref(),
                     request_path.as_deref(),
-                    if api_key.trim().is_empty() { None } else { Some(api_key.as_str()) },
+                    if api_key.trim().is_empty() {
+                        None
+                    } else {
+                        Some(api_key.as_str())
+                    },
                     &text,
                     &voice_id,
                 )

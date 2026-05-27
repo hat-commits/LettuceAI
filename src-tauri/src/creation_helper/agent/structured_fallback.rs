@@ -351,4 +351,3 @@ fn parse_xml(raw: &str) -> Result<ParsedFallback, String> {
     }
     Ok(out)
 }
-

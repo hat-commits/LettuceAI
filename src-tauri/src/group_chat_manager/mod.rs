@@ -93,7 +93,11 @@ fn dynamic_memory_summary_template_id(settings: &Settings) -> String {
     settings
         .advanced_settings
         .as_ref()
-        .and_then(|advanced| advanced.dynamic_memory_summarizer_prompt_template_id.clone())
+        .and_then(|advanced| {
+            advanced
+                .dynamic_memory_summarizer_prompt_template_id
+                .clone()
+        })
         .filter(|id| !id.trim().is_empty())
         .unwrap_or_else(|| APP_DYNAMIC_SUMMARY_TEMPLATE_ID.to_string())
 }
@@ -138,7 +142,10 @@ fn resolve_group_dynamic_memory_summarisation_model_id(
         log_info(
             app,
             "group_dynamic_memory",
-            format!("summarisation model not set; falling back to app default model: {}", id),
+            format!(
+                "summarisation model not set; falling back to app default model: {}",
+                id
+            ),
         );
         return Ok(id.clone());
     }
@@ -2057,8 +2064,11 @@ async fn migrate_group_memory_embeddings_if_needed(
 
     let migration_result: Result<(), String> = async {
         for (idx, memory) in session.memory_embeddings.iter_mut().enumerate() {
-            if memory_embedding_requires_migration(memory, &target_source_version, target_dimensions)
-            {
+            if memory_embedding_requires_migration(
+                memory,
+                &target_source_version,
+                target_dimensions,
+            ) {
                 memory.embedding = tokio::time::timeout(
                     Duration::from_secs(MEMORY_MIGRATION_EMBED_TIMEOUT_SECS),
                     embedding::compute_embedding(app.clone(), memory.text.clone()),
@@ -7321,7 +7331,9 @@ pub async fn group_chat_generate_user_reply(
                     .help_me_reply_conversational_prompt_template_id
                     .as_deref()
             } else {
-                advanced.help_me_reply_roleplay_prompt_template_id.as_deref()
+                advanced
+                    .help_me_reply_roleplay_prompt_template_id
+                    .as_deref()
             }
         })
         .filter(|id| !id.trim().is_empty());

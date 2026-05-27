@@ -550,4 +550,3 @@ fn read_to_step(result: CreationToolResult, summary: &str) -> StepResult {
         StepResult::failed(err)
     }
 }
-

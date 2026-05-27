@@ -131,7 +131,9 @@ pub async fn chat_generate_user_reply(
                     .help_me_reply_conversational_prompt_template_id
                     .as_deref()
             } else {
-                advanced.help_me_reply_roleplay_prompt_template_id.as_deref()
+                advanced
+                    .help_me_reply_roleplay_prompt_template_id
+                    .as_deref()
             }
         })
         .filter(|id| !id.trim().is_empty());
@@ -335,4 +337,3 @@ fn remove_if_block(prompt: &mut String) {
     }
     *prompt = prompt.replace("{{/if}}", "");
 }
-

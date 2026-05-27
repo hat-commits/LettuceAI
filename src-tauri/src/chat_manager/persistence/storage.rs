@@ -460,7 +460,6 @@ pub fn resolve_credential_for_model<'a>(
     None
 }
 
-
 pub fn choose_persona<'a>(
     personas: &'a [Persona],
     explicit: Option<&String>,

@@ -5,8 +5,6 @@ use lettuceai_lib::chat_manager::types::{
     Character, Model, Persona, Scene, SceneVariant, Session, Settings, StoredMessage,
 };
 
-
-
 fn make_character() -> Character {
     Character {
         id: "c1".into(),
@@ -42,7 +40,8 @@ fn make_settings() -> Settings {
         provider_credentials: vec![],
         models: vec![],
         app_state: serde_json::json!({}),
-        advanced_model_settings: lettuceai_lib::chat_manager::types::AdvancedModelSettings::default(),
+        advanced_model_settings: lettuceai_lib::chat_manager::types::AdvancedModelSettings::default(
+        ),
         prompt_template_id: None,
         system_prompt: None,
         migration_version: 0,
@@ -223,4 +222,3 @@ fn renders_simple_placeholders() {
     assert!(!rendered4.contains("{{time_12hour_format}}"));
     assert!(!rendered4.contains("{{datetime_iso}}"));
 }
-

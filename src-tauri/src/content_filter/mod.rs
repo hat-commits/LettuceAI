@@ -680,4 +680,3 @@ pub fn clear_filter_log(app: tauri::AppHandle) -> Result<(), String> {
     filter.log.lock().map_err(|e| e.to_string())?.clear();
     Ok(())
 }
-

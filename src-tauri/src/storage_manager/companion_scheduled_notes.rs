@@ -469,4 +469,3 @@ pub fn companion_scheduled_notes_delete(app: AppHandle, id: String) -> Result<()
     .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
     Ok(())
 }
-

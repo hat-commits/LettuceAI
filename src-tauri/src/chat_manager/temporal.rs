@@ -396,4 +396,3 @@ fn days_in_month(year: i32, month: u32) -> u32 {
     let next = NaiveDate::from_ymd_opt(next_year, next_month, 1).expect("valid next month");
     (next - Duration::days(1)).day()
 }
-

@@ -179,4 +179,3 @@ fn scope_list_match_any(values: &[String], scopes: &[String]) -> bool {
         !wanted.is_empty() && normalized_scopes.iter().any(|scope| scope == &wanted)
     })
 }
-

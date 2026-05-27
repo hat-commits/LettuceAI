@@ -4054,7 +4054,6 @@ fn copy_dir_all(src: &PathBuf, dst: &PathBuf) -> Result<(), String> {
     Ok(())
 }
 
-
 /// List available backups in downloads directory
 #[tauri::command]
 pub fn backup_list(app: tauri::AppHandle) -> Result<Vec<serde_json::Value>, String> {

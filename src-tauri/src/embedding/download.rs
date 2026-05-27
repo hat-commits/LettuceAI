@@ -447,7 +447,6 @@ pub async fn start_embedding_download(
     Ok(())
 }
 
-
 pub async fn start_companion_download(app: AppHandle, kind: String) -> Result<(), String> {
     let kind = CompanionKind::from_str(&kind).ok_or_else(|| {
         crate::utils::err_msg(

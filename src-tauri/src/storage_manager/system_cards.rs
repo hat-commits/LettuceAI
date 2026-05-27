@@ -606,4 +606,3 @@ pub fn create_model_profile_usc(model: &Model) -> UscModelProfileCard {
         extensions: None,
     }
 }
-

@@ -242,4 +242,3 @@ pub fn compute_chat_theme(
 
     Ok(theme)
 }
-

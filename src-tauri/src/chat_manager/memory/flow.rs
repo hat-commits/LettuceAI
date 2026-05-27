@@ -76,7 +76,11 @@ fn dynamic_memory_summary_template_id(settings: &Settings) -> String {
     settings
         .advanced_settings
         .as_ref()
-        .and_then(|advanced| advanced.dynamic_memory_summarizer_prompt_template_id.clone())
+        .and_then(|advanced| {
+            advanced
+                .dynamic_memory_summarizer_prompt_template_id
+                .clone()
+        })
         .filter(|id| !id.trim().is_empty())
         .unwrap_or_else(|| APP_DYNAMIC_SUMMARY_TEMPLATE_ID.to_string())
 }
@@ -106,7 +110,11 @@ fn resolve_dynamic_memory_summarisation_model_id(
     override_model_id: Option<&str>,
 ) -> Result<String, String> {
     if let Some(id) = override_model_id {
-        log_info(app, "dynamic_memory", format!("using override model: {}", id));
+        log_info(
+            app,
+            "dynamic_memory",
+            format!("using override model: {}", id),
+        );
         return Ok(id.to_string());
     }
 
@@ -127,7 +135,10 @@ fn resolve_dynamic_memory_summarisation_model_id(
         log_info(
             app,
             "dynamic_memory",
-            format!("summarisation model not set; falling back to app default model: {}", id),
+            format!(
+                "summarisation model not set; falling back to app default model: {}",
+                id
+            ),
         );
         return Ok(id.clone());
     }
@@ -830,8 +841,11 @@ async fn migrate_session_memory_embeddings_if_needed(
 
     let migration_result: Result<(), String> = async {
         for (idx, memory) in session.memory_embeddings.iter_mut().enumerate() {
-            if memory_embedding_requires_migration(memory, &target_source_version, target_dimensions)
-            {
+            if memory_embedding_requires_migration(
+                memory,
+                &target_source_version,
+                target_dimensions,
+            ) {
                 memory.embedding = tokio::time::timeout(
                     Duration::from_secs(MEMORY_MIGRATION_EMBED_TIMEOUT_SECS),
                     embedding::compute_embedding(app.clone(), memory.text.clone()),
@@ -4380,12 +4394,10 @@ async fn summarize_messages(
     let mut messages_for_api = Vec::new();
     let system_role = request_builder::system_role_for(provider_cred);
 
-    let summary_template = prompts::get_template(
-        app,
-        &dynamic_memory_summary_template_id(settings),
-    )
-        .ok()
-        .flatten();
+    let summary_template =
+        prompts::get_template(app, &dynamic_memory_summary_template_id(settings))
+            .ok()
+            .flatten();
     let recent_text = convo_window
         .iter()
         .map(|m| format!("{}: {}", m.role, m.content))

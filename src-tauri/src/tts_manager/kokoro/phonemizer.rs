@@ -879,4 +879,3 @@ fn push_space_id(ids: &mut Vec<i64>, vocab: &HashMap<char, i64>) -> Option<i64> 
     }
     None
 }
-
