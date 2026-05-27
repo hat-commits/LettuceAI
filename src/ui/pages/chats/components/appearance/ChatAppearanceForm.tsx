@@ -399,6 +399,84 @@ export function ChatAppearanceForm({
           overridden={isOverridden("avatarSize")}
           onReset={resetFor("avatarSize")}
         />
+        <div className="hidden space-y-4 lg:block lg:space-y-4">
+        <OptionGrid
+          label={t("chatAppearance.layout.chatColumn.widthLabel")}
+          value={settings.chatColumnWidth}
+          options={[
+            { value: "narrow", label: t("chatAppearance.layout.chatColumn.width.narrow") },
+            { value: "normal", label: t("chatAppearance.layout.chatColumn.width.normal") },
+            { value: "wide", label: t("chatAppearance.layout.chatColumn.width.wide") },
+            { value: "xl", label: t("chatAppearance.layout.chatColumn.width.xl") },
+            { value: "full", label: t("chatAppearance.layout.chatColumn.width.full") },
+            { value: "custom", label: t("chatAppearance.layout.chatColumn.width.custom") },
+          ]}
+          onChange={(v) => {
+            onUpdate("chatColumnWidth", v);
+            if (v === "custom" && settings.chatColumnWidthPx == null) {
+              onUpdate("chatColumnWidthPx", 800);
+            }
+          }}
+          overridden={isOverridden("chatColumnWidth")}
+          onReset={resetFor("chatColumnWidth")}
+        />
+        {settings.chatColumnWidth === "custom" && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-fg/60">
+                {t("chatAppearance.layout.chatColumn.customPx")}
+              </span>
+              {isOverridden("chatColumnWidthPx") && (
+                <button
+                  type="button"
+                  onClick={resetFor("chatColumnWidthPx")}
+                  className="flex items-center gap-1 text-[10px] text-accent/70 hover:text-accent"
+                >
+                  <RotateCcw size={10} />
+                  Reset
+                </button>
+              )}
+            </div>
+            <input
+              type="number"
+              min={400}
+              max={2400}
+              step={10}
+              value={settings.chatColumnWidthPx ?? 800}
+              onChange={(e) => {
+                const raw = Number(e.target.value);
+                if (!Number.isFinite(raw)) return;
+                const clamped = Math.min(2400, Math.max(400, Math.round(raw)));
+                onUpdate("chatColumnWidthPx", clamped);
+              }}
+              className={cn(
+                "w-full rounded-lg border border-fg/10 bg-fg/5 px-3 py-2 text-sm text-fg/80",
+                "focus:border-accent/40 focus:outline-none",
+              )}
+            />
+          </div>
+        )}
+        <OptionGrid
+          label={t("chatAppearance.layout.chatColumn.alignLabel")}
+          value={settings.chatColumnAlign}
+          options={[
+            { value: "left", label: t("chatAppearance.layout.chatColumn.align.left") },
+            { value: "center", label: t("chatAppearance.layout.chatColumn.align.center") },
+            { value: "right", label: t("chatAppearance.layout.chatColumn.align.right") },
+          ]}
+          onChange={(v) => onUpdate("chatColumnAlign", v)}
+          overridden={isOverridden("chatColumnAlign")}
+          onReset={resetFor("chatColumnAlign")}
+        />
+        <ToggleControl
+          label={t("chatAppearance.layout.chatColumn.fullShell")}
+          description={t("chatAppearance.layout.chatColumn.fullShellDesc")}
+          checked={settings.chatColumnFullShell}
+          onChange={(v) => onUpdate("chatColumnFullShell", v)}
+          overridden={isOverridden("chatColumnFullShell")}
+          onReset={resetFor("chatColumnFullShell")}
+        />
+        </div>
       </div>
     );
   }

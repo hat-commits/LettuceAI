@@ -3169,6 +3169,27 @@ export const enMessages = {
       tight: "Tight",
       normal: "Normal",
       relaxed: "Relaxed",
+      chatColumn: {
+        widthLabel: "Chat Column Width",
+        width: {
+          narrow: "Narrow",
+          normal: "Normal",
+          wide: "Wide",
+          xl: "Extra Wide",
+          full: "Full",
+          custom: "Custom",
+        },
+        customPx: "Custom Width (px)",
+        alignLabel: "Chat Column Alignment",
+        align: {
+          left: "Left",
+          center: "Center",
+          right: "Right",
+        },
+        fullShell: "Move Full Shell",
+        fullShellDesc:
+          "Move the header and input area along with the messages column.",
+      },
     },
     avatar: {
       shape: {
