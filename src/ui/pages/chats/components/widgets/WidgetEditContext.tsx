@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -27,28 +28,56 @@ interface WidgetEditContextValue {
   addNode: (side: WidgetSide, node: WidgetNode) => void;
   updateNode: (side: WidgetSide, node: WidgetNode) => void;
   removeNode: (side: WidgetSide, id: string) => void;
+  moveToOtherSlot: (fromSide: WidgetSide, id: string) => void;
+  chooseLibraryImage: (node: WidgetNode) => void;
+  pendingOpenNodeId: string | null;
+  clearPendingOpen: () => void;
 }
 
 const WidgetEditCtx = createContext<WidgetEditContextValue | null>(null);
 
+export interface WidgetEditRestore {
+  slots: WidgetSlots;
+  openNodeId: string;
+}
+
 interface WidgetEditProviderProps {
   slots: WidgetSlots;
   onPersist: (slots: WidgetSlots) => Promise<void> | void;
+  onChooseLibraryImage?: (nodeId: string) => void;
+  restore?: WidgetEditRestore | null;
+  onRestoreConsumed?: () => void;
   children: ReactNode;
 }
 
 export function WidgetEditProvider({
   slots,
   onPersist,
+  onChooseLibraryImage,
+  restore,
+  onRestoreConsumed,
   children,
 }: WidgetEditProviderProps) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [draft, setDraft] = useState<WidgetSlots>(slots);
+  const [pendingOpenNodeId, setPendingOpenNodeId] = useState<string | null>(null);
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
 
   useEffect(() => {
     if (!editing) setDraft(slots);
   }, [slots, editing]);
+
+  useEffect(() => {
+    if (!restore) return;
+    setDraft(restore.slots);
+    setEditing(true);
+    setPendingOpenNodeId(restore.openNodeId);
+    onRestoreConsumed?.();
+  }, [restore, onRestoreConsumed]);
+
+  const clearPendingOpen = useCallback(() => setPendingOpenNodeId(null), []);
 
   const enterEdit = useCallback(() => {
     setDraft(slots);
@@ -97,6 +126,41 @@ export function WidgetEditProvider({
     }));
   }, []);
 
+  const moveToOtherSlot = useCallback((fromSide: WidgetSide, id: string) => {
+    setDraft((prev) => {
+      const node = prev[fromSide].find((n) => n.id === id);
+      if (!node) return prev;
+      const otherSide: WidgetSide = fromSide === "left" ? "right" : "left";
+      return {
+        ...prev,
+        [fromSide]: prev[fromSide].filter((n) => n.id !== id),
+        [otherSide]: [...prev[otherSide], node],
+      };
+    });
+  }, []);
+
+  const chooseLibraryImage = useCallback(
+    (node: WidgetNode) => {
+      const merge = (nodes: WidgetNode[]): WidgetNode[] =>
+        nodes.map((n) =>
+          n.id === node.id
+            ? node
+            : n.type === "box"
+              ? { ...n, children: merge(n.children) }
+              : n,
+        );
+      const next: WidgetSlots = {
+        left: merge(draftRef.current.left),
+        right: merge(draftRef.current.right),
+      };
+      setDraft(next);
+      setEditing(false);
+      void onPersist(next);
+      onChooseLibraryImage?.(node.id);
+    },
+    [onPersist, onChooseLibraryImage],
+  );
+
   const value = useMemo<WidgetEditContextValue>(
     () => ({
       editing,
@@ -109,8 +173,27 @@ export function WidgetEditProvider({
       addNode,
       updateNode,
       removeNode,
+      moveToOtherSlot,
+      chooseLibraryImage,
+      pendingOpenNodeId,
+      clearPendingOpen,
     }),
-    [editing, saving, enterEdit, done, revert, getNodes, setNodes, addNode, updateNode, removeNode],
+    [
+      editing,
+      saving,
+      pendingOpenNodeId,
+      clearPendingOpen,
+      moveToOtherSlot,
+      enterEdit,
+      done,
+      revert,
+      getNodes,
+      setNodes,
+      addNode,
+      updateNode,
+      removeNode,
+      chooseLibraryImage,
+    ],
   );
 
   return <WidgetEditCtx.Provider value={value}>{children}</WidgetEditCtx.Provider>;

@@ -1,7 +1,8 @@
 import { Reorder, useDragControls } from "framer-motion";
-import { GripVertical, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeftToLine, ArrowRightToLine, GripVertical, Pencil, Trash2 } from "lucide-react";
 import type { WidgetNode } from "../../../../../core/storage/schemas";
 import type { BoxNode } from "../../../../../core/storage/chatWidgetSchemas";
+import type { WidgetSide } from "./WidgetEditContext";
 import { WidgetRenderer } from "./WidgetRenderer";
 import { WidgetEditList } from "./WidgetEditList";
 
@@ -9,6 +10,8 @@ interface WidgetEditWrapperProps {
   node: WidgetNode;
   onEdit: () => void;
   onDelete: () => void;
+  moveSide?: WidgetSide;
+  onMove?: () => void;
   onChildrenChange?: (children: WidgetNode[]) => void;
 }
 
@@ -16,6 +19,8 @@ export function WidgetEditWrapper({
   node,
   onEdit,
   onDelete,
+  moveSide,
+  onMove,
   onChildrenChange,
 }: WidgetEditWrapperProps) {
   const controls = useDragControls();
@@ -46,6 +51,20 @@ export function WidgetEditWrapper({
           <GripVertical size={14} />
         </button>
         <div className="flex items-center gap-1">
+          {onMove && (
+            <button
+              type="button"
+              onClick={onMove}
+              className="flex h-7 w-7 items-center justify-center rounded-md border border-fg/20 bg-surface-el text-fg/80 shadow-sm transition hover:bg-fg/15 hover:text-fg"
+              aria-label={moveSide === "left" ? "Move to right side" : "Move to left side"}
+            >
+              {moveSide === "left" ? (
+                <ArrowRightToLine size={13} strokeWidth={2.2} />
+              ) : (
+                <ArrowLeftToLine size={13} strokeWidth={2.2} />
+              )}
+            </button>
+          )}
           <button
             type="button"
             onClick={onEdit}

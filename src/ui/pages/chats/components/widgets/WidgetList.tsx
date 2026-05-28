@@ -9,9 +9,10 @@ import { useWidgetEdit, type WidgetSide } from "./WidgetEditContext";
 interface WidgetListProps {
   nodes: WidgetNode[];
   side: WidgetSide;
+  canMove: boolean;
 }
 
-export function WidgetList({ nodes, side }: WidgetListProps) {
+export function WidgetList({ nodes, side, canMove }: WidgetListProps) {
   const edit = useWidgetEdit();
   const displayNodes = edit.editing ? edit.getNodes(side) : nodes;
 
@@ -29,6 +30,7 @@ export function WidgetList({ nodes, side }: WidgetListProps) {
         <WidgetEditList
           nodes={displayNodes}
           onChange={(next) => edit.setNodes(side, next)}
+          side={canMove ? side : undefined}
         />
       ) : displayNodes.length === 0 ? (
         <AnimatePresence>

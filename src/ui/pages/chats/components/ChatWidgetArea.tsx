@@ -11,9 +11,10 @@ interface WidgetAreaPanelProps {
   side: "left" | "right";
   nodes: WidgetNode[];
   withBorder: boolean;
+  canMove: boolean;
 }
 
-function WidgetAreaPanel({ side, nodes, withBorder }: WidgetAreaPanelProps) {
+function WidgetAreaPanel({ side, nodes, withBorder, canMove }: WidgetAreaPanelProps) {
   return (
     <aside
       className={cn(
@@ -23,7 +24,7 @@ function WidgetAreaPanel({ side, nodes, withBorder }: WidgetAreaPanelProps) {
       style={{ minWidth: 0 }}
       aria-label={`${side} widget area`}
     >
-      <WidgetList nodes={nodes} side={side} />
+      <WidgetList nodes={nodes} side={side} canMove={canMove} />
     </aside>
   );
 }
@@ -127,7 +128,12 @@ export function ChatWidgetArea({
   return (
     <div className="relative z-10 flex min-h-0 flex-1 flex-row">
       {widgetLayout.showLeft && (
-        <WidgetAreaPanel side="left" nodes={leftNodes} withBorder={!resizable} />
+        <WidgetAreaPanel
+          side="left"
+          nodes={leftNodes}
+          withBorder={!resizable}
+          canMove={bothSides}
+        />
       )}
       {widgetLayout.showLeft && resizable && (
         <ResizeHandle
@@ -150,7 +156,12 @@ export function ChatWidgetArea({
         />
       )}
       {widgetLayout.showRight && (
-        <WidgetAreaPanel side="right" nodes={rightNodes} withBorder={!resizable} />
+        <WidgetAreaPanel
+          side="right"
+          nodes={rightNodes}
+          withBorder={!resizable}
+          canMove={bothSides}
+        />
       )}
     </div>
   );

@@ -58,6 +58,38 @@ export function createWidgetNode(type: WidgetType): WidgetNode {
   }
 }
 
+export function setLibraryImageOnNode(
+  nodes: WidgetNode[],
+  id: string,
+  imageId: string,
+): WidgetNode[] {
+  return nodes.map((n) => {
+    if (n.id === id && n.type === "image") {
+      return { ...n, source: { kind: "library", path: imageId } };
+    }
+    if (n.type === "box") {
+      return { ...n, children: setLibraryImageOnNode(n.children, id, imageId) };
+    }
+    return n;
+  });
+}
+
+export function setScratchPadContentOnNode(
+  nodes: WidgetNode[],
+  id: string,
+  content: string,
+): WidgetNode[] {
+  return nodes.map((n) => {
+    if (n.id === id && n.type === "scratch_pad") {
+      return { ...n, content };
+    }
+    if (n.type === "box") {
+      return { ...n, children: setScratchPadContentOnNode(n.children, id, content) };
+    }
+    return n;
+  });
+}
+
 export function widgetSummary(node: WidgetNode): string {
   switch (node.type) {
     case "divider":

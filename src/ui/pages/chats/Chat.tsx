@@ -7,8 +7,16 @@ import {
   useRef,
   useState,
 } from "react";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { Routes } from "../../navigation";
+import {
+  buildAvatarLibrarySelectionKey,
+  type AvatarLibrarySelectionPayload,
+} from "../../components/AvatarPicker/librarySelection";
+import {
+  setLibraryImageOnNode,
+  setScratchPadContentOnNode,
+} from "./components/widgets/editor/widgetFactories";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { ArrowLeftRight, ChevronDown, NotebookPen, User, X } from "lucide-react";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
@@ -74,6 +82,7 @@ import {
   WidgetEditProvider,
   type WidgetActionContext,
   type WidgetSlots,
+  type WidgetEditRestore,
 } from "./components/widgets";
 import {
   getCharacter,
@@ -91,7 +100,7 @@ import { sanitizeAssistantSceneDirective } from "./hooks/sceneImageProtocol";
 import { useBeetrootRain } from "./components/BeetrootRain";
 import { useBeetrootEasterEgg } from "./hooks/useBeetrootEasterEgg";
 import { processBackgroundImage } from "../../../core/utils/image";
-import { convertToImageRef } from "../../../core/storage/images";
+import { convertFilePathToDataUrl, convertToImageRef } from "../../../core/storage/images";
 import { useImageData } from "../../hooks/useImageData";
 import { ImageLibraryPanel } from "../library/ImageLibraryPage";
 import type { ImageLibraryItem } from "../../../core/storage/repo";
@@ -143,6 +152,7 @@ export function ChatConversationPage() {
   const { characterId } = useParams<{ characterId: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useI18n();
   const { shouldShow: showChatDetailTour, dismiss: dismissChatDetailTour } =
     useGuidedTour("chatDetail");
@@ -631,6 +641,27 @@ export function ChatConversationPage() {
         await saveSession(next);
         setSessionForHeader(next);
       },
+      onUpdateScratchPad: async (nodeId, content) => {
+        const target = character;
+        if (!target) return;
+        const fresh = await getCharacter(target.id);
+        const existing = (fresh?.chatAppearance ?? target.chatAppearance ?? {}) as Record<
+          string,
+          unknown
+        >;
+        const slots = (existing.chatWidgetSlots as WidgetSlots | undefined) ?? {
+          left: [],
+          right: [],
+        };
+        await updateCharacterChatAppearance(target.id, {
+          ...existing,
+          chatWidgetSlots: {
+            left: setScratchPadContentOnNode(slots.left, nodeId, content),
+            right: setScratchPadContentOnNode(slots.right, nodeId, content),
+          },
+        });
+        reloadCharacter();
+      },
     };
   }, [
     character,
@@ -681,6 +712,80 @@ export function ChatConversationPage() {
     },
     [layoutCharacter, character, reloadCharacter],
   );
+
+  const returnPathRef = useRef(`${location.pathname}${location.search}`);
+  returnPathRef.current = `${location.pathname}${location.search}`;
+  const widgetImageSelectionKey = characterId ? `widget-image:${characterId}` : null;
+  const widgetImageHandledRef = useRef(false);
+  const [widgetEditRestore, setWidgetEditRestore] = useState<WidgetEditRestore | null>(null);
+  const beginLibraryImagePick = useCallback(
+    (nodeId: string) => {
+      if (!widgetImageSelectionKey) return;
+      sessionStorage.setItem(
+        `widget-image-target:${widgetImageSelectionKey}`,
+        JSON.stringify({ nodeId }),
+      );
+      navigate("/library/images/pick", {
+        state: {
+          returnPath: returnPathRef.current,
+          selectionStorageKey: widgetImageSelectionKey,
+          selectionKind: "avatar",
+        },
+      });
+    },
+    [navigate, widgetImageSelectionKey],
+  );
+
+  useEffect(() => {
+    const target = layoutCharacter ?? character;
+    if (!target || !widgetImageSelectionKey) return;
+    if (widgetImageHandledRef.current) return;
+    const selectionKey = buildAvatarLibrarySelectionKey(widgetImageSelectionKey);
+    const targetKey = `widget-image-target:${widgetImageSelectionKey}`;
+    const rawSelection = sessionStorage.getItem(selectionKey);
+    const rawTarget = sessionStorage.getItem(targetKey);
+    if (!rawSelection || !rawTarget) return;
+
+    let filePath: string | undefined;
+    let nodeId: string | undefined;
+    try {
+      filePath = (JSON.parse(rawSelection) as AvatarLibrarySelectionPayload).filePath;
+      nodeId = (JSON.parse(rawTarget) as { nodeId: string }).nodeId;
+    } catch (err) {
+      console.error("Failed to parse widget library selection:", err);
+    }
+    widgetImageHandledRef.current = true;
+    sessionStorage.removeItem(selectionKey);
+    sessionStorage.removeItem(targetKey);
+    if (!filePath || !nodeId) return;
+    const resolvedNodeId = nodeId;
+
+    void (async () => {
+      const dataUrl = await convertFilePathToDataUrl(filePath!);
+      if (!dataUrl) return;
+      const imageId = await convertToImageRef(dataUrl);
+      if (!imageId) return;
+      const fresh = await getCharacter(target.id);
+      const existing = (fresh?.chatAppearance ?? target.chatAppearance ?? {}) as Record<
+        string,
+        unknown
+      >;
+      const slots = (existing.chatWidgetSlots as WidgetSlots | undefined) ?? {
+        left: [],
+        right: [],
+      };
+      const nextSlots: WidgetSlots = {
+        left: setLibraryImageOnNode(slots.left, resolvedNodeId, imageId),
+        right: setLibraryImageOnNode(slots.right, resolvedNodeId, imageId),
+      };
+      await updateCharacterChatAppearance(target.id, {
+        ...existing,
+        chatWidgetSlots: nextSlots,
+      });
+      reloadCharacter();
+      setWidgetEditRestore({ slots: nextSlots, openNodeId: resolvedNodeId });
+    })();
+  }, [widgetImageSelectionKey, layoutCharacter, character, reloadCharacter]);
 
   const beetrootRain = useBeetrootRain();
   useBeetrootEasterEgg({ messages, fire: beetrootRain.fire });
@@ -2354,6 +2459,9 @@ export function ChatConversationPage() {
       <WidgetEditProvider
         slots={chatAppearance.chatWidgetSlots}
         onPersist={persistWidgetSlots}
+        onChooseLibraryImage={beginLibraryImagePick}
+        restore={widgetEditRestore}
+        onRestoreConsumed={() => setWidgetEditRestore(null)}
       >
       <ChatWidgetArea
         widgetLayout={widgetLayout}

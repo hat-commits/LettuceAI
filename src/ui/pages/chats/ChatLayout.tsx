@@ -37,8 +37,6 @@ export interface ChatLayoutContext {
   reloadCharacter: () => void;
   draftAppearanceOverride: ChatAppearanceOverride | null;
   setDraftAppearanceOverride: (next: ChatAppearanceOverride | null) => void;
-  /** Set by the appearance drawer while open so other UI (e.g. the resizable
-   * widget divider) can edit the live draft instead of persisting directly. */
   appearanceFieldUpdater: AppearanceFieldUpdater | null;
   registerAppearanceFieldUpdater: (fn: AppearanceFieldUpdater | null) => void;
 }

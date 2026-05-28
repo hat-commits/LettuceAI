@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { convertFileSrc } from "@tauri-apps/api/core";
-import { ImagePlus, Loader2, Upload } from "lucide-react";
+import { Image as ImageIcon, ImagePlus, Loader2, Upload } from "lucide-react";
 import { BottomMenu } from "../../../../../components";
 import type {
   BoxNode,
@@ -16,17 +15,10 @@ import type {
   SelectorNode,
   WidgetNode,
 } from "../../../../../../core/storage/chatWidgetSchemas";
-import {
-  convertFilePathToDataUrl,
-  convertToImageRef,
-} from "../../../../../../core/storage/images";
-import {
-  listImageLibraryItems,
-  type ImageLibraryItem,
-} from "../../../../../../core/storage/repo";
+import { convertToImageRef } from "../../../../../../core/storage/images";
 import { useImageData } from "../../../../../hooks/useImageData";
-import { cn } from "../../../../../design-tokens";
 import { WIDGET_TYPE_LABEL } from "./widgetFactories";
+import { useWidgetEdit } from "../WidgetEditContext";
 
 interface FieldProps {
   label: string;
@@ -87,6 +79,7 @@ export function WidgetConfigSheet({
   onClose,
   onSave,
 }: WidgetConfigSheetProps) {
+  const edit = useWidgetEdit();
   const [draft, setDraft] = useState<WidgetNode | null>(node);
 
   useEffect(() => {
@@ -106,6 +99,18 @@ export function WidgetConfigSheet({
     onClose();
   };
 
+  const chooseLibrary = () => {
+    if (draft.type !== "image") return;
+    const next: WidgetNode = {
+      ...draft,
+      source: {
+        kind: "library",
+        path: draft.source.kind === "library" ? draft.source.path : "",
+      },
+    };
+    edit.chooseLibraryImage(next);
+  };
+
   return (
     <BottomMenu
       isOpen={open}
@@ -119,7 +124,7 @@ export function WidgetConfigSheet({
           commit();
         }}
       >
-        {renderBody(draft, setDraft)}
+        {renderBody(draft, setDraft, chooseLibrary)}
         <div className="flex justify-end gap-2 pt-2">
           <button
             type="button"
@@ -143,6 +148,7 @@ export function WidgetConfigSheet({
 function renderBody(
   draft: WidgetNode,
   setDraft: (next: WidgetNode) => void,
+  onChooseLibrary: () => void,
 ): React.ReactNode {
   switch (draft.type) {
     case "divider":
@@ -159,7 +165,7 @@ function renderBody(
     case "scratch_pad":
       return <ScratchPadForm node={draft} setNode={setDraft} />;
     case "image":
-      return <ImageForm node={draft} setNode={setDraft} />;
+      return <ImageForm node={draft} setNode={setDraft} onChooseLibrary={onChooseLibrary} />;
     case "selector":
       return <SelectorForm node={draft} setNode={setDraft} />;
     case "button":
@@ -274,14 +280,64 @@ function ScratchPadForm({
 function ImageForm({
   node,
   setNode,
+  onChooseLibrary,
 }: {
   node: ImageNode;
   setNode: (n: ImageNode) => void;
+  onChooseLibrary: () => void;
 }) {
   const sourceKind = node.source.kind;
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploadBusy, setUploadBusy] = useState(false);
   const updateSource = (next: ImageSource) => setNode({ ...node, source: next });
+
+  const currentPath =
+    node.source.kind === "upload" || node.source.kind === "library"
+      ? node.source.path
+      : "";
+  const previewUrl = useImageData(currentPath || null);
+
+  const handleFile = async (file: File | undefined) => {
+    if (!file) return;
+    setUploadBusy(true);
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error("read failed"));
+        reader.readAsDataURL(file);
+      });
+      const id = await convertToImageRef(dataUrl);
+      if (id) updateSource({ kind: "upload", path: id });
+    } catch (err) {
+      console.error("Widget image upload failed:", err);
+    } finally {
+      setUploadBusy(false);
+    }
+  };
+
+  const handleSourceClick = (kind: ImageSource["kind"]) => {
+    if (kind === "character_avatar") {
+      updateSource({ kind: "character_avatar" });
+    } else if (kind === "persona_avatar") {
+      updateSource({ kind: "persona_avatar" });
+    } else if (kind === "library") {
+      onChooseLibrary();
+    } else {
+      if (node.source.kind !== "upload") updateSource({ kind: "upload", path: "" });
+      fileRef.current?.click();
+    }
+  };
+
   return (
     <>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => void handleFile(e.target.files?.[0])}
+      />
       <Field label="Title (optional)">
         <input
           type="text"
@@ -307,25 +363,50 @@ function ImageForm({
             { value: "library", label: "Library" },
             { value: "upload", label: "Upload" },
           ]}
-          onChange={(v) => {
-            if (v === "character_avatar") updateSource({ kind: "character_avatar" });
-            else if (v === "persona_avatar") updateSource({ kind: "persona_avatar" });
-            else if (v === "library") updateSource({ kind: "library", path: "" });
-            else updateSource({ kind: "upload", path: "" });
-          }}
+          onChange={handleSourceClick}
         />
       </Field>
-      {sourceKind === "upload" && (
-        <UploadField
-          path={node.source.kind === "upload" ? node.source.path : ""}
-          onPick={(id) => updateSource({ kind: "upload", path: id })}
-        />
-      )}
-      {sourceKind === "library" && (
-        <LibraryField
-          path={node.source.kind === "library" ? node.source.path : ""}
-          onPick={(id) => updateSource({ kind: "library", path: id })}
-        />
+      {(sourceKind === "library" || sourceKind === "upload") && (
+        <div className="flex items-center gap-3 rounded-lg border border-fg/10 bg-fg/5 p-2.5">
+          <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-fg/10 bg-fg/5">
+            {uploadBusy ? (
+              <div className="flex h-full w-full items-center justify-center text-fg/40">
+                <Loader2 size={18} className="animate-spin" />
+              </div>
+            ) : previewUrl ? (
+              <img src={previewUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-fg/30">
+                <ImagePlus size={18} />
+              </div>
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[12px] text-fg/60">
+              {currentPath ? "Image selected." : "No image selected yet."}
+            </p>
+            <button
+              type="button"
+              onClick={() =>
+                sourceKind === "library" ? onChooseLibrary() : fileRef.current?.click()
+              }
+              className="mt-1.5 flex items-center gap-1.5 rounded-md border border-fg/15 bg-fg/5 px-2.5 py-1.5 text-[12px] text-fg/80 transition hover:bg-fg/10"
+            >
+              {sourceKind === "library" ? (
+                <ImageIcon size={13} />
+              ) : (
+                <Upload size={13} />
+              )}
+              {currentPath
+                ? sourceKind === "library"
+                  ? "Choose another"
+                  : "Replace image"
+                : sourceKind === "library"
+                  ? "Choose from library"
+                  : "Choose file"}
+            </button>
+          </div>
+        </div>
       )}
       <Field label="Shape">
         <Segmented<ImageShape>
@@ -340,150 +421,6 @@ function ImageForm({
         />
       </Field>
     </>
-  );
-}
-
-function UploadField({
-  path,
-  onPick,
-}: {
-  path: string;
-  onPick: (imageId: string) => void;
-}) {
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [busy, setBusy] = useState(false);
-  const previewUrl = useImageData(path || null);
-
-  const handleFile = async (file: File | undefined) => {
-    if (!file) return;
-    setBusy(true);
-    try {
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = () => reject(new Error("read failed"));
-        reader.readAsDataURL(file);
-      });
-      const id = await convertToImageRef(dataUrl);
-      if (id) onPick(id);
-    } catch (err) {
-      console.error("Widget image upload failed:", err);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <Field label="Upload">
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => void handleFile(e.target.files?.[0])}
-      />
-      <div className="flex items-center gap-3">
-        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-fg/10 bg-fg/5">
-          {previewUrl ? (
-            <img src={previewUrl} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-fg/30">
-              <ImagePlus size={18} />
-            </div>
-          )}
-        </div>
-        <button
-          type="button"
-          onClick={() => fileRef.current?.click()}
-          disabled={busy}
-          className="flex items-center gap-1.5 rounded-lg border border-fg/15 bg-fg/5 px-3 py-2 text-sm text-fg/80 transition hover:bg-fg/10 disabled:opacity-50"
-        >
-          {busy ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
-          {path ? "Replace image" : "Choose file"}
-        </button>
-      </div>
-    </Field>
-  );
-}
-
-function LibraryField({
-  path,
-  onPick,
-}: {
-  path: string;
-  onPick: (imageId: string) => void;
-}) {
-  const [items, setItems] = useState<ImageLibraryItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [busyId, setBusyId] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    void listImageLibraryItems()
-      .then((list) => {
-        if (!cancelled) setItems(list);
-      })
-      .catch((err) => console.error("Failed to load image library:", err))
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const handlePick = async (item: ImageLibraryItem) => {
-    setBusyId(item.id);
-    try {
-      const dataUrl = await convertFilePathToDataUrl(item.filePath);
-      if (!dataUrl) return;
-      const id = await convertToImageRef(dataUrl);
-      if (id) onPick(id);
-    } catch (err) {
-      console.error("Failed to pick library image:", err);
-    } finally {
-      setBusyId(null);
-    }
-  };
-
-  return (
-    <Field label="Library" hint={path ? "Tap an image to replace." : undefined}>
-      {loading ? (
-        <div className="flex items-center gap-2 px-1 py-3 text-[12px] text-fg/40">
-          <Loader2 size={14} className="animate-spin" /> Loading…
-        </div>
-      ) : items.length === 0 ? (
-        <p className="px-1 py-3 text-[12px] italic text-fg/40">
-          No images in your library yet.
-        </p>
-      ) : (
-        <div className="grid max-h-56 grid-cols-3 gap-2 overflow-y-auto pr-1">
-          {items.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => void handlePick(item)}
-              className={cn(
-                "relative aspect-square overflow-hidden rounded-lg border transition",
-                "border-fg/10 hover:border-accent/50",
-              )}
-            >
-              <img
-                src={convertFileSrc(item.filePath)}
-                alt={item.filename}
-                className="h-full w-full object-cover"
-              />
-              {busyId === item.id && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                  <Loader2 size={16} className="animate-spin text-white" />
-                </div>
-              )}
-            </button>
-          ))}
-        </div>
-      )}
-    </Field>
   );
 }
 

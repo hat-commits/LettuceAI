@@ -33,6 +33,7 @@ export interface WidgetActionContext {
   onOpenMemories: () => void;
   onOpenSearch: () => void;
   onToggleVoiceAutoplay: () => void | Promise<void>;
+  onUpdateScratchPad: (nodeId: string, content: string) => void | Promise<void>;
 }
 
 const WidgetContext = createContext<WidgetActionContext | null>(null);

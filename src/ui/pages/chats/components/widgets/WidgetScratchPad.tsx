@@ -1,7 +1,9 @@
+import { useEffect, useRef, useState } from "react";
 import type { ScratchPadNode } from "../../../../../core/storage/chatWidgetSchemas";
 import { cn } from "../../../../design-tokens";
 import { MarkdownRenderer } from "../MarkdownRenderer";
 import { useWidgetContext } from "./WidgetContext";
+import { useWidgetEdit } from "./WidgetEditContext";
 import { widgetCardClass } from "./widgetSurface";
 
 interface WidgetScratchPadProps {
@@ -9,8 +11,37 @@ interface WidgetScratchPadProps {
 }
 
 export function WidgetScratchPad({ node }: WidgetScratchPadProps) {
-  const { hasBackground } = useWidgetContext();
+  const { hasBackground, onUpdateScratchPad } = useWidgetContext();
+  const { editing: areaEditing } = useWidgetEdit();
   const content = node.content?.trim() ?? "";
+
+  const [inlineEditing, setInlineEditing] = useState(false);
+  const [draft, setDraft] = useState(node.content ?? "");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (!inlineEditing) setDraft(node.content ?? "");
+  }, [node.content, inlineEditing]);
+
+  useEffect(() => {
+    if (inlineEditing) {
+      const el = textareaRef.current;
+      if (el) {
+        el.focus();
+        el.setSelectionRange(el.value.length, el.value.length);
+      }
+    }
+  }, [inlineEditing]);
+
+  const canInlineEdit = !areaEditing;
+
+  const commit = () => {
+    setInlineEditing(false);
+    if (draft !== (node.content ?? "")) {
+      void onUpdateScratchPad(node.id, draft);
+    }
+  };
+
   return (
     <section className="flex flex-col gap-1.5">
       {(node.title || node.description) && (
@@ -29,10 +60,47 @@ export function WidgetScratchPad({ node }: WidgetScratchPadProps) {
           widgetCardClass(hasBackground),
         )}
       >
-        {content ? (
-          <MarkdownRenderer content={content} />
+        {inlineEditing ? (
+          <textarea
+            ref={textareaRef}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                setDraft(node.content ?? "");
+                setInlineEditing(false);
+              }
+            }}
+            rows={Math.max(3, draft.split("\n").length)}
+            className="w-full resize-y bg-transparent text-sm text-fg/85 placeholder-fg/30 focus:outline-none"
+            placeholder="Write notes… (markdown supported)"
+          />
         ) : (
-          <span className="text-[12px] italic text-fg/35">Empty scratch pad.</span>
+          <div
+            role={canInlineEdit ? "button" : undefined}
+            tabIndex={canInlineEdit ? 0 : undefined}
+            onClick={canInlineEdit ? () => setInlineEditing(true) : undefined}
+            onKeyDown={
+              canInlineEdit
+                ? (e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      setInlineEditing(true);
+                    }
+                  }
+                : undefined
+            }
+            className={canInlineEdit ? "cursor-text" : undefined}
+          >
+            {content ? (
+              <MarkdownRenderer content={content} />
+            ) : (
+              <span className="text-[12px] italic text-fg/35">
+                {canInlineEdit ? "Tap to write notes…" : "Empty scratch pad."}
+              </span>
+            )}
+          </div>
         )}
       </div>
     </section>

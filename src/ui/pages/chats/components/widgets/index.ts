@@ -11,4 +11,5 @@ export {
   useWidgetEdit,
   type WidgetSlots,
   type WidgetSide,
+  type WidgetEditRestore,
 } from "./WidgetEditContext";
