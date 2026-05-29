@@ -4,6 +4,7 @@ import {
   Cpu,
   Zap,
   Hash,
+  History,
   Info,
   Check,
   ChevronDown,
@@ -35,6 +36,8 @@ export function HelpMeReplyPage() {
   const [streamingEnabled, setStreamingEnabled] = useState(true);
   const [maxTokens, setMaxTokens] = useState(150);
   const [maxTokensInput, setMaxTokensInput] = useState("150");
+  const [historyCount, setHistoryCount] = useState(10);
+  const [historyCountInput, setHistoryCountInput] = useState("10");
   const [replyStyle, setReplyStyle] = useState<ReplyStyle>("conversational");
   const [templates, setTemplates] = useState<SystemPromptTemplate[]>([]);
   const [roleplayPromptTemplateId, setRoleplayPromptTemplateId] = useState<string | null>(null);
@@ -62,6 +65,9 @@ export function HelpMeReplyPage() {
         const tokens = settings.advancedSettings?.helpMeReplyMaxTokens ?? 150;
         setMaxTokens(tokens);
         setMaxTokensInput(String(tokens));
+        const history = settings.advancedSettings?.helpMeReplyHistoryCount ?? 10;
+        setHistoryCount(history);
+        setHistoryCountInput(String(history));
         setReplyStyle(settings.advancedSettings?.helpMeReplyStyle ?? "conversational");
         setRoleplayPromptTemplateId(
           settings.advancedSettings?.helpMeReplyRoleplayPromptTemplateId ?? null,
@@ -85,6 +91,7 @@ export function HelpMeReplyPage() {
       helpMeReplyModelId: string | undefined;
       helpMeReplyStreaming: boolean;
       helpMeReplyMaxTokens: number;
+      helpMeReplyHistoryCount: number;
       helpMeReplyStyle: ReplyStyle;
       helpMeReplyRoleplayPromptTemplateId: string | undefined;
       helpMeReplyConversationalPromptTemplateId: string | undefined;
@@ -127,6 +134,22 @@ export function HelpMeReplyPage() {
       await saveSettings({ helpMeReplyMaxTokens: val });
     } else {
       setMaxTokensInput(String(maxTokens));
+    }
+  };
+
+  const handleHistoryCountChange = async (value: number) => {
+    setHistoryCount(value);
+    setHistoryCountInput(String(value));
+    await saveSettings({ helpMeReplyHistoryCount: value });
+  };
+
+  const handleHistoryCountBlur = async () => {
+    const val = parseInt(historyCountInput);
+    if (!isNaN(val) && val >= 1 && val <= 100) {
+      setHistoryCount(val);
+      await saveSettings({ helpMeReplyHistoryCount: val });
+    } else {
+      setHistoryCountInput(String(historyCount));
     }
   };
 
@@ -310,6 +333,59 @@ export function HelpMeReplyPage() {
                         "px-3 py-2 rounded-lg text-xs font-medium transition-all",
                         maxTokens === val
                           ? "bg-warning/20 border border-warning/40 text-warning/80"
+                          : "border border-fg/10 bg-fg/5 text-fg/60 hover:border-fg/20",
+                      )}
+                    >
+                      {val}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* History Count */}
+              <div className="rounded-xl border border-fg/10 bg-fg/5 px-4 py-3">
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-lg border border-info/30 bg-info/10 p-1.5">
+                      <History className="h-4 w-4 text-info" />
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-fg">
+                        {t("helpMeReply.labels.historyCount")}
+                      </span>
+                      <p className="text-[11px] text-fg/45">
+                        {t("helpMeReply.labels.historyCountDescription")}
+                      </p>
+                    </div>
+                  </div>
+                  <input
+                    type="number"
+                    value={historyCountInput}
+                    onChange={(e) => setHistoryCountInput(e.target.value)}
+                    onBlur={handleHistoryCountBlur}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.currentTarget.blur();
+                      }
+                    }}
+                    min={1}
+                    max={100}
+                    className={cn(
+                      "w-20 rounded-lg border border-fg/15 bg-surface-el/30 px-3 py-1.5",
+                      "text-center font-mono text-sm text-fg",
+                      "focus:border-fg/30 focus:outline-none",
+                    )}
+                  />
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {[5, 10, 20, 40].map((val) => (
+                    <button
+                      key={val}
+                      onClick={() => handleHistoryCountChange(val)}
+                      className={cn(
+                        "px-3 py-2 rounded-lg text-xs font-medium transition-all",
+                        historyCount === val
+                          ? "bg-info/20 border border-info/40 text-info/80"
                           : "border border-fg/10 bg-fg/5 text-fg/60 hover:border-fg/20",
                       )}
                     >

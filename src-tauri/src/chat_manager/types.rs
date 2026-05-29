@@ -354,6 +354,8 @@ pub struct AdvancedSettings {
     #[serde(default)]
     pub help_me_reply_max_tokens: Option<u32>,
     #[serde(default)]
+    pub help_me_reply_history_count: Option<u32>,
+    #[serde(default)]
     pub help_me_reply_style: Option<String>,
     #[serde(default)]
     pub help_me_reply_roleplay_prompt_template_id: Option<String>,

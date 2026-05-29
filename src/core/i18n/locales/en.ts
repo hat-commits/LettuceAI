@@ -3462,6 +3462,8 @@ export const enMessages = {
       streamingDescription: "Show suggestions as they're generated",
       maxTokens: "Max Tokens",
       maxTokensDescription: "Maximum length of suggestions",
+      historyCount: "Messages Sent",
+      historyCountDescription: "How many recent messages to include as context",
       conversationalHint: "Suggestions will be written as natural dialogue, suitable for casual chats.",
       roleplayHint: "Suggestions will include roleplay elements like *actions* and narrative descriptions.",
       footerInfo: "This setting applies globally across all conversations. Lower token counts generate shorter, quicker suggestions while higher counts allow for more detailed responses.",

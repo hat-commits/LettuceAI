@@ -2886,6 +2886,7 @@ export const SettingsSchema = z.object({
       helpMeReplyModelId: z.string().optional(),
       helpMeReplyStreaming: z.boolean().optional(),
       helpMeReplyMaxTokens: z.number().optional(),
+      helpMeReplyHistoryCount: z.number().int().min(1).max(100).optional(),
       helpMeReplyStyle: z.enum(["conversational", "roleplay"]).optional(),
       helpMeReplyRoleplayPromptTemplateId: z.string().optional(),
       helpMeReplyConversationalPromptTemplateId: z.string().optional(),

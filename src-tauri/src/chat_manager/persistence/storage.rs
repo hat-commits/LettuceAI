@@ -240,6 +240,7 @@ fn default_settings() -> Settings {
             help_me_reply_model_id: None,
             help_me_reply_streaming: None,
             help_me_reply_max_tokens: None,
+            help_me_reply_history_count: None,
             help_me_reply_style: None,
             help_me_reply_roleplay_prompt_template_id: None,
             help_me_reply_conversational_prompt_template_id: None,

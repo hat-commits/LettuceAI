@@ -85,7 +85,13 @@ pub async fn chat_generate_user_reply(
         (character.clone(), persona.cloned())
     };
 
-    let recent_msgs = recent_messages(&session, 10);
+    let history_count = settings
+        .advanced_settings
+        .as_ref()
+        .and_then(|advanced| advanced.help_me_reply_history_count)
+        .filter(|count| *count > 0)
+        .unwrap_or(10) as usize;
+    let recent_msgs = recent_messages(&session, history_count);
 
     if recent_msgs.is_empty() {
         return Err(crate::utils::err_msg(
