@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Image as ImageIcon, ImagePlus, Loader2, Plus, Trash2, Upload } from "lucide-react";
 import { BottomMenu } from "../../../../../components";
+import { NumberInput } from "../../../../../components/NumberInput";
 import type {
   BoxNode,
   BoxVariant,
@@ -70,8 +71,9 @@ function Segmented<T extends string>({ value, options, onChange }: SegmentedProp
   );
 }
 
-const TEXT_INPUT_CLASS =
-  "w-full rounded-lg border border-fg/10 bg-fg/5 px-3 py-2 text-sm text-fg/80 focus:border-accent/40 focus:outline-none";
+const TEXT_INPUT_BASE =
+  "rounded-lg border border-fg/10 bg-fg/5 px-3 py-2 text-sm text-fg/80 focus:border-accent/40 focus:outline-none";
+const TEXT_INPUT_CLASS = `w-full ${TEXT_INPUT_BASE}`;
 
 interface WidgetConfigSheetProps {
   open: boolean;
@@ -298,7 +300,10 @@ function StatTrackerForm({
   node: StatTrackerNode;
   setNode: (n: StatTrackerNode) => void;
 }) {
-  const updateStat = (id: string, patch: Partial<{ label: string; value: number }>) =>
+  const updateStat = (
+    id: string,
+    patch: Partial<{ label: string; value: number; min?: number; max?: number }>,
+  ) =>
     setNode({
       ...node,
       stats: node.stats.map((s) => (s.id === id ? { ...s, ...patch } : s)),
@@ -316,30 +321,67 @@ function StatTrackerForm({
       <Field label="Stats">
         <div className="flex flex-col gap-2">
           {node.stats.map((stat) => (
-            <div key={stat.id} className="flex items-center gap-2">
-              <input
-                type="text"
-                placeholder="Label"
-                className={`${TEXT_INPUT_CLASS} flex-1`}
-                value={stat.label}
-                onChange={(e) => updateStat(stat.id, { label: e.target.value })}
-              />
-              <input
-                type="number"
-                className={`${TEXT_INPUT_CLASS} w-20`}
-                value={stat.value}
-                onChange={(e) => updateStat(stat.id, { value: Number(e.target.value) || 0 })}
-              />
-              <button
-                type="button"
-                onClick={() =>
-                  setNode({ ...node, stats: node.stats.filter((s) => s.id !== stat.id) })
-                }
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-fg/15 bg-fg/5 text-fg/50 hover:border-danger/40 hover:text-danger"
-                aria-label="Remove stat"
-              >
-                <Trash2 size={13} />
-              </button>
+            <div
+              key={stat.id}
+              className="flex flex-col gap-2 rounded-lg border border-fg/10 bg-fg/[0.03] p-2"
+            >
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="Label"
+                  className={`${TEXT_INPUT_BASE} min-w-0 flex-1`}
+                  value={stat.label}
+                  onChange={(e) => updateStat(stat.id, { label: e.target.value })}
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setNode({ ...node, stats: node.stats.filter((s) => s.id !== stat.id) })
+                  }
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-fg/15 bg-fg/5 text-fg/50 hover:border-danger/40 hover:text-danger"
+                  aria-label="Remove stat"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <label className="flex flex-col gap-1">
+                  <span className="text-[10px] font-medium uppercase tracking-wide text-fg/45">
+                    Min
+                  </span>
+                  <NumberInput
+                    value={stat.min ?? null}
+                    max={stat.max}
+                    placeholder="—"
+                    className={`${TEXT_INPUT_BASE} w-full`}
+                    onChange={(next) => updateStat(stat.id, { min: next ?? undefined })}
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-[10px] font-medium uppercase tracking-wide text-fg/45">
+                    Start
+                  </span>
+                  <NumberInput
+                    value={stat.value}
+                    min={stat.min}
+                    max={stat.max}
+                    className={`${TEXT_INPUT_BASE} w-full`}
+                    onChange={(next) => updateStat(stat.id, { value: next ?? 0 })}
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-[10px] font-medium uppercase tracking-wide text-fg/45">
+                    Max
+                  </span>
+                  <NumberInput
+                    value={stat.max ?? null}
+                    min={stat.min}
+                    placeholder="—"
+                    className={`${TEXT_INPUT_BASE} w-full`}
+                    onChange={(next) => updateStat(stat.id, { max: next ?? undefined })}
+                  />
+                </label>
+              </div>
             </div>
           ))}
           <button
@@ -389,14 +431,14 @@ function QuickSnippetsForm({
               <input
                 type="text"
                 placeholder="Label"
-                className={`${TEXT_INPUT_CLASS} w-24 shrink-0`}
+                className={`${TEXT_INPUT_BASE} w-24 shrink-0`}
                 value={snippet.label}
                 onChange={(e) => updateSnippet(snippet.id, { label: e.target.value })}
               />
               <input
                 type="text"
                 placeholder="Inserted text"
-                className={`${TEXT_INPUT_CLASS} flex-1`}
+                className={`${TEXT_INPUT_BASE} min-w-0 flex-1`}
                 value={snippet.text}
                 onChange={(e) => updateSnippet(snippet.id, { text: e.target.value })}
               />

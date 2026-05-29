@@ -12,9 +12,13 @@ export function WidgetStatTracker({ node }: { node: StatTrackerNode }) {
 
   const setValue = (statId: string, next: number) => {
     if (!interactive) return;
-    const stats = node.stats.map((s) =>
-      s.id === statId ? { ...s, value: next } : s,
-    );
+    const stats = node.stats.map((s) => {
+      if (s.id !== statId) return s;
+      let clamped = next;
+      if (s.min !== undefined) clamped = Math.max(s.min, clamped);
+      if (s.max !== undefined) clamped = Math.min(s.max, clamped);
+      return { ...s, value: clamped };
+    });
     void onUpdateNode(node.id, { stats });
   };
 
@@ -48,7 +52,7 @@ export function WidgetStatTracker({ node }: { node: StatTrackerNode }) {
                 <button
                   type="button"
                   onClick={() => setValue(stat.id, stat.value - 1)}
-                  disabled={!interactive}
+                  disabled={!interactive || (stat.min !== undefined && stat.value <= stat.min)}
                   className="flex h-6 w-6 items-center justify-center rounded-md border border-fg/15 bg-fg/5 text-fg/60 transition hover:bg-fg/10 disabled:opacity-40"
                   aria-label={`Decrease ${stat.label}`}
                 >
@@ -60,7 +64,7 @@ export function WidgetStatTracker({ node }: { node: StatTrackerNode }) {
                 <button
                   type="button"
                   onClick={() => setValue(stat.id, stat.value + 1)}
-                  disabled={!interactive}
+                  disabled={!interactive || (stat.max !== undefined && stat.value >= stat.max)}
                   className="flex h-6 w-6 items-center justify-center rounded-md border border-fg/15 bg-fg/5 text-fg/60 transition hover:bg-fg/10 disabled:opacity-40"
                   aria-label={`Increase ${stat.label}`}
                 >

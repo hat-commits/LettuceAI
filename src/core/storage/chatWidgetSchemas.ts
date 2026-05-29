@@ -90,6 +90,8 @@ export interface StatItem {
   id: string;
   label: string;
   value: number;
+  min?: number;
+  max?: number;
 }
 
 export interface StatTrackerNode extends NodeBase {
@@ -242,6 +244,8 @@ export const widgetNodeSchema: z.ZodType<WidgetNode> = z.lazy(() =>
             id: z.string(),
             label: z.string(),
             value: z.number(),
+            min: z.number().optional(),
+            max: z.number().optional(),
           }),
         )
         .default([]),
