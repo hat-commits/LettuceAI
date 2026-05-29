@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import type { StatTrackerNode } from "../../../../../core/storage/chatWidgetSchemas";
 import { cn } from "../../../../design-tokens";
+import { NumberInput } from "../../../../components/NumberInput";
 import { useWidgetContext } from "./WidgetContext";
 import { useWidgetEdit } from "./WidgetEditContext";
 import { widgetCardClass } from "./widgetSurface";
@@ -9,6 +11,7 @@ export function WidgetStatTracker({ node }: { node: StatTrackerNode }) {
   const { hasBackground, onUpdateNode } = useWidgetContext();
   const { editing: areaEditing } = useWidgetEdit();
   const interactive = !areaEditing;
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const setValue = (statId: string, next: number) => {
     if (!interactive) return;
@@ -58,9 +61,26 @@ export function WidgetStatTracker({ node }: { node: StatTrackerNode }) {
                 >
                   <Minus size={12} strokeWidth={2.4} />
                 </button>
-                <span className="w-8 text-center text-sm font-semibold tabular-nums text-fg/85">
-                  {stat.value}
-                </span>
+                {interactive && editingId === stat.id ? (
+                  <NumberInput
+                    value={stat.value}
+                    min={stat.min}
+                    max={stat.max}
+                    autoFocus
+                    className="w-12 rounded-md border border-fg/15 bg-fg/5 px-1 py-0.5 text-center text-sm font-semibold tabular-nums text-fg/85 focus:border-accent/40 focus:outline-none"
+                    onChange={(next) => setValue(stat.id, next ?? stat.value)}
+                    onBlur={() => setEditingId(null)}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => interactive && setEditingId(stat.id)}
+                    disabled={!interactive}
+                    className="w-8 text-center text-sm font-semibold tabular-nums text-fg/85 disabled:cursor-default"
+                  >
+                    {stat.value}
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setValue(stat.id, stat.value + 1)}
