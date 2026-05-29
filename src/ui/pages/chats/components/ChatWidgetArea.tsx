@@ -143,7 +143,7 @@ export function ChatWidgetArea({
         />
       )}
       <div
-        className="flex shrink-0 flex-col"
+        className="relative flex shrink-0 flex-col"
         style={{ width: columnPx, maxWidth: "100%" }}
       >
         {children}

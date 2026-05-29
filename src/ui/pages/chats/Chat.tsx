@@ -2699,7 +2699,7 @@ export function ChatConversationPage() {
             exit={{ opacity: 0, y: 10, scale: 0.98 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
             className={cn(
-              "fixed right-3 z-30 flex h-11 w-11 items-center justify-center",
+              "absolute right-3 z-30 flex h-11 w-11 items-center justify-center",
               "border border-white/15 bg-black/40 text-white/80 shadow-lg backdrop-blur-sm",
               "hover:bg-black/55 active:scale-95",
               radius.full,
