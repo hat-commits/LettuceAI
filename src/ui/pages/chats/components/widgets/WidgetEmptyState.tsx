@@ -13,9 +13,7 @@ export function WidgetEmptyState({ editing, onAdd }: WidgetEmptyStateProps) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -6 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      className={`mx-3 mb-4 flex flex-1 flex-col items-center justify-center gap-2 rounded-xl px-4 py-8 text-center ${
-        editing ? "border border-dashed border-fg/15 bg-fg/[0.02]" : ""
-      }`}
+      className="mx-3 mb-4 flex flex-1 flex-col items-center justify-center gap-2 rounded-xl px-4 py-8 text-center"
     >
       <div className="flex h-9 w-9 items-center justify-center rounded-full bg-fg/5 text-fg/30">
         <LayoutPanelLeft size={16} strokeWidth={1.8} />
@@ -37,9 +35,7 @@ export function WidgetEmptyState({ editing, onAdd }: WidgetEmptyStateProps) {
       ) : (
         <>
           <p className="text-[12px] text-fg/40">No widgets here.</p>
-          <p className="text-[11px] text-fg/30">
-            Tap the pencil above to add some.
-          </p>
+          <p className="text-[11px] text-fg/30">Tap "Edit widgets" above to add some.</p>
         </>
       )}
     </motion.div>
