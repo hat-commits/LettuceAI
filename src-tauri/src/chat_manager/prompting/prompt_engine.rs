@@ -2901,6 +2901,62 @@ fn is_dynamic_memory_active(settings: &Settings, character: &Character) -> bool 
         && character.memory_type.eq_ignore_ascii_case("dynamic")
 }
 
+enum IdentityValue {
+    CharName,
+    CharDesc,
+    PersonaName,
+    PersonaDesc,
+}
+
+fn identity_placeholder_patterns() -> &'static [(regex::Regex, IdentityValue)] {
+    static PATTERNS: std::sync::OnceLock<Vec<(regex::Regex, IdentityValue)>> =
+        std::sync::OnceLock::new();
+    PATTERNS.get_or_init(|| {
+        let compile = |body: &str| regex::Regex::new(&format!(r"\{{\{{\s*{}\s*\}}\}}", body)).unwrap();
+        vec![
+            (compile(r"char\.name"), IdentityValue::CharName),
+            (compile(r"char\.desc"), IdentityValue::CharDesc),
+            (compile(r"ai_name"), IdentityValue::CharName),
+            (compile(r"ai_description"), IdentityValue::CharDesc),
+            (compile(r"persona\.name"), IdentityValue::PersonaName),
+            (compile(r"persona\.desc"), IdentityValue::PersonaDesc),
+            (compile(r"persona_name"), IdentityValue::PersonaName),
+            (compile(r"persona_description"), IdentityValue::PersonaDesc),
+            (compile(r"user\.name"), IdentityValue::PersonaName),
+            (compile(r"user\.desc"), IdentityValue::PersonaDesc),
+            (compile(r"user_name"), IdentityValue::PersonaName),
+            (compile(r"user_description"), IdentityValue::PersonaDesc),
+            (compile(r"char"), IdentityValue::CharName),
+            (compile(r"persona"), IdentityValue::PersonaName),
+            (compile(r"user"), IdentityValue::PersonaName),
+        ]
+    })
+}
+
+fn apply_identity_placeholders(
+    input: &str,
+    char_name: &str,
+    char_desc: &str,
+    persona_name: &str,
+    persona_desc: &str,
+) -> String {
+    let mut out = std::borrow::Cow::Borrowed(input);
+    for (pattern, value) in identity_placeholder_patterns() {
+        if pattern.is_match(&out) {
+            let replacement = match value {
+                IdentityValue::CharName => char_name,
+                IdentityValue::CharDesc => char_desc,
+                IdentityValue::PersonaName => persona_name,
+                IdentityValue::PersonaDesc => persona_desc,
+            };
+            out = std::borrow::Cow::Owned(
+                pattern.replace_all(&out, regex::NoExpand(replacement)).into_owned(),
+            );
+        }
+    }
+    out.into_owned()
+}
+
 fn render_author_note_text(
     character: &Character,
     persona: Option<&Persona>,
@@ -3894,16 +3950,9 @@ pub fn render_with_context_internal(
         result = result.replace("{{lorebook}}", &lorebook_text);
     }
 
-    result = result.replace("{{char}}", char_name);
-    result = result.replace("{{persona}}", persona_name);
-    result = result.replace("{{user}}", persona_name);
-    result = result.replace("{{ai_name}}", char_name);
-    result = result.replace("{{ai_description}}", &char_desc);
     result = result.replace("{{ai_rules}}", "");
-    result = result.replace("{{persona_name}}", persona_name);
-    result = result.replace("{{persona_description}}", persona_desc);
-    result = result.replace("{{user_name}}", persona_name);
-    result = result.replace("{{user_description}}", persona_desc);
+
+    result = apply_identity_placeholders(&result, char_name, &char_desc, persona_name, persona_desc);
 
     result
 }
