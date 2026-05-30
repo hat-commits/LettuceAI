@@ -7,7 +7,7 @@ use crate::storage_manager::settings::{read_settings_typed, write_settings_typed
 use crate::utils::log_info;
 
 /// Current migration version
-pub const CURRENT_MIGRATION_VERSION: u32 = 70;
+pub const CURRENT_MIGRATION_VERSION: u32 = 71;
 
 pub fn run_migrations(app: &AppHandle) -> Result<(), String> {
     log_info(app, "migrations", "Starting migration check");
@@ -737,6 +737,16 @@ pub fn run_migrations(app: &AppHandle) -> Result<(), String> {
         );
         migrate_v69_to_v70(app)?;
         version = 70;
+    }
+
+    if version < 71 {
+        log_info(
+            app,
+            "migrations",
+            "Running migration v70 -> v71: Add model_id to direct messages",
+        );
+        migrate_v70_to_v71(app)?;
+        version = 71;
     }
 
     // Update the stored version
@@ -3972,5 +3982,11 @@ fn migrate_v69_to_v70(app: &AppHandle) -> Result<(), String> {
         [],
     );
 
+    Ok(())
+}
+
+fn migrate_v70_to_v71(app: &AppHandle) -> Result<(), String> {
+    let conn = crate::storage_manager::db::open_db(app)?;
+    let _ = conn.execute("ALTER TABLE messages ADD COLUMN model_id TEXT", []);
     Ok(())
 }

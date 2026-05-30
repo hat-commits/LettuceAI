@@ -660,6 +660,7 @@ pub fn init_db(_app: &tauri::AppHandle, conn: &Connection) -> Result<(), String>
           total_tokens INTEGER,
           first_token_ms INTEGER,
           tokens_per_second REAL,
+          model_id TEXT,
           selected_variant_id TEXT,
           is_pinned INTEGER NOT NULL DEFAULT 0,
           memory_refs TEXT NOT NULL DEFAULT '[]',

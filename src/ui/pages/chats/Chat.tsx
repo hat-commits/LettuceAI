@@ -565,11 +565,10 @@ export function ChatConversationPage() {
   const [widgetModels, setWidgetModels] = useState<Model[]>([]);
   const resolveModelName = useCallback(
     (modelId?: string | null): string | undefined => {
-      const id = modelId || character?.defaultModelId || undefined;
-      if (!id) return undefined;
-      return widgetModels.find((m) => m.id === id)?.displayName ?? id;
+      if (!modelId) return undefined;
+      return widgetModels.find((m) => m.id === modelId)?.displayName ?? modelId;
     },
-    [widgetModels, character?.defaultModelId],
+    [widgetModels],
   );
   useEffect(() => {
     let cancelled = false;
