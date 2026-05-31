@@ -146,6 +146,16 @@ export const changelog: ChangelogEntry[] = [
       },
       {
         type: "bugfix",
+        description:
+          "Local models now load more reliably with GPU offload. Context sizing accounts for layers offloaded to the GPU, so a model that runs fine with mixed CPU and GPU offload is no longer wrongly reported as too big to fit.",
+      },
+      {
+        type: "bugfix",
+        description:
+          "Improved llama.cpp VRAM headroom estimates so context creation no longer fails with out-of-memory on partially offloaded models. The compute-buffer reserve is derived from the model's dimensions and batch size, and a context that hits OOM is retried at a smaller size even when a KV cache type is set.",
+      },
+      {
+        type: "bugfix",
         description: "Cleaned up orphaned memory embeddings and repaired the embeddings migration.",
       },
       {
