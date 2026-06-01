@@ -2,6 +2,12 @@ import { useReducer, useCallback, useEffect } from "react";
 import { storageBridge } from "../../../../core/storage/files";
 import { setTooltipSeen } from "../../../../core/storage/appState";
 
+function toErrorMessage(e: unknown, fallback: string): string {
+  if (typeof e === "string" && e.trim().length > 0) return e;
+  if (e instanceof Error && e.message.trim().length > 0) return e.message;
+  return fallback;
+}
+
 export interface BackupInfo {
   version: number;
   createdAt: number;
@@ -198,7 +204,7 @@ export function useBackupRestore() {
       dispatch({ type: "EXPORT_COMPLETE", payload: path });
       await loadBackups();
     } catch (e) {
-      dispatch({ type: "SET_ERROR", payload: e instanceof Error ? e.message : "Export failed" });
+      dispatch({ type: "SET_ERROR", payload: toErrorMessage(e, "Export failed") });
       dispatch({ type: "SET_EXPORTING", payload: false });
     }
   }, [state.exportPassword, state.confirmPassword, loadBackups]);
@@ -265,7 +271,7 @@ export function useBackupRestore() {
 
         return { success: true };
       } catch (e) {
-        dispatch({ type: "SET_ERROR", payload: e instanceof Error ? e.message : "Import failed" });
+        dispatch({ type: "SET_ERROR", payload: toErrorMessage(e, "Import failed") });
         dispatch({ type: "SET_IMPORTING", payload: false });
         return { error: true };
       }
@@ -306,7 +312,7 @@ export function useBackupRestore() {
       console.error("Failed to browse for backup:", e);
       dispatch({
         type: "SET_ERROR",
-        payload: e instanceof Error ? e.message : "Failed to open file",
+        payload: toErrorMessage(e, "Failed to open file"),
       });
     }
   }, []);
