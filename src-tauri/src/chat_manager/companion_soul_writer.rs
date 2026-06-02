@@ -27,9 +27,9 @@ use crate::utils::{log_info, log_warn, now_millis};
 
 const MAX_LOOP_ITERATIONS: usize = 8;
 
-const COMPANION_SOUL_JSON_FALLBACK_PROMPT: &str = r#"Return only JSON. Format: {"operations":[{"name":"set_identity","arguments":{"essence":"...","voice":"...","relationalStyle":"...","vulnerabilities":"...","habits":"...","boundaries":"..."}},{"name":"set_baseline_affect","arguments":{"warmth":0.5,"trust":0.5,"calm":0.5,"vulnerability":0.5,"longing":0.5,"hurt":0.5,"tension":0.5,"irritation":0.5,"affectionIntensity":0.5,"reassuranceNeed":0.5}},{"name":"set_regulation_style","arguments":{"suppression":0.5,"volatility":0.5,"recoverySpeed":0.5,"conflictAvoidance":0.5,"reassuranceSeeking":0.5,"protestBehavior":0.5,"emotionalTransparency":0.5,"attachmentActivation":0.5,"pride":0.5}},{"name":"set_relationship_defaults","arguments":{"closeness":0.2,"trust":0.3,"affection":0.2,"tension":0.05}},{"name":"done","arguments":{"notes":"optional"}}]}. End with done. Numeric fields are optional and clamped to [0,1]. Do not use markdown."#;
+const COMPANION_SOUL_JSON_FALLBACK_PROMPT: &str = r#"Return only JSON. Format: {"operations":[{"name":"set_identity","arguments":{"essence":"...","voice":"...","relationalStyle":"...","vulnerabilities":"...","habits":"...","boundaries":"..."}},{"name":"set_baseline_affect","arguments":{"warmth":0.5,"trust":0.5,"calm":0.5,"vulnerability":0.5,"longing":0.5,"hurt":0.5,"tension":0.5,"irritation":0.5,"affectionIntensity":0.5,"reassuranceNeed":0.5}},{"name":"set_regulation_style","arguments":{"suppression":0.5,"volatility":0.5,"recoverySpeed":0.5,"conflictAvoidance":0.5,"reassuranceSeeking":0.5,"protestBehavior":0.5,"emotionalTransparency":0.5,"attachmentActivation":0.5,"pride":0.5}},{"name":"set_relationship_defaults","arguments":{"closeness":0.2,"trust":0.3,"affection":0.2,"tension":0.05}},{"name":"done","arguments":{"notes":"optional"}}]}. End with done. Numeric fields are optional; baseline and regulation values clamp to [0,1], and relationship closeness/trust/affection clamp to [-1,1] (negative means the character starts disliking/distrusting/distant from the user) while relationship tension clamps to [0,1]. Do not use markdown."#;
 
-const COMPANION_SOUL_XML_FALLBACK_PROMPT: &str = r#"Return only XML. Format: <soul_ops><set_identity><essence>...</essence><voice>...</voice><relationalStyle>...</relationalStyle><vulnerabilities>...</vulnerabilities><habits>...</habits><boundaries>...</boundaries></set_identity><set_baseline_affect warmth="0.5" trust="0.5" calm="0.5" vulnerability="0.5" longing="0.5" hurt="0.5" tension="0.5" irritation="0.5" affectionIntensity="0.5" reassuranceNeed="0.5" /><set_regulation_style suppression="0.5" volatility="0.5" recoverySpeed="0.5" conflictAvoidance="0.5" reassuranceSeeking="0.5" protestBehavior="0.5" emotionalTransparency="0.5" attachmentActivation="0.5" pride="0.5" /><set_relationship_defaults closeness="0.2" trust="0.3" affection="0.2" tension="0.05" /><done summary="optional" /></soul_ops>. End with <done />. Numeric fields are optional and clamped to [0,1]. Do not use markdown."#;
+const COMPANION_SOUL_XML_FALLBACK_PROMPT: &str = r#"Return only XML. Format: <soul_ops><set_identity><essence>...</essence><voice>...</voice><relationalStyle>...</relationalStyle><vulnerabilities>...</vulnerabilities><habits>...</habits><boundaries>...</boundaries></set_identity><set_baseline_affect warmth="0.5" trust="0.5" calm="0.5" vulnerability="0.5" longing="0.5" hurt="0.5" tension="0.5" irritation="0.5" affectionIntensity="0.5" reassuranceNeed="0.5" /><set_regulation_style suppression="0.5" volatility="0.5" recoverySpeed="0.5" conflictAvoidance="0.5" reassuranceSeeking="0.5" protestBehavior="0.5" emotionalTransparency="0.5" attachmentActivation="0.5" pride="0.5" /><set_relationship_defaults closeness="0.2" trust="0.3" affection="0.2" tension="0.05" /><done summary="optional" /></soul_ops>. End with <done />. Numeric fields are optional; baseline and regulation values clamp to [0,1], and relationship closeness/trust/affection clamp to [-1,1] (negative means the character starts disliking/distrusting/distant from the user) while relationship tension clamps to [0,1]. Do not use markdown."#;
 
 const TEXT_FIELDS: &[&str] = &[
     "essence",
@@ -336,7 +336,7 @@ fn build_tool_config() -> ToolConfig {
         ToolDefinition {
             name: "set_relationship_defaults".to_string(),
             description: Some(
-                "Set the starting relationship-with-user defaults (closeness/trust/affection/tension), each in [0,1]. All fields optional.".to_string(),
+                "Set the starting relationship-with-user defaults. closeness/trust/affection are bidirectional in [-1,1] (negative = the character starts disliking/distrusting/distant from the user, 0 = neutral, positive = warm); tension is in [0,1]. All fields optional.".to_string(),
             ),
             parameters: json!({
                 "type": "object",
@@ -462,7 +462,11 @@ fn normalize_working_soul(current: Option<&Value>) -> Value {
         {
             for key in RELATIONSHIP_DEFAULTS_FIELDS {
                 if let Some(num) = in_rel.get(*key).and_then(Value::as_f64) {
-                    insert_clamped(out_rel, key, num);
+                    if RELATIONSHIP_BIPOLAR_FIELDS.contains(key) {
+                        insert_clamped_range(out_rel, key, num, -1.0, 1.0);
+                    } else {
+                        insert_clamped(out_rel, key, num);
+                    }
                 }
             }
         }
@@ -473,6 +477,15 @@ fn normalize_working_soul(current: Option<&Value>) -> Value {
 
 fn insert_clamped(map: &mut Map<String, Value>, key: &str, value: f64) {
     let clamped = value.clamp(0.0, 1.0);
+    if let Some(num) = serde_json::Number::from_f64(clamped) {
+        map.insert(key.to_string(), Value::Number(num));
+    }
+}
+
+const RELATIONSHIP_BIPOLAR_FIELDS: &[&str] = &["closeness", "trust", "affection"];
+
+fn insert_clamped_range(map: &mut Map<String, Value>, key: &str, value: f64, lo: f64, hi: f64) {
+    let clamped = value.clamp(lo, hi);
     if let Some(num) = serde_json::Number::from_f64(clamped) {
         map.insert(key.to_string(), Value::Number(num));
     }
@@ -504,6 +517,7 @@ fn apply_set_numeric_section(
     working: &mut Value,
     section_path: &[&str],
     fields: &[&str],
+    signed_fields: &[&str],
     args: &Value,
 ) -> Vec<String> {
     let mut applied = Vec::new();
@@ -528,7 +542,11 @@ fn apply_set_numeric_section(
     for key in fields {
         if let Some(value) = args_obj.get(*key) {
             if let Some(num) = value.as_f64() {
-                insert_clamped(target, key, num);
+                if signed_fields.contains(key) {
+                    insert_clamped_range(target, key, num, -1.0, 1.0);
+                } else {
+                    insert_clamped(target, key, num);
+                }
                 applied.push((*key).to_string());
             }
         }
@@ -771,6 +789,7 @@ fn apply_call(working_soul: &mut Value, call: &ToolCall) -> (bool, Value) {
                 working_soul,
                 &["soul", "baselineAffect"],
                 BASELINE_AFFECT_FIELDS,
+                &[],
                 &call.arguments,
             );
             (false, json!({ "ok": true, "applied": applied }))
@@ -780,6 +799,7 @@ fn apply_call(working_soul: &mut Value, call: &ToolCall) -> (bool, Value) {
                 working_soul,
                 &["soul", "regulationStyle"],
                 REGULATION_STYLE_FIELDS,
+                &[],
                 &call.arguments,
             );
             (false, json!({ "ok": true, "applied": applied }))
@@ -789,6 +809,7 @@ fn apply_call(working_soul: &mut Value, call: &ToolCall) -> (bool, Value) {
                 working_soul,
                 &["relationshipDefaults"],
                 RELATIONSHIP_DEFAULTS_FIELDS,
+                RELATIONSHIP_BIPOLAR_FIELDS,
                 &call.arguments,
             );
             (false, json!({ "ok": true, "applied": applied }))
