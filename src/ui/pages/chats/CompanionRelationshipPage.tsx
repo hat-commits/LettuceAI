@@ -99,18 +99,24 @@ function StatTile({
   baseline,
   tone = "default",
   low,
+  mid,
   high,
+  bipolar,
 }: {
   label: string;
   value: number;
   baseline?: number;
   tone?: "default" | "warm" | "warning";
   low?: string;
+  mid?: string;
   high?: string;
+  bipolar?: boolean;
 }) {
   const barTone =
     tone === "warm" ? "bg-amber-400" : tone === "warning" ? "bg-rose-400" : "bg-accent";
-  const pct = Math.round(Math.max(0, Math.min(1, value)) * 100);
+  const v = bipolar ? Math.max(-1, Math.min(1, value)) : Math.max(0, Math.min(1, value));
+  const pct = Math.round(v * 100);
+  const mag = Math.abs(v) * (bipolar ? 50 : 100);
   const delta = baseline == null ? null : Math.round((value - baseline) * 100);
   const Trend = delta == null ? null : delta >= 0 ? TrendingUp : TrendingDown;
 
@@ -133,13 +139,29 @@ function StatTile({
           </span>
         ) : null}
       </div>
-      <div className="mt-0.5 text-[17px] font-semibold tabular-nums text-fg/90">{pct}%</div>
-      <div className="mt-1.5 h-[3px] rounded-full bg-fg/6">
-        <div className={cn("h-full rounded-full", barTone)} style={{ width: `${pct}%` }} />
+      <div className="mt-0.5 text-[17px] font-semibold tabular-nums text-fg/90">
+        {bipolar && pct > 0 ? `+${pct}` : pct}%
       </div>
+      {bipolar ? (
+        <div className="relative mt-1.5 h-[3px] rounded-full bg-fg/6">
+          <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-fg/25" />
+          <div
+            className={cn(
+              "absolute top-0 h-full",
+              v >= 0 ? cn("rounded-r-full", barTone) : "rounded-l-full bg-rose-400",
+            )}
+            style={v >= 0 ? { left: "50%", width: `${mag}%` } : { right: "50%", width: `${mag}%` }}
+          />
+        </div>
+      ) : (
+        <div className="mt-1.5 h-[3px] rounded-full bg-fg/6">
+          <div className={cn("h-full rounded-full", barTone)} style={{ width: `${pct}%` }} />
+        </div>
+      )}
       {low && high && (
         <div className="mt-1 flex items-center justify-between text-[9px] text-fg/40">
           <span>{low}</span>
+          {bipolar && mid ? <span>{mid}</span> : null}
           <span>{high}</span>
         </div>
       )}
@@ -354,14 +376,18 @@ export function CompanionRelationshipPage() {
                 value={relationshipState?.closeness ?? companion?.relationshipDefaults?.closeness ?? 0.2}
                 baseline={companion?.relationshipDefaults?.closeness}
                 low={RELATIONSHIP_AXIS_ANCHORS.closeness.low}
+                mid={RELATIONSHIP_AXIS_ANCHORS.closeness.mid}
                 high={RELATIONSHIP_AXIS_ANCHORS.closeness.high}
+                bipolar
               />
               <StatTile
                 label={t("chats.companionRelationship.trust")}
                 value={relationshipState?.trust ?? companion?.relationshipDefaults?.trust ?? 0.3}
                 baseline={companion?.relationshipDefaults?.trust}
                 low={RELATIONSHIP_AXIS_ANCHORS.trust.low}
+                mid={RELATIONSHIP_AXIS_ANCHORS.trust.mid}
                 high={RELATIONSHIP_AXIS_ANCHORS.trust.high}
+                bipolar
               />
               <StatTile
                 label={t("chats.companionRelationship.affection")}
@@ -369,7 +395,9 @@ export function CompanionRelationshipPage() {
                 baseline={companion?.relationshipDefaults?.affection}
                 tone="warm"
                 low={RELATIONSHIP_AXIS_ANCHORS.affection.low}
+                mid={RELATIONSHIP_AXIS_ANCHORS.affection.mid}
                 high={RELATIONSHIP_AXIS_ANCHORS.affection.high}
+                bipolar
               />
               <StatTile
                 label={t("chats.companionRelationship.tension")}
