@@ -502,6 +502,7 @@ function GroupChatMessageInner({
 
   return (
     <div
+      id={`group-msg-${message.id}`}
       className={cn(
         "relative flex gap-2",
         message.role === "user" ? "justify-end" : "justify-start",

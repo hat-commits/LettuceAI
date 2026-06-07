@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Brain, Loader2, AlertTriangle, BookOpen, Palette } from "lucide-react";
+import { ArrowLeft, Brain, Loader2, AlertTriangle, BookOpen, Palette, Search } from "lucide-react";
 import { listen } from "@tauri-apps/api/event";
 
 import { useI18n } from "../../../../core/i18n/context";
@@ -18,6 +18,7 @@ export function GroupChatHeader({
   onMemories,
   onLorebooks,
   onAppearance,
+  onSearch,
   hasBackgroundImage,
   headerOverlayClassName,
   transparentHeader = false,
@@ -29,6 +30,7 @@ export function GroupChatHeader({
   onMemories: () => void;
   onLorebooks: () => void;
   onAppearance?: () => void;
+  onSearch?: () => void;
   hasBackgroundImage?: boolean;
   headerOverlayClassName?: string;
   transparentHeader?: boolean;
@@ -157,6 +159,16 @@ export function GroupChatHeader({
               </span>
             )}
           </button>
+
+          {onSearch && (
+            <button
+              onClick={onSearch}
+              className="flex items-center justify-center px-[0.6em] py-[0.3em] text-fg/75 transition hover:text-fg"
+              aria-label={t("chats.search.placeholder")}
+            >
+              <Search size={18} strokeWidth={2.5} />
+            </button>
+          )}
 
           <button
             onClick={onLorebooks}

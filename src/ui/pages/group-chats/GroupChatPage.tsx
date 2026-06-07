@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback, useMemo, useLayoutEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronDown, Loader2, Sparkles, Image, RefreshCw, PenLine, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
@@ -71,6 +71,7 @@ export function GroupChatPage() {
   const { t } = useI18n();
   const { groupSessionId } = useParams<{ groupSessionId: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // State variables
   const [messages, setMessages] = useState<GroupMessage[]>([]);
@@ -215,6 +216,22 @@ export function GroupChatPage() {
       setAppearanceDrawerOpen(true);
     }
   }, [isMobilePlatform, navigate, session]);
+
+  const jumpToMessageId = searchParams.get("jumpToMessage");
+  useEffect(() => {
+    if (!jumpToMessageId || messages.length === 0) return;
+    const el = document.getElementById(`group-msg-${jumpToMessageId}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.classList.add("ring-2", "ring-accent", "rounded-xl");
+    const timer = window.setTimeout(() => {
+      el.classList.remove("ring-2", "ring-accent", "rounded-xl");
+    }, 2000);
+    const next = new URLSearchParams(searchParams);
+    next.delete("jumpToMessage");
+    setSearchParams(next, { replace: true });
+    return () => window.clearTimeout(timer);
+  }, [jumpToMessageId, messages.length, searchParams, setSearchParams]);
 
   // Load messages and stats (session, characters, personas, settings come from layout)
   const loadData = useCallback(async () => {
@@ -1662,6 +1679,7 @@ export function GroupChatPage() {
             onMemories={() => navigate(Routes.groupChatMemories(session.id))}
             onLorebooks={() => navigate(Routes.groupChatLorebook(session.id))}
             onAppearance={group ? handleOpenAppearance : undefined}
+            onSearch={() => navigate(Routes.groupChatSearch(session.id))}
             hasBackgroundImage={!!backgroundImageData}
             headerOverlayClassName={theme.headerOverlay}
             transparentHeader={chatAppearance.transparentHeader}

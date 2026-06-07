@@ -485,6 +485,22 @@ export const storageBridge = {
       }[]
     >("search_messages", { sessionId, query }),
 
+  groupSearchMessages: (
+    sessionId: string,
+    query: string,
+  ): Promise<
+    {
+      messageId: string;
+      content: string;
+      createdAt: number;
+      role: string;
+      speakerCharacterId: string | null;
+    }[]
+  > =>
+    invoke<string>("group_search_messages", { sessionId, query }).then(
+      (s) => JSON.parse(s),
+    ),
+
   chatGenerateUserReply: (
     sessionId: string,
     currentDraft?: string,

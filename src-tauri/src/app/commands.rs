@@ -397,6 +397,7 @@ macro_rules! invoke_handler {
             crate::storage_manager::group_sessions::group_participation_stats,
             crate::storage_manager::group_sessions::group_participation_increment,
             crate::storage_manager::group_sessions::group_messages_list,
+            crate::storage_manager::group_sessions::group_search_messages,
             crate::storage_manager::group_sessions::group_messages_list_pinned,
             crate::storage_manager::group_sessions::group_message_upsert,
             crate::storage_manager::group_sessions::group_message_toggle_pin_state,

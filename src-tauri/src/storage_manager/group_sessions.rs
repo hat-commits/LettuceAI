@@ -2028,6 +2028,37 @@ pub fn group_messages_list(
 }
 
 #[tauri::command]
+pub fn group_search_messages(
+    session_id: String,
+    query: String,
+    pool: State<'_, SwappablePool>,
+) -> Result<String, String> {
+    let trimmed = query.trim().to_lowercase();
+    if trimmed.is_empty() {
+        return Ok("[]".to_string());
+    }
+    let conn = pool.get_connection()?;
+    let results: Vec<serde_json::Value> = read_group_messages(&conn, &session_id, i32::MAX, None, None)?
+        .into_iter()
+        .filter(|message| {
+            (message.role == "user" || message.role == "assistant" || message.role == "scene")
+                && message.content.to_lowercase().contains(&trimmed)
+        })
+        .map(|message| {
+            serde_json::json!({
+                "messageId": message.id,
+                "content": message.content,
+                "createdAt": message.created_at,
+                "role": message.role,
+                "speakerCharacterId": message.speaker_character_id,
+            })
+        })
+        .collect();
+    serde_json::to_string(&results)
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))
+}
+
+#[tauri::command]
 pub fn group_messages_list_pinned(
     session_id: String,
     pool: State<'_, SwappablePool>,
