@@ -507,6 +507,7 @@ export function ChatAppearanceForm({
 
   if (activeTab === "layout") {
     return (
+      <div className="space-y-5">
       <div className="space-y-4 rounded-xl border border-fg/10 bg-fg/5 px-4 py-3">
         <OptionGrid
           label={t("chatAppearance.layout.messageSpacing")}
@@ -667,6 +668,60 @@ export function ChatAppearanceForm({
           </p>
         )}
         </div>
+      </div>
+      <div className="space-y-4 rounded-xl border border-fg/10 bg-fg/5 px-4 py-3">
+        <div className="text-[11px] font-semibold uppercase tracking-wide text-fg/45">
+          {t("chatAppearance.participantsBar.title")}
+        </div>
+        <ToggleControl
+          label={t("chatAppearance.participantsBar.enabled")}
+          description={t("chatAppearance.participantsBar.enabledDesc")}
+          checked={settings.participantsBarEnabled}
+          onChange={(v) => onUpdate("participantsBarEnabled", v)}
+          overridden={isOverridden("participantsBarEnabled")}
+          onReset={resetFor("participantsBarEnabled")}
+        />
+        {settings.participantsBarEnabled && (
+          <>
+            <OptionGrid
+              label={t("chatAppearance.participantsBar.sizeLabel")}
+              value={settings.participantsBarAvatarSize}
+              options={[
+                { value: "small", label: t("chatAppearance.avatar.size.small") },
+                { value: "medium", label: t("chatAppearance.avatar.size.medium") },
+                { value: "large", label: t("chatAppearance.avatar.size.large") },
+              ]}
+              onChange={(v) => onUpdate("participantsBarAvatarSize", v)}
+              overridden={isOverridden("participantsBarAvatarSize")}
+              onReset={resetFor("participantsBarAvatarSize")}
+            />
+            <OptionGrid
+              label={t("chatAppearance.participantsBar.gapLabel")}
+              value={settings.participantsBarGap}
+              options={[
+                { value: "tight", label: t("chatAppearance.layout.tight") },
+                { value: "normal", label: t("chatAppearance.layout.normal") },
+                { value: "relaxed", label: t("chatAppearance.layout.relaxed") },
+              ]}
+              onChange={(v) => onUpdate("participantsBarGap", v)}
+              overridden={isOverridden("participantsBarGap")}
+              onReset={resetFor("participantsBarGap")}
+            />
+            <OptionGrid
+              label={t("chatAppearance.participantsBar.alignLabel")}
+              value={settings.participantsBarAlign}
+              options={[
+                { value: "left", label: t("chatAppearance.layout.chatColumn.align.left") },
+                { value: "center", label: t("chatAppearance.layout.chatColumn.align.center") },
+                { value: "right", label: t("chatAppearance.layout.chatColumn.align.right") },
+              ]}
+              onChange={(v) => onUpdate("participantsBarAlign", v)}
+              overridden={isOverridden("participantsBarAlign")}
+              onReset={resetFor("participantsBarAlign")}
+            />
+          </>
+        )}
+      </div>
       </div>
     );
   }

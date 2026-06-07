@@ -17,6 +17,14 @@ import { useAvatar } from "../../../hooks/useAvatar";
 import { AvatarImage } from "../../../components/AvatarImage";
 import { RecordingIndicator } from "../../chats/components/ChatFooter";
 import { ChatErrorBanner } from "../../chats/components/ChatErrorBanner";
+import {
+  GroupChatParticipantsBar,
+  type ParticipantsBarSize,
+  type ParticipantsBarGap,
+  type ParticipantsBarAlign,
+} from "./GroupChatParticipantsBar";
+
+const EMPTY_MUTED_SET: Set<string> = new Set();
 
 interface GroupChatFooterProps {
   draft: string;
@@ -46,6 +54,12 @@ interface GroupChatFooterProps {
   recordingAnalyser?: AnalyserNode | null;
   recordingTranscribing?: boolean;
   composerDisabled?: boolean;
+  mutedCharacterIds?: Set<string>;
+  onToggleMute?: (characterId: string, muted: boolean) => void;
+  participantsBarEnabled?: boolean;
+  participantsBarSize?: ParticipantsBarSize;
+  participantsBarGap?: ParticipantsBarGap;
+  participantsBarAlign?: ParticipantsBarAlign;
 }
 
 export function GroupChatFooter({
@@ -75,6 +89,12 @@ export function GroupChatFooter({
   recordingAnalyser = null,
   recordingTranscribing = false,
   composerDisabled = false,
+  mutedCharacterIds,
+  onToggleMute,
+  participantsBarEnabled = true,
+  participantsBarSize = "medium",
+  participantsBarGap = "normal",
+  participantsBarAlign = "left",
 }: GroupChatFooterProps) {
   const { t } = useI18n();
   const hasDraft = draft.trim().length > 0;
@@ -380,6 +400,20 @@ export function GroupChatFooter({
         className="hidden"
         onChange={handleFileSelect}
       />
+
+      {!micActive && onToggleMute && participantsBarEnabled && (
+        <GroupChatParticipantsBar
+          characters={characters}
+          draft={draft}
+          setDraft={setDraft}
+          mutedCharacterIds={mutedCharacterIds ?? EMPTY_MUTED_SET}
+          onToggleMute={onToggleMute}
+          disabled={sending || composerDisabled}
+          size={participantsBarSize}
+          gap={participantsBarGap}
+          align={participantsBarAlign}
+        />
+      )}
 
       <div
         className={cn(

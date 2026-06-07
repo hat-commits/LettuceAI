@@ -2761,6 +2761,12 @@ export const ChatAppearanceSettingsSchema = z.object({
   chatHeaderMoves: z.boolean().default(false),
   chatFooterMoves: z.boolean().default(false),
 
+  // Group chat participants bar (avatar row above the composer)
+  participantsBarEnabled: z.boolean().default(true),
+  participantsBarAvatarSize: z.enum(["small", "medium", "large"]).default("medium"),
+  participantsBarGap: z.enum(["tight", "normal", "relaxed"]).default("normal"),
+  participantsBarAlign: z.enum(["left", "center", "right"]).default("left"),
+
   chatWidgetAreaEnabled: z.boolean().default(false),
   chatWidgetCenterMode: z.enum(["both", "left", "right"]).default("both"),
   chatWidgetSlots: z
@@ -2824,6 +2830,10 @@ export function createDefaultChatAppearanceSettings(): ChatAppearanceSettings {
     chatColumnAlign: "center",
     chatHeaderMoves: false,
     chatFooterMoves: false,
+    participantsBarEnabled: true,
+    participantsBarAvatarSize: "medium",
+    participantsBarGap: "normal",
+    participantsBarAlign: "left",
     chatWidgetAreaEnabled: false,
     chatWidgetCenterMode: "both",
     chatWidgetSlots: { left: [], right: [] },

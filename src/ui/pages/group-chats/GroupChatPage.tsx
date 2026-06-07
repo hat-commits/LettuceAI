@@ -157,6 +157,7 @@ export function GroupChatPage() {
     backgroundImageData,
     theme,
     chatAppearance,
+    updateSession,
   } = useGroupChatLayoutContext();
   const helpMeReplyEnabled = settings?.advancedSettings?.helpMeReplyEnabled ?? true;
 
@@ -165,6 +166,35 @@ export function GroupChatPage() {
     if (!session?.personaId) return null;
     return personas.find((p) => p.id === session.personaId) || null;
   }, [session, personas]);
+
+  const mutedCharacterIds = useMemo(
+    () => new Set(session?.mutedCharacterIds ?? []),
+    [session?.mutedCharacterIds],
+  );
+
+  const handleToggleMute = useCallback(
+    async (characterId: string, muted: boolean) => {
+      if (!session) return;
+      const previous = session.mutedCharacterIds ?? [];
+      const next = new Set(previous);
+      const activeCount = session.characterIds.length - next.size;
+      if (muted && activeCount <= 1 && !next.has(characterId)) return;
+      if (muted) {
+        next.add(characterId);
+      } else {
+        next.delete(characterId);
+      }
+      const nextArr = Array.from(next);
+      updateSession({ ...session, mutedCharacterIds: nextArr });
+      try {
+        await storageBridge.groupSessionUpdateMutedCharacterIds(session.id, nextArr);
+      } catch (err) {
+        console.error("Failed to update muted characters:", err);
+        updateSession({ ...session, mutedCharacterIds: previous });
+      }
+    },
+    [session, updateSession],
+  );
 
   // Load messages and stats (session, characters, personas, settings come from layout)
   const loadData = useCallback(async () => {
@@ -1755,6 +1785,12 @@ export function GroupChatPage() {
             recordingAnalyser={footerAnalyser}
             recordingTranscribing={footerAsrMode === "transcribing"}
             composerDisabled={footerAsrMode !== "idle"}
+            mutedCharacterIds={mutedCharacterIds}
+            onToggleMute={handleToggleMute}
+            participantsBarEnabled={chatAppearance.participantsBarEnabled}
+            participantsBarSize={chatAppearance.participantsBarAvatarSize}
+            participantsBarGap={chatAppearance.participantsBarGap}
+            participantsBarAlign={chatAppearance.participantsBarAlign}
           />
         </div>
       </div>

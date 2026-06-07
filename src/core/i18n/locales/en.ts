@@ -1265,6 +1265,11 @@ export const enMessages = {
       dismissError: "Dismiss error",
       removeAttachment: "Remove attachment",
       tabToSelect: "Tab to select",
+      mentionParticipant: "Mention {{name}}",
+      removeMention: "Remove mention of {{name}}",
+      muteParticipant: "Mute {{name}}",
+      unmuteParticipant: "Unmute {{name}}",
+      participantMuted: "{{name}} (muted)",
     },
     messageActions: {
       characterMessage: "Character Message",
@@ -3261,6 +3266,14 @@ export const enMessages = {
         medium: "Medium",
         large: "Large",
       },
+    },
+    participantsBar: {
+      title: "Participants Bar",
+      enabled: "Show Participants Bar",
+      enabledDesc: "Show character avatars above the composer in group chats. Tap to mention, long-press or right-click to mute.",
+      sizeLabel: "Avatar Size",
+      gapLabel: "Avatar Spacing",
+      alignLabel: "Alignment",
     },
     colors: {
       label: "Colors",

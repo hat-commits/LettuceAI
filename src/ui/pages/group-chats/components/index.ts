@@ -1,4 +1,5 @@
 export { GroupChatFooter } from "./GroupChatFooter";
+export { GroupChatParticipantsBar } from "./GroupChatParticipantsBar";
 export {
   GroupChatMessage,
   type VariantState,
