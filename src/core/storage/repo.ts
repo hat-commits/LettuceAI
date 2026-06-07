@@ -1143,7 +1143,6 @@ export async function updateGroupChatAppearance(
     groupId,
     chatAppearance ? JSON.stringify(chatAppearance) : null,
   );
-  broadcastSessionUpdated();
   return GroupSchema.parse(data);
 }
 
