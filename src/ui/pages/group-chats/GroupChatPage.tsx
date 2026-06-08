@@ -12,6 +12,8 @@ import {
   readSettings,
   SETTINGS_UPDATED_EVENT,
   toggleGroupMessagePin,
+  updateGroupChatAppearance,
+  updateGroupSessionAuthorNote,
 } from "../../../core/storage/repo";
 import { useI18n } from "../../../core/i18n/context";
 import type {
@@ -24,6 +26,19 @@ import type {
 import { radius, interactive, cn } from "../../design-tokens";
 import { useGroupChatLayoutContext } from "./GroupChatLayout";
 import { useAuthorNoteInlineEditor } from "../chats/components/useAuthorNoteInlineEditor";
+import { getChatWidgetLayout, useViewportWidth } from "../chats/utils/chatWidgetLayout";
+import { ChatWidgetArea } from "../chats/components/ChatWidgetArea";
+import {
+  WidgetContextProvider,
+  WidgetEditProvider,
+  type WidgetActionContext,
+  type WidgetSlots,
+} from "../chats/components/widgets";
+import {
+  patchWidgetNode,
+  setScratchPadContentOnNode,
+} from "../chats/components/widgets/editor/widgetFactories";
+import type { WidgetNode } from "../../../core/storage/chatWidgetSchemas";
 import { splitThinkTags } from "../../../core/utils/thinkTags";
 
 import { Routes } from "../../navigation";
@@ -1736,6 +1751,146 @@ export function GroupChatPage() {
       .filter(Boolean) as Character[];
   }, [session, characters]);
 
+  // --- Widget area (desktop, non-full chat column) ---
+  const viewportWidth = useViewportWidth();
+  const widgetLayout = getChatWidgetLayout(chatAppearance, viewportWidth);
+  const widgetsOn = widgetLayout.enabled;
+  const [widgetEditNonce, setWidgetEditNonce] = useState(0);
+  const requestWidgetEdit = widgetsOn ? () => setWidgetEditNonce((n) => n + 1) : undefined;
+  const widgetLeftNodes = widgetLayout.showLeft
+    ? widgetLayout.showRight
+      ? chatAppearance.chatWidgetSlots.left
+      : [...chatAppearance.chatWidgetSlots.left, ...chatAppearance.chatWidgetSlots.right]
+    : [];
+  const widgetRightNodes = widgetLayout.showRight
+    ? widgetLayout.showLeft
+      ? chatAppearance.chatWidgetSlots.right
+      : [...chatAppearance.chatWidgetSlots.right, ...chatAppearance.chatWidgetSlots.left]
+    : [];
+
+  const persistWidgetSlots = useCallback(
+    async (slots: WidgetSlots) => {
+      if (!group) return;
+      const existing = (group.chatAppearance ?? {}) as Record<string, unknown>;
+      const saved = await updateGroupChatAppearance(group.id, {
+        ...existing,
+        chatWidgetSlots: slots,
+      });
+      updateGroup(saved);
+    },
+    [group, updateGroup],
+  );
+
+  const persistColumnWidthPx = useCallback(
+    async (px: number) => {
+      if (!group) return;
+      const existing = (group.chatAppearance ?? {}) as Record<string, unknown>;
+      const saved = await updateGroupChatAppearance(group.id, {
+        ...existing,
+        chatColumnWidth: "custom",
+        chatColumnWidthPx: px,
+      });
+      updateGroup(saved);
+    },
+    [group, updateGroup],
+  );
+
+  const widgetCharacter = groupCharacters[0] ?? null;
+  const widgetCtxValue = useMemo<WidgetActionContext>(() => {
+    const persistSlotMutation = async (
+      mutate: (nodes: WidgetNode[]) => WidgetNode[],
+    ) => {
+      if (!group) return;
+      const existing = (group.chatAppearance ?? {}) as Record<string, unknown>;
+      const slots = (existing.chatWidgetSlots as WidgetSlots | undefined) ?? {
+        left: [],
+        right: [],
+      };
+      const saved = await updateGroupChatAppearance(group.id, {
+        ...existing,
+        chatWidgetSlots: { left: mutate(slots.left), right: mutate(slots.right) },
+      });
+      updateGroup(saved);
+    };
+    const lastAssistant = [...messages]
+      .reverse()
+      .find((m) => m.role === "assistant" && !m.id.startsWith("placeholder"));
+    return {
+      character: widgetCharacter,
+      persona: currentPersona,
+      session: null,
+      hasBackground: !!backgroundImageData,
+      messageCount: messages.filter((m) => !m.id.startsWith("placeholder")).length,
+      sceneName: null,
+      memories: session?.memories ?? [],
+      personas,
+      models: settings?.models ?? [],
+      currentModelId: widgetCharacter?.defaultModelId ?? null,
+      fallbackModelId: widgetCharacter?.fallbackModelId ?? null,
+      swapPlacesActive: false,
+      voiceAutoplayActive: false,
+      canRegenerate: !!lastAssistant && !sending,
+      canContinue: messages.length > 0 && !sending,
+      isGenerating: sending,
+      onSelectPersona: () => {},
+      onSelectModel: () => {},
+      onSelectFallbackModel: () => {},
+      onAuthorNoteSaved: () => {},
+      onRegenerate: async () => {
+        if (lastAssistant) await handleRegenerate(lastAssistant.id);
+      },
+      onToggleSwapPlaces: () => {},
+      onNewSession: () => {},
+      onContinue: async () => {
+        await handleContinue();
+      },
+      onAbort: async () => {
+        await handleAbort();
+      },
+      onViewHistory: () => navigate(Routes.groupChatHistory),
+      onOpenMemories: () => session && navigate(Routes.groupChatMemories(session.id)),
+      onOpenSearch: () => session && navigate(Routes.groupChatSearch(session.id)),
+      onToggleVoiceAutoplay: () => {},
+      onUpdateScratchPad: async (nodeId, content) => {
+        await persistSlotMutation((nodes) => setScratchPadContentOnNode(nodes, nodeId, content));
+      },
+      onUpdateAuthorNote: async (content) => {
+        if (!session) return;
+        const trimmed = content.trim();
+        const updated = await updateGroupSessionAuthorNote(session.id, trimmed || null);
+        updateSession(updated);
+      },
+      onUpdateNode: async (nodeId, patch) => {
+        await persistSlotMutation((nodes) =>
+          patchWidgetNode(nodes, nodeId, patch as Partial<WidgetNode>),
+        );
+      },
+      onUpdateCompanionTimeOverride: () => {},
+      onInsertText: (text) => {
+        const trimmed = draft.trimEnd();
+        setDraft(trimmed ? `${trimmed} ${text}` : text);
+      },
+    };
+  }, [
+    widgetCharacter,
+    currentPersona,
+    backgroundImageData,
+    messages,
+    session,
+    personas,
+    settings,
+    sending,
+    group,
+    updateGroup,
+    updateSession,
+    handleRegenerate,
+    handleContinue,
+    handleAbort,
+    navigate,
+    draft,
+    setDraft,
+  ]);
+
   if (sessionLoading || loading) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -1792,6 +1947,7 @@ export function GroupChatPage() {
             onLorebooks={() => navigate(Routes.groupChatLorebook(session.id))}
             onAppearance={group ? handleOpenAppearance : undefined}
             onSearch={() => navigate(Routes.groupChatSearch(session.id))}
+            onEditWidgets={!isMobilePlatform ? requestWidgetEdit : undefined}
             hasBackgroundImage={!!backgroundImageData}
             headerOverlayClassName={theme.headerOverlay}
             transparentHeader={chatAppearance.transparentHeader}
@@ -1799,10 +1955,24 @@ export function GroupChatPage() {
         </div>
 
         {/* Main content area - flex-1 takes remaining space */}
+        <WidgetContextProvider value={widgetCtxValue}>
+          <WidgetEditProvider
+            slots={chatAppearance.chatWidgetSlots}
+            onPersist={persistWidgetSlots}
+            editRequestNonce={widgetEditNonce}
+          >
+            <ChatWidgetArea
+              widgetLayout={widgetLayout}
+              leftNodes={widgetLeftNodes}
+              rightNodes={widgetRightNodes}
+              resizable={false}
+              viewportWidth={viewportWidth}
+              onResizeColumn={(px) => void persistColumnWidthPx(px)}
+            >
         <main
           ref={scrollContainerRef}
           onScroll={handleScroll}
-          className="relative flex-1 overflow-y-auto px-2 pb-2"
+          className="relative w-full flex-1 overflow-y-auto px-2 pb-2"
         >
           <div
             className={`${getChatColumnLayout(chatAppearance).className} ${chatAppearance.messageGap === "tight" ? "space-y-2" : chatAppearance.messageGap === "relaxed" ? "space-y-6" : "space-y-4"} pb-6 pt-4`}
@@ -1867,6 +2037,9 @@ export function GroupChatPage() {
             )}
           </div>
         </main>
+            </ChatWidgetArea>
+          </WidgetEditProvider>
+        </WidgetContextProvider>
 
         {/* Scroll to Bottom Button */}
         <AnimatePresence>

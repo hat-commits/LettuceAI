@@ -1,5 +1,14 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Brain, Loader2, AlertTriangle, BookOpen, Palette, Search } from "lucide-react";
+import {
+  ArrowLeft,
+  Brain,
+  Loader2,
+  AlertTriangle,
+  BookOpen,
+  Palette,
+  Search,
+  LayoutGrid,
+} from "lucide-react";
 import { listen } from "@tauri-apps/api/event";
 
 import { useI18n } from "../../../../core/i18n/context";
@@ -19,6 +28,7 @@ export function GroupChatHeader({
   onLorebooks,
   onAppearance,
   onSearch,
+  onEditWidgets,
   hasBackgroundImage,
   headerOverlayClassName,
   transparentHeader = false,
@@ -31,6 +41,7 @@ export function GroupChatHeader({
   onLorebooks: () => void;
   onAppearance?: () => void;
   onSearch?: () => void;
+  onEditWidgets?: () => void;
   hasBackgroundImage?: boolean;
   headerOverlayClassName?: string;
   transparentHeader?: boolean;
@@ -177,6 +188,16 @@ export function GroupChatHeader({
           >
             <BookOpen size={18} strokeWidth={2.5} />
           </button>
+
+          {onEditWidgets && (
+            <button
+              onClick={onEditWidgets}
+              className="hidden items-center justify-center px-[0.6em] py-[0.3em] text-fg/75 transition hover:text-fg lg:flex"
+              aria-label="Edit widgets"
+            >
+              <LayoutGrid size={18} strokeWidth={2.5} />
+            </button>
+          )}
 
           {onAppearance && (
             <button
