@@ -147,6 +147,7 @@ export function GroupChatPage() {
     AsrInstalledWhisperModel[]
   >([]);
   const [keyboardInset, setKeyboardInset] = useState(0);
+  const [directorSelectedId, setDirectorSelectedId] = useState<string | null>(null);
   const helpMeReplyRequestIdRef = useRef<string | null>(null);
   const helpMeReplyUnlistenRef = useRef<UnlistenFn | null>(null);
   const helpMeReplyLoadingTimeoutRef = useRef<number | null>(null);
@@ -620,13 +621,6 @@ export function GroupChatPage() {
   const handleSend = useCallback(async () => {
     if (!groupSessionId || !draft.trim() || sending) return;
 
-    if (isDirectorMode) {
-      const text = draft.trim();
-      setDraft("");
-      await handleAddUserMessage(text);
-      return;
-    }
-
     const userMessage = draft.trim();
     const requestId = crypto.randomUUID();
     activeRequestIdRef.current = requestId;
@@ -773,16 +767,7 @@ export function GroupChatPage() {
       setSelectedCharacterName(null);
       setSelectedCharacterAvatarUrl(null);
     }
-  }, [
-    groupSessionId,
-    draft,
-    sending,
-    messages.length,
-    scrollToBottom,
-    triggerTypingHaptic,
-    isDirectorMode,
-    handleAddUserMessage,
-  ]);
+  }, [groupSessionId, draft, sending, messages.length, scrollToBottom, triggerTypingHaptic]);
 
   const handleRegenerate = useCallback(
     async (messageId: string, forceCharacterId?: string) => {
@@ -1007,19 +992,35 @@ export function GroupChatPage() {
     }
   }, []);
 
-  const handleDirectorTurn = useCallback(
-    async (characterId: string) => {
+  const handleDirectorTap = useCallback(
+    (characterId: string) => {
       if (sending) return;
-      const text = draft.trim();
-      if (text) {
-        setDraft("");
-        const added = await handleAddUserMessage(text);
-        if (!added) return;
+      if (draft.trim()) {
+        setDirectorSelectedId((prev) => (prev === characterId ? null : characterId));
+        return;
       }
-      await handleContinue(characterId);
+      setDirectorSelectedId(null);
+      void handleContinue(characterId);
     },
-    [sending, draft, handleAddUserMessage, handleContinue],
+    [sending, draft, handleContinue],
   );
+
+  const handleDirectorSend = useCallback(async () => {
+    if (sending) return;
+    const text = draft.trim();
+    if (!text) return;
+    setDraft("");
+    const selected = directorSelectedId;
+    setDirectorSelectedId(null);
+    const added = await handleAddUserMessage(text);
+    if (added && selected) {
+      await handleContinue(selected);
+    }
+  }, [sending, draft, directorSelectedId, handleAddUserMessage, handleContinue]);
+
+  useEffect(() => {
+    if (!isDirectorMode) setDirectorSelectedId(null);
+  }, [isDirectorMode]);
 
   const getCharacterById = useCallback(
     (characterId?: string | null): Character | undefined => {
@@ -2061,13 +2062,14 @@ export function GroupChatPage() {
         sending={sending}
         characters={groupCharacters}
         persona={currentPersona}
-        onSendMessage={handleSend}
+        onSendMessage={isDirectorMode ? handleDirectorSend : handleSend}
         onContinue={
           isDirectorMode ? undefined : messages.length > 0 ? () => handleContinue() : undefined
         }
         onAbort={handleAbort}
         directorMode={isDirectorMode}
-        onSelectSpeaker={handleDirectorTurn}
+        directorSelectedId={directorSelectedId}
+        onSelectSpeaker={handleDirectorTap}
         hasBackgroundImage={!!backgroundImageData}
         footerOverlayClassName={theme.footerOverlay}
         pendingAttachments={pendingAttachments}

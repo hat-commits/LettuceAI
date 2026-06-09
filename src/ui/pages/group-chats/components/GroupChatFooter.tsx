@@ -61,6 +61,7 @@ interface GroupChatFooterProps {
   participantsBarGap?: ParticipantsBarGap;
   participantsBarAlign?: ParticipantsBarAlign;
   directorMode?: boolean;
+  directorSelectedId?: string | null;
   onSelectSpeaker?: (characterId: string) => void;
 }
 
@@ -98,6 +99,7 @@ export function GroupChatFooter({
   participantsBarGap = "normal",
   participantsBarAlign = "left",
   directorMode = false,
+  directorSelectedId = null,
   onSelectSpeaker,
 }: GroupChatFooterProps) {
   const { t } = useI18n();
@@ -419,6 +421,7 @@ export function GroupChatFooter({
           gap={participantsBarGap}
           align={participantsBarAlign}
           directorMode={directorMode}
+          selectedId={directorSelectedId}
           onSelectSpeaker={onSelectSpeaker}
         />
       )}
@@ -531,7 +534,11 @@ export function GroupChatFooter({
                 value={draft}
                 onChange={(event) => handleDraftChange(event.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={t("groupChats.footer.messagePlaceholder")}
+                placeholder={
+                  directorMode
+                    ? t("groupChats.footer.directorPlaceholder")
+                    : t("groupChats.footer.messagePlaceholder")
+                }
                 rows={1}
                 className={cn(
                   "max-h-32 flex-1 resize-none bg-transparent py-2.5",

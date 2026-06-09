@@ -1271,6 +1271,9 @@ export const enMessages = {
       unmuteParticipant: "Unmute {{name}}",
       participantMuted: "{{name}} (muted)",
       directorSpeak: "Have {{name}} respond",
+      directorPlaceholder: "Message...",
+      directorHint: "Tap a character to have them respond",
+      directorSelectedHint: "{{name}} will respond when you send",
     },
     messageActions: {
       characterMessage: "Character Message",

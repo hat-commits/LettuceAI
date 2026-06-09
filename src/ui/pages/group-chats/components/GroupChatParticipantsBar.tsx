@@ -1,8 +1,9 @@
 import { useCallback, useMemo, useRef } from "react";
-import { VolumeX } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { VolumeX, Clapperboard } from "lucide-react";
 import { useI18n } from "../../../../core/i18n/context";
 import type { Character } from "../../../../core/storage/schemas";
-import { cn, interactive } from "../../../design-tokens";
+import { cn } from "../../../design-tokens";
 import { useAvatar } from "../../../hooks/useAvatar";
 import { AvatarImage } from "../../../components/AvatarImage";
 
@@ -80,6 +81,7 @@ interface GroupChatParticipantsBarProps {
   gap?: ParticipantsBarGap;
   align?: ParticipantsBarAlign;
   directorMode?: boolean;
+  selectedId?: string | null;
   onSelectSpeaker?: (characterId: string) => void;
 }
 
@@ -94,8 +96,10 @@ export function GroupChatParticipantsBar({
   gap = "normal",
   align = "left",
   directorMode = false,
+  selectedId = null,
   onSelectSpeaker,
 }: GroupChatParticipantsBarProps) {
+  const { t } = useI18n();
   const mentionedIds = useMemo(() => {
     if (directorMode) return new Set<string>();
     const set = new Set<string>();
@@ -106,38 +110,63 @@ export function GroupChatParticipantsBar({
   }, [characters, draft, directorMode]);
 
   const hasActiveMention = mentionedIds.size > 0;
+  const selectedName = selectedId
+    ? characters.find((c) => c.id === selectedId)?.name
+    : undefined;
 
   if (characters.length < 2) return null;
 
   return (
-    <div
-      className={cn(
-        "mb-2 flex items-center overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-        GAP_CLASS[gap],
-        ALIGN_CLASS[align],
+    <div className="mb-2">
+      {directorMode && (
+        <div className="mb-1.5 flex items-center gap-1.5 px-1.5 text-[11px] text-fg/45">
+          <Clapperboard size={12} className="text-accent/70" />
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={selectedName ?? "none"}
+              initial={{ opacity: 0, y: 3 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -3 }}
+              transition={{ duration: 0.16 }}
+            >
+              {selectedName
+                ? t("groupChats.footer.directorSelectedHint", { name: selectedName })
+                : t("groupChats.footer.directorHint")}
+            </motion.span>
+          </AnimatePresence>
+        </div>
       )}
-    >
-      {characters.map((character) => (
-        <ParticipantAvatar
-          key={character.id}
-          character={character}
-          muted={mutedCharacterIds.has(character.id)}
-          mentioned={mentionedIds.has(character.id)}
-          dimmed={
-            mutedCharacterIds.has(character.id) ||
-            (hasActiveMention && !mentionedIds.has(character.id))
-          }
-          disabled={disabled}
-          sizeClass={SIZE_CLASS[size]}
-          directorMode={directorMode}
-          onMention={() =>
-            directorMode
-              ? onSelectSpeaker?.(character.id)
-              : setDraft(toggleMention(draft, character.name))
-          }
-          onToggleMute={(muted) => onToggleMute(character.id, muted)}
-        />
-      ))}
+      <div
+        className={cn(
+          "flex items-center overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+          GAP_CLASS[gap],
+          ALIGN_CLASS[align],
+        )}
+      >
+        {characters.map((character) => (
+          <ParticipantAvatar
+            key={character.id}
+            character={character}
+            muted={mutedCharacterIds.has(character.id)}
+            mentioned={mentionedIds.has(character.id)}
+            selected={directorMode && selectedId === character.id}
+            dimmed={
+              mutedCharacterIds.has(character.id) ||
+              (hasActiveMention && !mentionedIds.has(character.id)) ||
+              (directorMode && !!selectedId && selectedId !== character.id)
+            }
+            disabled={disabled}
+            sizeClass={SIZE_CLASS[size]}
+            directorMode={directorMode}
+            onMention={() =>
+              directorMode
+                ? onSelectSpeaker?.(character.id)
+                : setDraft(toggleMention(draft, character.name))
+            }
+            onToggleMute={(muted) => onToggleMute(character.id, muted)}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -146,6 +175,7 @@ function ParticipantAvatar({
   character,
   muted,
   mentioned,
+  selected,
   dimmed,
   disabled,
   sizeClass,
@@ -156,6 +186,7 @@ function ParticipantAvatar({
   character: Character;
   muted: boolean;
   mentioned: boolean;
+  selected: boolean;
   dimmed: boolean;
   disabled: boolean;
   sizeClass: string;
@@ -202,7 +233,7 @@ function ParticipantAvatar({
         : t("groupChats.footer.mentionParticipant", { name: character.name });
 
   return (
-    <button
+    <motion.button
       type="button"
       onPointerDown={handlePointerDown}
       onPointerUp={clearTimer}
@@ -217,20 +248,22 @@ function ParticipantAvatar({
       disabled={disabled}
       title={label}
       aria-label={label}
-      className={cn(
-        "relative shrink-0 select-none",
-        sizeClass,
-        interactive.transition.default,
-        interactive.active.scale,
-        "disabled:cursor-not-allowed",
-      )}
+      animate={{ scale: selected ? 1.08 : 1 }}
+      whileTap={disabled ? undefined : { scale: 0.95 }}
+      transition={{ type: "spring", stiffness: 420, damping: 26 }}
+      className={cn("relative shrink-0 select-none", sizeClass, "disabled:cursor-not-allowed")}
     >
       <div
         className={cn(
           "h-full w-full rounded-full overflow-hidden bg-linear-to-br from-fg/8 to-fg/4",
-          "ring-2",
-          mentioned ? "ring-accent" : "ring-fg/10",
-          interactive.transition.default,
+          "ring-2 transition-all",
+          selected
+            ? "ring-accent ring-offset-2 ring-offset-surface shadow-[0_0_12px_-2px_var(--color-accent)]"
+            : mentioned
+              ? "ring-accent"
+              : directorMode
+                ? "ring-accent/25"
+                : "ring-fg/10",
           dimmed ? "opacity-40 grayscale" : "opacity-100",
         )}
       >
@@ -247,6 +280,6 @@ function ParticipantAvatar({
           <VolumeX size={11} />
         </span>
       )}
-    </button>
+    </motion.button>
   );
 }
