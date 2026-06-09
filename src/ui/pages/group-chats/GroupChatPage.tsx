@@ -2109,6 +2109,8 @@ export function GroupChatPage() {
         onToggleMute={handleToggleMute}
         participantsBarEnabled={chatAppearance.participantsBarEnabled}
         participantsBarSize={chatAppearance.participantsBarAvatarSize}
+        participantsBarShape={chatAppearance.participantsBarAvatarShape}
+        participantsBarBackground={chatAppearance.participantsBarBackground}
         participantsBarGap={chatAppearance.participantsBarGap}
         participantsBarAlign={chatAppearance.participantsBarAlign}
       />

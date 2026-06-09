@@ -696,6 +696,30 @@ export function ChatAppearanceForm({
               onReset={resetFor("participantsBarAvatarSize")}
             />
             <OptionGrid
+              label={t("chatAppearance.participantsBar.shapeLabel")}
+              value={settings.participantsBarAvatarShape}
+              options={[
+                { value: "round", label: t("chatAppearance.participantsBar.shapeRound") },
+                { value: "boxed", label: t("chatAppearance.participantsBar.shapeBoxed") },
+                { value: "rounded_box", label: t("chatAppearance.participantsBar.shapeRoundedBox") },
+              ]}
+              onChange={(v) => onUpdate("participantsBarAvatarShape", v)}
+              overridden={isOverridden("participantsBarAvatarShape")}
+              onReset={resetFor("participantsBarAvatarShape")}
+            />
+            <OptionGrid
+              label={t("chatAppearance.participantsBar.bgLabel")}
+              value={settings.participantsBarBackground}
+              options={[
+                { value: "solid", label: t("chatAppearance.participantsBar.bgSolid") },
+                { value: "fading", label: t("chatAppearance.participantsBar.bgFading") },
+                { value: "transparent", label: t("chatAppearance.participantsBar.bgTransparent") },
+              ]}
+              onChange={(v) => onUpdate("participantsBarBackground", v)}
+              overridden={isOverridden("participantsBarBackground")}
+              onReset={resetFor("participantsBarBackground")}
+            />
+            <OptionGrid
               label={t("chatAppearance.participantsBar.gapLabel")}
               value={settings.participantsBarGap}
               options={[

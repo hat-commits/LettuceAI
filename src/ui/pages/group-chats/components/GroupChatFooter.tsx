@@ -20,6 +20,8 @@ import { ChatErrorBanner } from "../../chats/components/ChatErrorBanner";
 import {
   GroupChatParticipantsBar,
   type ParticipantsBarSize,
+  type ParticipantsBarShape,
+  type ParticipantsBarBackground,
   type ParticipantsBarGap,
   type ParticipantsBarAlign,
 } from "./GroupChatParticipantsBar";
@@ -58,6 +60,8 @@ interface GroupChatFooterProps {
   onToggleMute?: (characterId: string, muted: boolean) => void;
   participantsBarEnabled?: boolean;
   participantsBarSize?: ParticipantsBarSize;
+  participantsBarShape?: ParticipantsBarShape;
+  participantsBarBackground?: ParticipantsBarBackground;
   participantsBarGap?: ParticipantsBarGap;
   participantsBarAlign?: ParticipantsBarAlign;
   directorMode?: boolean;
@@ -98,6 +102,8 @@ export function GroupChatFooter({
   onToggleMute,
   participantsBarEnabled = true,
   participantsBarSize = "medium",
+  participantsBarShape = "round",
+  participantsBarBackground = "transparent",
   participantsBarGap = "normal",
   participantsBarAlign = "left",
   directorMode = false,
@@ -416,15 +422,21 @@ export function GroupChatFooter({
 
       {!micActive && onToggleMute && (participantsBarEnabled || directorMode) && (
         <div className="pointer-events-none absolute inset-x-0 bottom-full">
-          <div
-            aria-hidden
-            className={cn(
-              "absolute inset-0",
-              hasBackgroundImage
-                ? "bg-gradient-to-t from-black/45 via-black/20 to-transparent"
-                : "bg-gradient-to-t from-surface via-surface/70 to-transparent",
-            )}
-          />
+          {participantsBarBackground !== "transparent" && (
+            <div
+              aria-hidden
+              className={cn(
+                "absolute inset-0",
+                participantsBarBackground === "solid"
+                  ? hasBackgroundImage
+                    ? "bg-black/55"
+                    : "bg-surface"
+                  : hasBackgroundImage
+                    ? "bg-gradient-to-t from-black/45 via-black/20 to-transparent"
+                    : "bg-gradient-to-t from-surface via-surface/70 to-transparent",
+              )}
+            />
+          )}
           <div className="pointer-events-auto relative px-4">
             <GroupChatParticipantsBar
               characters={characters}
@@ -434,6 +446,7 @@ export function GroupChatFooter({
               onToggleMute={onToggleMute}
               disabled={sending || composerDisabled}
               size={participantsBarSize}
+              shape={participantsBarShape}
               gap={participantsBarGap}
               align={participantsBarAlign}
               directorMode={directorMode}

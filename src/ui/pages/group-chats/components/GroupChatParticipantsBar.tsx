@@ -51,11 +51,19 @@ function toggleMention(draft: string, name: string): string {
 export type ParticipantsBarSize = "small" | "medium" | "large";
 export type ParticipantsBarGap = "tight" | "normal" | "relaxed";
 export type ParticipantsBarAlign = "left" | "center" | "right";
+export type ParticipantsBarShape = "round" | "boxed" | "rounded_box";
+export type ParticipantsBarBackground = "solid" | "fading" | "transparent";
 
 const SIZE_CLASS: Record<ParticipantsBarSize, string> = {
   small: "h-10 w-10",
   medium: "h-12 w-12",
   large: "h-14 w-14",
+};
+
+const SHAPE_CLASS: Record<ParticipantsBarShape, string> = {
+  round: "rounded-full",
+  boxed: "rounded-none",
+  rounded_box: "rounded-xl",
 };
 
 const GAP_CLASS: Record<ParticipantsBarGap, string> = {
@@ -78,6 +86,7 @@ interface GroupChatParticipantsBarProps {
   onToggleMute: (characterId: string, muted: boolean) => void;
   disabled?: boolean;
   size?: ParticipantsBarSize;
+  shape?: ParticipantsBarShape;
   gap?: ParticipantsBarGap;
   align?: ParticipantsBarAlign;
   directorMode?: boolean;
@@ -95,6 +104,7 @@ export function GroupChatParticipantsBar({
   onToggleMute,
   disabled = false,
   size = "medium",
+  shape = "round",
   gap = "normal",
   align = "left",
   directorMode = false,
@@ -182,6 +192,7 @@ export function GroupChatParticipantsBar({
                 }
                 disabled={disabled}
                 sizeClass={SIZE_CLASS[size]}
+                shapeClass={SHAPE_CLASS[shape]}
                 directorMode={directorMode}
                 onMention={() =>
                   directorMode
@@ -206,6 +217,7 @@ function ParticipantAvatar({
   dimmed,
   disabled,
   sizeClass,
+  shapeClass,
   directorMode,
   onMention,
   onToggleMute,
@@ -217,6 +229,7 @@ function ParticipantAvatar({
   dimmed: boolean;
   disabled: boolean;
   sizeClass: string;
+  shapeClass: string;
   directorMode: boolean;
   onMention: () => void;
   onToggleMute: (muted: boolean) => void;
@@ -282,7 +295,8 @@ function ParticipantAvatar({
     >
       <div
         className={cn(
-          "h-full w-full rounded-full overflow-hidden bg-transparent",
+          "h-full w-full overflow-hidden bg-transparent",
+          shapeClass,
           "ring-2 transition-all",
           selected
             ? "ring-accent shadow-[0_0_10px_-1px_var(--color-accent)]"
