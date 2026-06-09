@@ -6546,6 +6546,18 @@ async fn generate_character_response(
 }
 
 #[tauri::command]
+pub fn group_chat_add_user_message(
+    session_id: String,
+    user_message: String,
+    pool: State<'_, SwappablePool>,
+) -> Result<String, String> {
+    let conn = pool.get_connection()?;
+    let message = save_user_message(&conn, &session_id, &user_message)?;
+    serde_json::to_string(&message)
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))
+}
+
+#[tauri::command]
 pub async fn group_chat_send(
     app: AppHandle,
     session_id: String,

@@ -19,6 +19,7 @@ import {
   VolumeX,
   BookOpen,
   NotebookPen,
+  Clapperboard,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -611,7 +612,7 @@ export function GroupChatSettingsPage({
               title={t("groupChats.sessionSettings.speakerSelection")}
               subtitle={t("groupChats.sessionSettings.speakerSubtitle")}
             />
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {(
                 [
                   {
@@ -631,6 +632,12 @@ export function GroupChatSettingsPage({
                     label: t("groupChats.sessionSettings.roundRobin"),
                     desc: t("groupChats.sessionSettings.takeTurns"),
                     icon: RefreshCw,
+                  },
+                  {
+                    value: "director" as const,
+                    label: t("groupChats.sessionSettings.director"),
+                    desc: t("groupChats.sessionSettings.youPick"),
+                    icon: Clapperboard,
                   },
                 ] as const
               ).map((option) => (
@@ -676,7 +683,9 @@ export function GroupChatSettingsPage({
                 ? t("groupChats.sessionSettings.llmDesc")
                 : session.speakerSelectionMethod === "heuristic"
                   ? t("groupChats.sessionSettings.heuristicDesc")
-                  : t("groupChats.sessionSettings.roundRobinDesc")}
+                  : session.speakerSelectionMethod === "director"
+                    ? t("groupChats.sessionSettings.directorDesc")
+                    : t("groupChats.sessionSettings.roundRobinDesc")}
             </p>
           </section>
 

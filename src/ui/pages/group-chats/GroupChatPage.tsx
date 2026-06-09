@@ -577,8 +577,55 @@ export function GroupChatPage() {
     scrollToBottom("auto");
   }, [isAtBottom, isGenerating, scrollToBottom]);
 
+  const isDirectorMode = session?.speakerSelectionMethod === "director";
+
+  const handleAddUserMessage = useCallback(
+    async (text: string): Promise<boolean> => {
+      if (!groupSessionId) return false;
+      const trimmed = text.trim();
+      if (!trimmed) return false;
+      const tempUserMessage: GroupMessage = {
+        id: `temp-user-${Date.now()}`,
+        sessionId: groupSessionId,
+        role: "user",
+        content: trimmed,
+        speakerCharacterId: null,
+        turnNumber: messages.length + 1,
+        createdAt: Date.now(),
+        usage: undefined,
+        variants: undefined,
+        selectedVariantId: undefined,
+        isPinned: false,
+        attachments: [],
+        reasoning: null,
+        selectionReasoning: null,
+      };
+      setMessages((prev) => [...prev, tempUserMessage]);
+      scrollToBottom();
+      try {
+        await storageBridge.groupChatAddUserMessage(groupSessionId, trimmed);
+        const updated = await storageBridge.groupMessagesList(groupSessionId, MESSAGES_PAGE_SIZE);
+        setMessages(updated);
+        return true;
+      } catch (err) {
+        console.error("Failed to add user message:", err);
+        setError(err instanceof Error ? err.message : "Failed to add message");
+        setMessages((prev) => prev.filter((m) => m.id !== tempUserMessage.id));
+        return false;
+      }
+    },
+    [groupSessionId, messages.length, scrollToBottom],
+  );
+
   const handleSend = useCallback(async () => {
     if (!groupSessionId || !draft.trim() || sending) return;
+
+    if (isDirectorMode) {
+      const text = draft.trim();
+      setDraft("");
+      await handleAddUserMessage(text);
+      return;
+    }
 
     const userMessage = draft.trim();
     const requestId = crypto.randomUUID();
@@ -726,7 +773,16 @@ export function GroupChatPage() {
       setSelectedCharacterName(null);
       setSelectedCharacterAvatarUrl(null);
     }
-  }, [groupSessionId, draft, sending, messages.length, scrollToBottom, triggerTypingHaptic]);
+  }, [
+    groupSessionId,
+    draft,
+    sending,
+    messages.length,
+    scrollToBottom,
+    triggerTypingHaptic,
+    isDirectorMode,
+    handleAddUserMessage,
+  ]);
 
   const handleRegenerate = useCallback(
     async (messageId: string, forceCharacterId?: string) => {
@@ -950,6 +1006,20 @@ export function GroupChatPage() {
       console.error("Failed to abort group chat request:", err);
     }
   }, []);
+
+  const handleDirectorTurn = useCallback(
+    async (characterId: string) => {
+      if (sending) return;
+      const text = draft.trim();
+      if (text) {
+        setDraft("");
+        const added = await handleAddUserMessage(text);
+        if (!added) return;
+      }
+      await handleContinue(characterId);
+    },
+    [sending, draft, handleAddUserMessage, handleContinue],
+  );
 
   const getCharacterById = useCallback(
     (characterId?: string | null): Character | undefined => {
@@ -1992,8 +2062,12 @@ export function GroupChatPage() {
         characters={groupCharacters}
         persona={currentPersona}
         onSendMessage={handleSend}
-        onContinue={messages.length > 0 ? () => handleContinue() : undefined}
+        onContinue={
+          isDirectorMode ? undefined : messages.length > 0 ? () => handleContinue() : undefined
+        }
         onAbort={handleAbort}
+        directorMode={isDirectorMode}
+        onSelectSpeaker={handleDirectorTurn}
         hasBackgroundImage={!!backgroundImageData}
         footerOverlayClassName={theme.footerOverlay}
         pendingAttachments={pendingAttachments}

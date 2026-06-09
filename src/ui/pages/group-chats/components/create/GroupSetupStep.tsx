@@ -9,6 +9,7 @@ import {
   BarChart3,
   RefreshCw,
   BookOpen,
+  Clapperboard,
 } from "lucide-react";
 import { useI18n } from "../../../../../core/i18n/context";
 import { typography, radius, spacing, interactive, shadows, cn } from "../../../../design-tokens";
@@ -19,8 +20,8 @@ interface GroupSetupStepProps {
   onChatTypeChange: (value: "conversation" | "roleplay") => void;
   memoryType: "manual" | "dynamic";
   onMemoryTypeChange: (value: "manual" | "dynamic") => void;
-  speakerSelectionMethod: "llm" | "heuristic" | "round_robin";
-  onSpeakerSelectionMethodChange: (value: "llm" | "heuristic" | "round_robin") => void;
+  speakerSelectionMethod: "llm" | "heuristic" | "round_robin" | "director";
+  onSpeakerSelectionMethodChange: (value: "llm" | "heuristic" | "round_robin" | "director") => void;
   groupName: string;
   onGroupNameChange: (value: string) => void;
   backgroundImagePath: string;
@@ -221,7 +222,7 @@ export function GroupSetupStep({
           {t("groupChats.create.groupSetup.speakerSelection")}
         </label>
 
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {(
             [
               {
@@ -241,6 +242,12 @@ export function GroupSetupStep({
                 label: t("groupChats.create.groupSetup.roundRobin"),
                 desc: t("groupChats.create.groupSetup.takeTurns"),
                 icon: RefreshCw,
+              },
+              {
+                value: "director" as const,
+                label: t("groupChats.sessionSettings.director"),
+                desc: t("groupChats.sessionSettings.youPick"),
+                icon: Clapperboard,
               },
             ] as const
           ).map((option) => (

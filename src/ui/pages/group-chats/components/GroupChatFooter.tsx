@@ -60,6 +60,8 @@ interface GroupChatFooterProps {
   participantsBarSize?: ParticipantsBarSize;
   participantsBarGap?: ParticipantsBarGap;
   participantsBarAlign?: ParticipantsBarAlign;
+  directorMode?: boolean;
+  onSelectSpeaker?: (characterId: string) => void;
 }
 
 export function GroupChatFooter({
@@ -95,6 +97,8 @@ export function GroupChatFooter({
   participantsBarSize = "medium",
   participantsBarGap = "normal",
   participantsBarAlign = "left",
+  directorMode = false,
+  onSelectSpeaker,
 }: GroupChatFooterProps) {
   const { t } = useI18n();
   const hasDraft = draft.trim().length > 0;
@@ -130,6 +134,8 @@ export function GroupChatFooter({
   const handleDraftChange = useCallback(
     (value: string) => {
       setDraft(value);
+
+      if (directorMode) return;
 
       // Check for @ mention trigger
       const textarea = textareaRef.current;
@@ -175,7 +181,7 @@ export function GroupChatFooter({
       setMentionQuery("");
       setMentionStartIndex(-1);
     },
-    [setDraft],
+    [setDraft, directorMode],
   );
 
   // Insert selected character mention
@@ -401,7 +407,7 @@ export function GroupChatFooter({
         onChange={handleFileSelect}
       />
 
-      {!micActive && onToggleMute && participantsBarEnabled && (
+      {!micActive && onToggleMute && (participantsBarEnabled || directorMode) && (
         <GroupChatParticipantsBar
           characters={characters}
           draft={draft}
@@ -412,6 +418,8 @@ export function GroupChatFooter({
           size={participantsBarSize}
           gap={participantsBarGap}
           align={participantsBarAlign}
+          directorMode={directorMode}
+          onSelectSpeaker={onSelectSpeaker}
         />
       )}
 

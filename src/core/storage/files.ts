@@ -626,7 +626,7 @@ export const storageBridge = {
     chatType?: "conversation" | "roleplay",
     startingScene?: any | null,
     backgroundImagePath?: string | null,
-    speakerSelectionMethod?: "llm" | "heuristic" | "round_robin" | null,
+    speakerSelectionMethod?: "llm" | "heuristic" | "round_robin" | "director" | null,
   ) =>
     invoke<string>("group_create", {
       name,
@@ -649,7 +649,7 @@ export const storageBridge = {
     chatType?: "conversation" | "roleplay",
     startingScene?: any | null,
     backgroundImagePath?: string | null,
-    speakerSelectionMethod?: "llm" | "heuristic" | "round_robin" | null,
+    speakerSelectionMethod?: "llm" | "heuristic" | "round_robin" | "director" | null,
     mutedCharacterIds?: string[] | null,
   ) =>
     invoke<string>("group_update", {
@@ -670,7 +670,7 @@ export const storageBridge = {
     invoke("group_update_persona", { id, personaId }) as Promise<void>,
   groupUpdateSpeakerSelectionMethod: (
     id: string,
-    speakerSelectionMethod: "llm" | "heuristic" | "round_robin",
+    speakerSelectionMethod: "llm" | "heuristic" | "round_robin" | "director",
   ) =>
     invoke("group_update_speaker_selection_method", {
       id,
@@ -715,7 +715,7 @@ export const storageBridge = {
     chatType?: "conversation" | "roleplay",
     startingScene?: any | null,
     backgroundImagePath?: string | null,
-    speakerSelectionMethod?: "llm" | "heuristic" | "round_robin" | null,
+    speakerSelectionMethod?: "llm" | "heuristic" | "round_robin" | "director" | null,
   ) =>
     invoke<string>("group_session_create", {
       name,
@@ -798,7 +798,7 @@ export const storageBridge = {
     }).then((s) => JSON.parse(s)),
   groupSessionUpdateSpeakerSelectionMethod: (
     sessionId: string,
-    speakerSelectionMethod: "llm" | "heuristic" | "round_robin",
+    speakerSelectionMethod: "llm" | "heuristic" | "round_robin" | "director",
   ) =>
     invoke<string>("group_session_update_speaker_selection_method", {
       sessionId,
@@ -867,6 +867,11 @@ export const storageBridge = {
       userMessage,
       stream: stream ?? true,
       requestId: requestId ?? null,
+    }).then((s) => JSON.parse(s)),
+  groupChatAddUserMessage: (sessionId: string, userMessage: string) =>
+    invoke<string>("group_chat_add_user_message", {
+      sessionId,
+      userMessage,
     }).then((s) => JSON.parse(s)),
   groupChatRegenerate: (
     sessionId: string,

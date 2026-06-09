@@ -79,6 +79,8 @@ interface GroupChatParticipantsBarProps {
   size?: ParticipantsBarSize;
   gap?: ParticipantsBarGap;
   align?: ParticipantsBarAlign;
+  directorMode?: boolean;
+  onSelectSpeaker?: (characterId: string) => void;
 }
 
 export function GroupChatParticipantsBar({
@@ -91,14 +93,17 @@ export function GroupChatParticipantsBar({
   size = "medium",
   gap = "normal",
   align = "left",
+  directorMode = false,
+  onSelectSpeaker,
 }: GroupChatParticipantsBarProps) {
   const mentionedIds = useMemo(() => {
+    if (directorMode) return new Set<string>();
     const set = new Set<string>();
     for (const character of characters) {
       if (findMention(draft, character.name)) set.add(character.id);
     }
     return set;
-  }, [characters, draft]);
+  }, [characters, draft, directorMode]);
 
   const hasActiveMention = mentionedIds.size > 0;
 
@@ -124,7 +129,12 @@ export function GroupChatParticipantsBar({
           }
           disabled={disabled}
           sizeClass={SIZE_CLASS[size]}
-          onMention={() => setDraft(toggleMention(draft, character.name))}
+          directorMode={directorMode}
+          onMention={() =>
+            directorMode
+              ? onSelectSpeaker?.(character.id)
+              : setDraft(toggleMention(draft, character.name))
+          }
           onToggleMute={(muted) => onToggleMute(character.id, muted)}
         />
       ))}
@@ -139,6 +149,7 @@ function ParticipantAvatar({
   dimmed,
   disabled,
   sizeClass,
+  directorMode,
   onMention,
   onToggleMute,
 }: {
@@ -148,6 +159,7 @@ function ParticipantAvatar({
   dimmed: boolean;
   disabled: boolean;
   sizeClass: string;
+  directorMode: boolean;
   onMention: () => void;
   onToggleMute: (muted: boolean) => void;
 }) {
@@ -181,11 +193,13 @@ function ParticipantAvatar({
     if (!disabled) onMention();
   }, [clearTimer, disabled, onMention]);
 
-  const label = muted
-    ? t("groupChats.footer.participantMuted", { name: character.name })
-    : mentioned
-      ? t("groupChats.footer.removeMention", { name: character.name })
-      : t("groupChats.footer.mentionParticipant", { name: character.name });
+  const label = directorMode
+    ? t("groupChats.footer.directorSpeak", { name: character.name })
+    : muted
+      ? t("groupChats.footer.participantMuted", { name: character.name })
+      : mentioned
+        ? t("groupChats.footer.removeMention", { name: character.name })
+        : t("groupChats.footer.mentionParticipant", { name: character.name });
 
   return (
     <button
