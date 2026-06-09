@@ -62,10 +62,7 @@ interface GroupChatFooterProps {
   participantsBarAlign?: ParticipantsBarAlign;
   directorMode?: boolean;
   directorSelectedId?: string | null;
-  directorActionSide?: "left" | "right";
   onSelectSpeaker?: (characterId: string) => void;
-  onConfirmSpeaker?: (characterId: string) => void;
-  onCancelSpeaker?: () => void;
 }
 
 export function GroupChatFooter({
@@ -103,14 +100,12 @@ export function GroupChatFooter({
   participantsBarAlign = "left",
   directorMode = false,
   directorSelectedId = null,
-  directorActionSide = "right",
   onSelectSpeaker,
-  onConfirmSpeaker,
-  onCancelSpeaker,
 }: GroupChatFooterProps) {
   const { t } = useI18n();
   const hasDraft = draft.trim().length > 0;
   const hasAttachments = pendingAttachments.length > 0;
+  const canSend = hasDraft || hasAttachments || (directorMode && !!directorSelectedId);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -246,7 +241,7 @@ export function GroupChatFooter({
 
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
-      if (!sending && (hasDraft || hasAttachments)) {
+      if (!sending && (canSend)) {
         onSendMessage();
       } else if (!sending && onContinue && !hasDraft && !hasAttachments) {
         onContinue();
@@ -297,7 +292,7 @@ export function GroupChatFooter({
   const handleSendClick = () => {
     if (sending && onAbort) {
       onAbort();
-    } else if (hasDraft || hasAttachments) {
+    } else if (canSend) {
       onSendMessage();
     } else if (onContinue) {
       onContinue();
@@ -439,10 +434,7 @@ export function GroupChatFooter({
               align={participantsBarAlign}
               directorMode={directorMode}
               selectedId={directorSelectedId}
-              actionSide={directorActionSide}
               onSelectSpeaker={onSelectSpeaker}
-              onConfirmSpeaker={onConfirmSpeaker}
-              onCancelSpeaker={onCancelSpeaker}
             />
           </div>
         </div>
@@ -601,7 +593,7 @@ export function GroupChatFooter({
                   interactive.active.scale,
                   sending && onAbort
                     ? "bg-red-400/90 text-white hover:brightness-110"
-                    : hasDraft || hasAttachments
+                    : canSend
                       ? "bg-accent text-black shadow-sm hover:brightness-110"
                       : "bg-fg/15 text-fg/55 hover:bg-fg/20",
                   "disabled:cursor-not-allowed disabled:opacity-40",
@@ -609,7 +601,7 @@ export function GroupChatFooter({
                 title={
                   sending && onAbort
                     ? t("groupChats.footer.stopGeneration")
-                    : hasDraft || hasAttachments
+                    : canSend
                       ? t("groupChats.footer.sendMessage")
                       : onContinue
                         ? t("groupChats.footer.continueConversation")
@@ -618,7 +610,7 @@ export function GroupChatFooter({
                 aria-label={
                   sending && onAbort
                     ? t("groupChats.footer.stopGeneration")
-                    : hasDraft || hasAttachments
+                    : canSend
                       ? t("groupChats.footer.sendMessage")
                       : onContinue
                         ? t("groupChats.footer.continueConversation")
@@ -629,7 +621,7 @@ export function GroupChatFooter({
                   <Square size={16} fill="currentColor" />
                 ) : sending ? (
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                ) : hasDraft || hasAttachments ? (
+                ) : canSend ? (
                   <ArrowUp size={18} strokeWidth={2.75} />
                 ) : onContinue ? (
                   <ChevronsRight size={18} />

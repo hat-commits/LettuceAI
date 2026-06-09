@@ -719,17 +719,6 @@ export function ChatAppearanceForm({
               overridden={isOverridden("participantsBarAlign")}
               onReset={resetFor("participantsBarAlign")}
             />
-            <OptionGrid
-              label={t("chatAppearance.participantsBar.actionSideLabel")}
-              value={settings.participantsBarActionSide}
-              options={[
-                { value: "left", label: t("chatAppearance.layout.chatColumn.align.left") },
-                { value: "right", label: t("chatAppearance.layout.chatColumn.align.right") },
-              ]}
-              onChange={(v) => onUpdate("participantsBarActionSide", v)}
-              overridden={isOverridden("participantsBarActionSide")}
-              onReset={resetFor("participantsBarActionSide")}
-            />
           </>
         )}
       </div>

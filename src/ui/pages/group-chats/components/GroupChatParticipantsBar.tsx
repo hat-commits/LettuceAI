@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { VolumeX, Clapperboard, Check, X } from "lucide-react";
+import { VolumeX, Clapperboard } from "lucide-react";
 import { useI18n } from "../../../../core/i18n/context";
 import type { Character } from "../../../../core/storage/schemas";
 import { cn } from "../../../design-tokens";
@@ -82,10 +82,7 @@ interface GroupChatParticipantsBarProps {
   align?: ParticipantsBarAlign;
   directorMode?: boolean;
   selectedId?: string | null;
-  actionSide?: "left" | "right";
   onSelectSpeaker?: (characterId: string) => void;
-  onConfirmSpeaker?: (characterId: string) => void;
-  onCancelSpeaker?: () => void;
 }
 
 export function GroupChatParticipantsBar({
@@ -100,10 +97,7 @@ export function GroupChatParticipantsBar({
   align = "left",
   directorMode = false,
   selectedId = null,
-  actionSide = "right",
   onSelectSpeaker,
-  onConfirmSpeaker,
-  onCancelSpeaker,
 }: GroupChatParticipantsBarProps) {
   const { t } = useI18n();
   const mentionedIds = useMemo(() => {
@@ -122,27 +116,16 @@ export function GroupChatParticipantsBar({
 
   if (characters.length < 2) return null;
 
-  const actions = (
-    <DirectorActions
-      onConfirm={() => selectedId && onConfirmSpeaker?.(selectedId)}
-      onCancel={() => onCancelSpeaker?.()}
-    />
-  );
-
   return (
     <div className="mb-1">
-      <div className="flex items-center gap-2">
-        {actionSide === "left" && (
-          <AnimatePresence>{!!selectedId && actions}</AnimatePresence>
+      <div
+        className={cn(
+          "flex items-center overflow-x-auto px-1 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+          GAP_CLASS[gap],
+          ALIGN_CLASS[align],
         )}
-        <div
-          className={cn(
-            "flex min-w-0 flex-1 items-center overflow-x-auto px-1 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-            GAP_CLASS[gap],
-            ALIGN_CLASS[align],
-          )}
-        >
-          {characters.map((character) => {
+      >
+        {characters.map((character) => {
             const isSelected = directorMode && selectedId === character.id;
             const otherSelected = directorMode && !!selectedId && selectedId !== character.id;
             return (
@@ -169,10 +152,6 @@ export function GroupChatParticipantsBar({
               />
             );
           })}
-        </div>
-        {actionSide === "right" && (
-          <AnimatePresence>{!!selectedId && actions}</AnimatePresence>
-        )}
       </div>
       {directorMode && (
         <div className="mt-1 flex items-center gap-1.5 px-1.5 text-[11px] text-fg/55 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
@@ -306,48 +285,5 @@ function ParticipantAvatar({
         </span>
       )}
     </motion.button>
-  );
-}
-
-function DirectorActions({
-  onConfirm,
-  onCancel,
-}: {
-  onConfirm: () => void;
-  onCancel: () => void;
-}) {
-  return (
-    <motion.div
-      className="flex shrink-0 items-center gap-1"
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.8 }}
-      transition={{ type: "spring", stiffness: 420, damping: 26 }}
-    >
-      <button
-        type="button"
-        onClick={onConfirm}
-        aria-label="Confirm"
-        className={cn(
-          "flex h-8 w-8 items-center justify-center rounded-full",
-          "bg-accent text-black shadow-sm",
-          "transition-transform active:scale-90 hover:brightness-110",
-        )}
-      >
-        <Check size={16} strokeWidth={2.75} />
-      </button>
-      <button
-        type="button"
-        onClick={onCancel}
-        aria-label="Cancel"
-        className={cn(
-          "flex h-8 w-8 items-center justify-center rounded-full",
-          "bg-fg/15 text-fg/70",
-          "transition-transform active:scale-90 hover:bg-fg/25 hover:text-fg",
-        )}
-      >
-        <X size={16} strokeWidth={2.75} />
-      </button>
-    </motion.div>
   );
 }

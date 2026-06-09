@@ -1273,7 +1273,7 @@ export const enMessages = {
       directorSpeak: "Have {{name}} respond",
       directorPlaceholder: "Message...",
       directorHint: "Tap a character to have them respond",
-      directorSelectedHint: "Confirm to have {{name}} respond",
+      directorSelectedHint: "{{name}} will respond when you send",
     },
     messageActions: {
       characterMessage: "Character Message",
@@ -3283,7 +3283,6 @@ export const enMessages = {
       sizeLabel: "Avatar Size",
       gapLabel: "Avatar Spacing",
       alignLabel: "Alignment",
-      actionSideLabel: "Director Buttons Side",
     },
     colors: {
       label: "Colors",

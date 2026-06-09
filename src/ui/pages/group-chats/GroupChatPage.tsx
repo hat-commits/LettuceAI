@@ -1000,33 +1000,21 @@ export function GroupChatPage() {
     [sending],
   );
 
-  const handleDirectorConfirm = useCallback(
-    async (characterId: string) => {
-      if (sending) return;
-      setDirectorSelectedId(null);
-      const text = draft.trim();
-      if (text) {
-        setDraft("");
-        const added = await handleAddUserMessage(text);
-        if (!added) return;
-      }
-      await handleContinue(characterId);
-    },
-    [sending, draft, handleAddUserMessage, handleContinue],
-  );
-
-  const handleDirectorCancel = useCallback(() => {
-    setDirectorSelectedId(null);
-  }, []);
-
   const handleDirectorSend = useCallback(async () => {
     if (sending) return;
     const text = draft.trim();
-    if (!text) return;
-    setDraft("");
+    const selected = directorSelectedId;
+    if (!text && !selected) return;
+    if (text) setDraft("");
     setDirectorSelectedId(null);
-    await handleAddUserMessage(text);
-  }, [sending, draft, handleAddUserMessage]);
+    if (text) {
+      const added = await handleAddUserMessage(text);
+      if (!added) return;
+    }
+    if (selected) {
+      await handleContinue(selected);
+    }
+  }, [sending, draft, directorSelectedId, handleAddUserMessage, handleContinue]);
 
   useEffect(() => {
     if (!isDirectorMode) setDirectorSelectedId(null);
@@ -2086,10 +2074,7 @@ export function GroupChatPage() {
         onAbort={handleAbort}
         directorMode={isDirectorMode}
         directorSelectedId={directorSelectedId}
-        directorActionSide={chatAppearance.participantsBarActionSide}
         onSelectSpeaker={handleDirectorTap}
-        onConfirmSpeaker={handleDirectorConfirm}
-        onCancelSpeaker={handleDirectorCancel}
         hasBackgroundImage={!!backgroundImageData}
         footerOverlayClassName={theme.footerOverlay}
         pendingAttachments={pendingAttachments}
