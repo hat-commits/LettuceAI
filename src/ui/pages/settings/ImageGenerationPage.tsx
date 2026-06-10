@@ -1,8 +1,6 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ChevronDown, HardDrive, Image, LucideIcon, PenLine, Sparkles } from "lucide-react";
-
-import { LocalImageGenSection } from "./LocalImageGenSection";
+import { Check, ChevronDown, Image, LucideIcon, PenLine, Sparkles } from "lucide-react";
 
 import { ModelSelectionBottomMenu } from "../../components/ModelSelectionBottomMenu";
 import {
@@ -539,16 +537,6 @@ export function ImageGenerationPage() {
                     ) : null}
                   </AnimatePresence>
                 </div>
-              </SettingsSection>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.22, delay: 0.12, ease: "easeOut" }}
-            >
-              <SettingsSection title="Local Generation" icon={<HardDrive size={12} />}>
-                <LocalImageGenSection />
               </SettingsSection>
             </motion.div>
           </div>

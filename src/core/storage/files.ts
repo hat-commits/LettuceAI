@@ -28,32 +28,6 @@ async function writeJsonCommand(
   await invoke(command, { data: payload, ...(args ?? {}) });
 }
 
-export interface SdcppConfig {
-  backend: string;
-  port?: number | null;
-  fullModelPath?: string | null;
-  diffusionModelPath?: string | null;
-  vaePath?: string | null;
-  llmPath?: string | null;
-  clipLPath?: string | null;
-  clipGPath?: string | null;
-  t5xxlPath?: string | null;
-  offloadToCpu: boolean;
-  flashAttention: boolean;
-  keepAliveMinutes?: number | null;
-  extraArgs?: string | null;
-}
-
-export interface SdcppStatus {
-  binaryInstalled: boolean;
-  binaryTag?: string | null;
-  binaryBackend?: string | null;
-  modelConfigured: boolean;
-  serverRunning: boolean;
-  serverReady: boolean;
-  baseUrl?: string | null;
-}
-
 export const storageBridge = {
   readSettings: <T>(fallback: T) =>
     readJsonCommand<T>("storage_read_settings", undefined, fallback).then((res) => res ?? fallback),
@@ -499,18 +473,6 @@ export const storageBridge = {
       estimatedSessions: number;
       lastUpdatedMs: number | null;
     }>,
-
-  // Local image generation (stable-diffusion.cpp sidecar)
-  sdcppGetConfig: () => invoke<SdcppConfig>("sdcpp_get_config"),
-  sdcppSetConfig: (config: SdcppConfig) =>
-    invoke("sdcpp_set_config", { config }) as Promise<void>,
-  sdcppGetStatus: () => invoke<SdcppStatus>("sdcpp_get_status"),
-  sdcppDownloadBinary: (backend?: string | null) =>
-    invoke<string>("sdcpp_download_binary", { backend: backend ?? null }),
-  sdcppStartServer: () => invoke<string>("sdcpp_start_server"),
-  sdcppStopServer: () => invoke("sdcpp_stop_server") as Promise<void>,
-  sdcppListModelFiles: () =>
-    invoke<{ name: string; path: string; sizeBytes: string }[]>("sdcpp_list_model_files"),
 
   // Search
   searchMessages: (sessionId: string, query: string) =>
