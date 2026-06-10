@@ -580,7 +580,11 @@ export function GroupChatPage() {
     scrollToBottom("auto");
   }, [isAtBottom, isGenerating, scrollToBottom]);
 
-  const isDirectorMode = session?.speakerSelectionMethod === "director";
+  const isDirectorMode =
+    session?.speakerSelectionMethod === "director" ||
+    session?.speakerSelectionMethod === "director_action";
+  const directorBehavior: "cue" | "action" =
+    session?.speakerSelectionMethod === "director_action" ? "action" : "cue";
 
   const handleAddUserMessage = useCallback(
     async (text: string): Promise<boolean> => {
@@ -994,13 +998,49 @@ export function GroupChatPage() {
     }
   }, []);
 
+  const handleDirectorAction = useCallback(
+    async (characterId: string) => {
+      if (sending) return;
+      if (!session?.characterIds.includes(characterId)) return;
+      const text = draft.trim();
+      if (text) {
+        setDraft("");
+        const added = await handleAddUserMessage(text);
+        if (!added) {
+          setDraft(text);
+          return;
+        }
+      }
+      setDirectorSelectedId(characterId);
+      try {
+        await handleContinue(characterId);
+      } finally {
+        setDirectorSelectedId(null);
+      }
+    },
+    [sending, session, draft, setDraft, handleAddUserMessage, handleContinue],
+  );
+
   const handleDirectorTap = useCallback(
     (characterId: string) => {
       if (sending) return;
+      if (directorBehavior === "action") {
+        void handleDirectorAction(characterId);
+        return;
+      }
       setDirectorSelectedId(characterId);
     },
-    [sending],
+    [sending, directorBehavior, handleDirectorAction],
   );
+
+  const handleDirectorAddMessage = useCallback(async () => {
+    if (sending) return;
+    const text = draft.trim();
+    if (!text) return;
+    setDraft("");
+    const added = await handleAddUserMessage(text);
+    if (!added) setDraft(text);
+  }, [sending, draft, setDraft, handleAddUserMessage]);
 
   const handleDirectorSend = useCallback(async () => {
     if (sending) return;
@@ -1022,8 +1062,8 @@ export function GroupChatPage() {
   }, [sending, draft, directorSelectedId, session, handleAddUserMessage, handleContinue]);
 
   useEffect(() => {
-    if (!isDirectorMode) setDirectorSelectedId(null);
-  }, [isDirectorMode]);
+    setDirectorSelectedId(null);
+  }, [isDirectorMode, directorBehavior]);
 
   const getCharacterById = useCallback(
     (characterId?: string | null): Character | undefined => {
@@ -2072,12 +2112,19 @@ export function GroupChatPage() {
         sending={sending}
         characters={groupCharacters}
         persona={currentPersona}
-        onSendMessage={isDirectorMode ? handleDirectorSend : handleSend}
+        onSendMessage={
+          isDirectorMode
+            ? directorBehavior === "action"
+              ? handleDirectorAddMessage
+              : handleDirectorSend
+            : handleSend
+        }
         onContinue={
           isDirectorMode ? undefined : messages.length > 0 ? () => handleContinue() : undefined
         }
         onAbort={handleAbort}
         directorMode={isDirectorMode}
+        directorBehavior={directorBehavior}
         directorSelectedId={directorSelectedId}
         directorWiggleNonce={directorWiggleNonce}
         directorHintPosition={chatAppearance.participantsBarHintPosition}

@@ -65,6 +65,7 @@ interface GroupChatFooterProps {
   participantsBarGap?: ParticipantsBarGap;
   participantsBarAlign?: ParticipantsBarAlign;
   directorMode?: boolean;
+  directorBehavior?: "cue" | "action";
   directorSelectedId?: string | null;
   directorWiggleNonce?: number;
   directorHintPosition?: "top" | "bottom" | "hidden";
@@ -107,6 +108,7 @@ export function GroupChatFooter({
   participantsBarGap = "normal",
   participantsBarAlign = "left",
   directorMode = false,
+  directorBehavior = "cue",
   directorSelectedId = null,
   directorWiggleNonce = 0,
   directorHintPosition = "bottom",
@@ -115,7 +117,10 @@ export function GroupChatFooter({
   const { t } = useI18n();
   const hasDraft = draft.trim().length > 0;
   const hasAttachments = pendingAttachments.length > 0;
-  const canSend = hasDraft || hasAttachments || (directorMode && !!directorSelectedId);
+  const canSend =
+    hasDraft ||
+    hasAttachments ||
+    (directorMode && directorBehavior === "cue" && !!directorSelectedId);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -309,6 +314,17 @@ export function GroupChatFooter({
     }
   };
 
+  const sendButtonLabel =
+    sending && onAbort
+      ? t("groupChats.footer.stopGeneration")
+      : canSend
+        ? directorMode && directorBehavior === "action"
+          ? t("groupChats.footer.directorAddMessage")
+          : t("groupChats.footer.sendMessage")
+        : onContinue
+          ? t("groupChats.footer.continueConversation")
+          : t("groupChats.footer.sendMessage");
+
   useEffect(() => {
     if (triggerFileInput) {
       fileInputRef.current?.click();
@@ -450,6 +466,7 @@ export function GroupChatFooter({
               gap={participantsBarGap}
               align={participantsBarAlign}
               directorMode={directorMode}
+              directorBehavior={directorBehavior}
               selectedId={directorSelectedId}
               wiggleNonce={directorWiggleNonce}
               hintPosition={directorHintPosition}
@@ -617,24 +634,8 @@ export function GroupChatFooter({
                       : "bg-fg/15 text-fg/55 hover:bg-fg/20",
                   "disabled:cursor-not-allowed disabled:opacity-40",
                 )}
-                title={
-                  sending && onAbort
-                    ? t("groupChats.footer.stopGeneration")
-                    : canSend
-                      ? t("groupChats.footer.sendMessage")
-                      : onContinue
-                        ? t("groupChats.footer.continueConversation")
-                        : t("groupChats.footer.sendMessage")
-                }
-                aria-label={
-                  sending && onAbort
-                    ? t("groupChats.footer.stopGeneration")
-                    : canSend
-                      ? t("groupChats.footer.sendMessage")
-                      : onContinue
-                        ? t("groupChats.footer.continueConversation")
-                        : t("groupChats.footer.sendMessage")
-                }
+                title={sendButtonLabel}
+                aria-label={sendButtonLabel}
               >
                 {sending && onAbort ? (
                   <Square size={16} fill="currentColor" />

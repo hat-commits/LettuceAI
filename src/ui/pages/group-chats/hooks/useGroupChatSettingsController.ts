@@ -184,7 +184,7 @@ export function useGroupChatSettingsController(
   );
 
   const handleChangeSpeakerSelectionMethod = useCallback(
-    async (method: "llm" | "heuristic" | "round_robin" | "director") => {
+    async (method: "llm" | "heuristic" | "round_robin" | "director" | "director_action") => {
       if (!session) return;
       try {
         setUi({ saving: true });

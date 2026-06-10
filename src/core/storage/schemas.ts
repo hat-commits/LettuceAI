@@ -2405,7 +2405,7 @@ export const GroupSessionSchema = z.object({
   /** Token count of the memory summary */
   memorySummaryTokenCount: z.number().int().default(0),
   /** Speaker selection method for group chat */
-  speakerSelectionMethod: z.enum(["llm", "heuristic", "round_robin", "director"]).default("llm"),
+  speakerSelectionMethod: z.enum(["llm", "heuristic", "round_robin", "director", "director_action"]).default("llm"),
   /** Memory mode: "manual" or "dynamic" */
   memoryType: z.enum(["manual", "dynamic"]).default("manual"),
   /** Private session-level author note injected into the prompt */
@@ -2465,7 +2465,7 @@ export const GroupSchema = z.object({
   backgroundImagePath: z.string().nullish().optional(),
   lorebookIds: z.array(z.string().uuid()).default([]),
   disableCharacterLorebooks: z.boolean().default(false),
-  speakerSelectionMethod: z.enum(["llm", "heuristic", "round_robin", "director"]).default("llm"),
+  speakerSelectionMethod: z.enum(["llm", "heuristic", "round_robin", "director", "director_action"]).default("llm"),
   memoryType: z.enum(["manual", "dynamic"]).default("manual"),
   chatAppearance: z.lazy(() => ChatAppearanceOverrideSchema).nullish(),
 });

@@ -626,7 +626,7 @@ export const storageBridge = {
     chatType?: "conversation" | "roleplay",
     startingScene?: any | null,
     backgroundImagePath?: string | null,
-    speakerSelectionMethod?: "llm" | "heuristic" | "round_robin" | "director" | null,
+    speakerSelectionMethod?: "llm" | "heuristic" | "round_robin" | "director" | "director_action" | null,
   ) =>
     invoke<string>("group_create", {
       name,
@@ -649,7 +649,7 @@ export const storageBridge = {
     chatType?: "conversation" | "roleplay",
     startingScene?: any | null,
     backgroundImagePath?: string | null,
-    speakerSelectionMethod?: "llm" | "heuristic" | "round_robin" | "director" | null,
+    speakerSelectionMethod?: "llm" | "heuristic" | "round_robin" | "director" | "director_action" | null,
     mutedCharacterIds?: string[] | null,
   ) =>
     invoke<string>("group_update", {
@@ -670,7 +670,7 @@ export const storageBridge = {
     invoke("group_update_persona", { id, personaId }) as Promise<void>,
   groupUpdateSpeakerSelectionMethod: (
     id: string,
-    speakerSelectionMethod: "llm" | "heuristic" | "round_robin" | "director",
+    speakerSelectionMethod: "llm" | "heuristic" | "round_robin" | "director" | "director_action",
   ) =>
     invoke("group_update_speaker_selection_method", {
       id,
@@ -715,7 +715,7 @@ export const storageBridge = {
     chatType?: "conversation" | "roleplay",
     startingScene?: any | null,
     backgroundImagePath?: string | null,
-    speakerSelectionMethod?: "llm" | "heuristic" | "round_robin" | "director" | null,
+    speakerSelectionMethod?: "llm" | "heuristic" | "round_robin" | "director" | "director_action" | null,
   ) =>
     invoke<string>("group_session_create", {
       name,
@@ -798,7 +798,7 @@ export const storageBridge = {
     }).then((s) => JSON.parse(s)),
   groupSessionUpdateSpeakerSelectionMethod: (
     sessionId: string,
-    speakerSelectionMethod: "llm" | "heuristic" | "round_robin" | "director",
+    speakerSelectionMethod: "llm" | "heuristic" | "round_robin" | "director" | "director_action",
   ) =>
     invoke<string>("group_session_update_speaker_selection_method", {
       sessionId,

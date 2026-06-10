@@ -640,52 +640,104 @@ export function GroupChatSettingsPage({
                     icon: Clapperboard,
                   },
                 ] as const
-              ).map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => handleChangeSpeakerSelectionMethod(option.value)}
-                  disabled={saving}
-                  className={cn(
-                    "relative flex flex-col items-center gap-1.5 p-3",
-                    radius.lg,
-                    "border text-center",
-                    interactive.transition.fast,
-                    session.speakerSelectionMethod === option.value
-                      ? "border-accent/40 bg-accent/10"
-                      : "border-fg/10 bg-surface-el/85 hover:border-fg/20",
-                    saving && "opacity-50",
-                  )}
-                >
-                  <option.icon
+              ).map((option) => {
+                const selected =
+                  option.value === "director"
+                    ? session.speakerSelectionMethod === "director" ||
+                      session.speakerSelectionMethod === "director_action"
+                    : session.speakerSelectionMethod === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    onClick={() => {
+                      if (selected) return;
+                      handleChangeSpeakerSelectionMethod(option.value);
+                    }}
+                    disabled={saving}
                     className={cn(
-                      "h-5 w-5",
-                      session.speakerSelectionMethod === option.value
-                        ? "text-accent/80"
-                        : "text-fg/50",
-                    )}
-                  />
-                  <div
-                    className={cn(
-                      "text-xs font-semibold",
-                      session.speakerSelectionMethod === option.value
-                        ? "text-accent"
-                        : "text-fg/80",
+                      "relative flex flex-col items-center gap-1.5 p-3",
+                      radius.lg,
+                      "border text-center",
+                      interactive.transition.fast,
+                      selected
+                        ? "border-accent/40 bg-accent/10"
+                        : "border-fg/10 bg-surface-el/85 hover:border-fg/20",
+                      saving && "opacity-50",
                     )}
                   >
-                    {option.label}
-                  </div>
-                  <div className="text-[10px] text-fg/40">{option.desc}</div>
-                </button>
-              ))}
+                    <option.icon
+                      className={cn("h-5 w-5", selected ? "text-accent/80" : "text-fg/50")}
+                    />
+                    <div
+                      className={cn(
+                        "text-xs font-semibold",
+                        selected ? "text-accent" : "text-fg/80",
+                      )}
+                    >
+                      {option.label}
+                    </div>
+                    <div className="text-[10px] text-fg/40">{option.desc}</div>
+                  </button>
+                );
+              })}
             </div>
+            {(session.speakerSelectionMethod === "director" ||
+              session.speakerSelectionMethod === "director_action") && (
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {(
+                  [
+                    {
+                      value: "director" as const,
+                      label: t("groupChats.sessionSettings.directorCue"),
+                      desc: t("groupChats.sessionSettings.directorCueShort"),
+                    },
+                    {
+                      value: "director_action" as const,
+                      label: t("groupChats.sessionSettings.directorAction"),
+                      desc: t("groupChats.sessionSettings.directorActionShort"),
+                    },
+                  ] as const
+                ).map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => handleChangeSpeakerSelectionMethod(option.value)}
+                    disabled={saving}
+                    className={cn(
+                      "flex flex-col items-center gap-0.5 px-3 py-2",
+                      radius.lg,
+                      "border text-center",
+                      interactive.transition.fast,
+                      session.speakerSelectionMethod === option.value
+                        ? "border-accent/40 bg-accent/10"
+                        : "border-fg/10 bg-surface-el/85 hover:border-fg/20",
+                      saving && "opacity-50",
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "text-xs font-semibold",
+                        session.speakerSelectionMethod === option.value
+                          ? "text-accent"
+                          : "text-fg/80",
+                      )}
+                    >
+                      {option.label}
+                    </div>
+                    <div className="text-[10px] text-fg/40">{option.desc}</div>
+                  </button>
+                ))}
+              </div>
+            )}
             <p className={cn(typography.caption.size, "mt-2 text-fg/40")}>
               {session.speakerSelectionMethod === "llm"
                 ? t("groupChats.sessionSettings.llmDesc")
                 : session.speakerSelectionMethod === "heuristic"
                   ? t("groupChats.sessionSettings.heuristicDesc")
                   : session.speakerSelectionMethod === "director"
-                    ? t("groupChats.sessionSettings.directorDesc")
-                    : t("groupChats.sessionSettings.roundRobinDesc")}
+                    ? t("groupChats.sessionSettings.directorCueDesc")
+                    : session.speakerSelectionMethod === "director_action"
+                      ? t("groupChats.sessionSettings.directorActionDesc")
+                      : t("groupChats.sessionSettings.roundRobinDesc")}
             </p>
           </section>
 

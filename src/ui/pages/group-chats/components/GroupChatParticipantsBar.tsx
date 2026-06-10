@@ -90,6 +90,7 @@ interface GroupChatParticipantsBarProps {
   gap?: ParticipantsBarGap;
   align?: ParticipantsBarAlign;
   directorMode?: boolean;
+  directorBehavior?: "cue" | "action";
   selectedId?: string | null;
   wiggleNonce?: number;
   hintPosition?: "top" | "bottom" | "hidden";
@@ -108,6 +109,7 @@ export function GroupChatParticipantsBar({
   gap = "normal",
   align = "left",
   directorMode = false,
+  directorBehavior = "cue",
   selectedId = null,
   wiggleNonce = 0,
   hintPosition = "bottom",
@@ -159,8 +161,12 @@ export function GroupChatParticipantsBar({
             transition={{ duration: 0.16 }}
           >
             {selectedName
-              ? t("groupChats.footer.directorSelectedHint", { name: selectedName })
-              : t("groupChats.footer.directorHint")}
+              ? directorBehavior === "action"
+                ? t("groupChats.footer.directorActionRespondingHint", { name: selectedName })
+                : t("groupChats.footer.directorSelectedHint", { name: selectedName })
+              : directorBehavior === "action"
+                ? t("groupChats.footer.directorActionHint")
+                : t("groupChats.footer.directorHint")}
           </motion.span>
         </AnimatePresence>
       </div>

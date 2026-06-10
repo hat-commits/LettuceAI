@@ -1971,11 +1971,12 @@ pub fn group_session_update_speaker_selection_method(
         && speaker_selection_method != "heuristic"
         && speaker_selection_method != "round_robin"
         && speaker_selection_method != "director"
+        && speaker_selection_method != "director_action"
     {
         return Err(crate::utils::err_msg(
             module_path!(),
             line!(),
-            "Invalid speaker_selection_method. Must be 'llm', 'heuristic', 'round_robin', or 'director'",
+            "Invalid speaker_selection_method. Must be 'llm', 'heuristic', 'round_robin', 'director', or 'director_action'",
         ));
     }
 
