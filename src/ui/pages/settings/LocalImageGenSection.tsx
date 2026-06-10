@@ -1,72 +1,30 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Cpu, Download, FilePlus2, HardDrive, Search, Trash2 } from "lucide-react";
-import { open } from "@tauri-apps/plugin-dialog";
+import { Cpu, Download, HardDrive, Search, Trash2 } from "lucide-react";
 
 import {
   sdDeleteModel,
-  sdEnsureModelRow,
   sdFinalizeBinaryInstall,
   sdGetStatus,
-  sdImportModel,
   sdListEngineVariants,
   sdListModels,
   sdQueueBinaryInstall,
   sdRemoveBinary,
   sdRemoveModelRow,
-  sdUpdateModelFiles,
   type SdEngineVariant,
   type SdModelEntry,
-  type SdModelFiles,
   type SdStatus,
 } from "../../../core/local-diffusion";
 import { useDownloadQueue } from "../../../core/downloads/DownloadQueueContext";
 import { useI18n } from "../../../core/i18n/context";
 import { Routes } from "../../navigation";
 import { toast } from "../../components/toast";
-import { cn } from "../../design-tokens";
-
-const ROLE_LABEL_KEYS = {
-  checkpoint: "imageGeneration.local.roles.checkpoint",
-  diffusionModel: "imageGeneration.local.roles.diffusionModel",
-  clipL: "imageGeneration.local.roles.clipL",
-  clipG: "imageGeneration.local.roles.clipG",
-  t5xxl: "imageGeneration.local.roles.t5xxl",
-  llm: "imageGeneration.local.roles.llm",
-  llmVision: "imageGeneration.local.roles.llmVision",
-  vae: "imageGeneration.local.roles.vae",
-} as const;
-
-type RoleName = keyof typeof ROLE_LABEL_KEYS;
-
-const ROLE_KEYS: Array<{ role: RoleName; key: keyof SdModelFiles }> = [
-  { role: "checkpoint", key: "checkpoint" },
-  { role: "diffusionModel", key: "diffusionModel" },
-  { role: "clipL", key: "clipL" },
-  { role: "clipG", key: "clipG" },
-  { role: "t5xxl", key: "t5xxl" },
-  { role: "llm", key: "llm" },
-  { role: "llmVision", key: "llmVision" },
-  { role: "vae", key: "vae" },
-];
-
-function roleLabelKey(role: string) {
-  return ROLE_LABEL_KEYS[role as RoleName] ?? ROLE_LABEL_KEYS.checkpoint;
-}
 
 function formatBytes(bytes: number): string {
   if (!bytes) return "0 B";
   const units = ["B", "KB", "MB", "GB", "TB"];
   const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
   return `${(bytes / 1024 ** exponent).toFixed(exponent > 1 ? 1 : 0)} ${units[exponent]}`;
-}
-
-async function pickModelFile(): Promise<string | null> {
-  const selection = await open({
-    multiple: false,
-    filters: [{ name: "Model files", extensions: ["safetensors", "gguf", "ckpt"] }],
-  });
-  return typeof selection === "string" ? selection : null;
 }
 
 export function LocalImageGenSection() {
@@ -79,9 +37,6 @@ export function LocalImageGenSection() {
   const [variantsError, setVariantsError] = useState<string | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<string>("");
   const [installing, setInstalling] = useState(false);
-  const [showImport, setShowImport] = useState(false);
-  const [importName, setImportName] = useState("");
-  const [importFiles, setImportFiles] = useState<SdModelFiles>({});
   const finalizedRef = useRef(false);
 
   const refresh = useCallback(async () => {
@@ -177,23 +132,6 @@ export function LocalImageGenSection() {
     }
   };
 
-  const attachFile = async (entry: SdModelEntry, role: string) => {
-    const path = await pickModelFile();
-    if (!path) return;
-    const key = ROLE_KEYS.find((item) => item.role === role)?.key;
-    if (!key) return;
-    try {
-      const updated = await sdUpdateModelFiles(entry.id, { [key]: path });
-      await sdEnsureModelRow(updated);
-      void refresh();
-    } catch (err) {
-      toast.error(
-        t("imageGeneration.local.updateFailed"),
-        err instanceof Error ? err.message : String(err),
-      );
-    }
-  };
-
   const deleteEntry = async (entry: SdModelEntry) => {
     try {
       await sdDeleteModel(entry.id, true);
@@ -202,23 +140,6 @@ export function LocalImageGenSection() {
     } catch (err) {
       toast.error(
         t("imageGeneration.local.deleteFailed"),
-        err instanceof Error ? err.message : String(err),
-      );
-    }
-  };
-
-  const submitImport = async () => {
-    try {
-      const entry = await sdImportModel(importName, importFiles);
-      await sdEnsureModelRow(entry);
-      setShowImport(false);
-      setImportName("");
-      setImportFiles({});
-      toast.success(t("imageGeneration.local.importDone"), entry.name);
-      void refresh();
-    } catch (err) {
-      toast.error(
-        t("imageGeneration.local.importFailed"),
         err instanceof Error ? err.message : String(err),
       );
     }
@@ -325,90 +246,18 @@ export function LocalImageGenSection() {
               </p>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <button
-              type="button"
-              onClick={() => navigate(`${Routes.settingsModelsBrowse}?mode=sd`)}
-              className="inline-flex items-center gap-1.5 rounded-[9px] border border-fg/12 px-3 py-1.5 text-xs font-medium text-fg/70 transition-colors hover:bg-fg/8"
-            >
-              <Search className="h-3.5 w-3.5" />
-              {t("imageGeneration.local.browseHf")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowImport((value) => !value)}
-              className="inline-flex items-center gap-1.5 rounded-[9px] border border-fg/12 px-3 py-1.5 text-xs font-medium text-fg/70 transition-colors hover:bg-fg/8"
-            >
-              <FilePlus2 className="h-3.5 w-3.5" />
-              {t("imageGeneration.local.importModel")}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => navigate(`${Routes.settingsModelsBrowse}?mode=sd`)}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-[9px] border border-fg/12 px-3 py-1.5 text-xs font-medium text-fg/70 transition-colors hover:bg-fg/8"
+          >
+            <Search className="h-3.5 w-3.5" />
+            {t("imageGeneration.local.browseHf")}
+          </button>
         </div>
 
         <div className="space-y-3 px-4 py-4">
-          {showImport ? (
-            <div className="space-y-3 rounded-[10px] border border-fg/12 bg-surface/40 p-3.5">
-              <input
-                type="text"
-                value={importName}
-                onChange={(event) => setImportName(event.target.value)}
-                placeholder={t("imageGeneration.local.importNamePlaceholder")}
-                className="w-full rounded-[9px] border border-fg/12 bg-surface/60 px-3 py-2 text-sm text-fg placeholder:text-fg/35 focus:border-fg/25 focus:outline-none"
-              />
-              <p className="text-xs leading-5 text-fg/45">
-                {t("imageGeneration.local.importHint")}
-              </p>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {ROLE_KEYS.map(({ role, key }) => (
-                  <button
-                    key={role}
-                    type="button"
-                    onClick={() => {
-                      void pickModelFile().then((path) => {
-                        if (path) {
-                          setImportFiles((files) => ({ ...files, [key]: path }));
-                        }
-                      });
-                    }}
-                    className={cn(
-                      "truncate rounded-[9px] border px-3 py-2 text-left text-xs transition-colors",
-                      importFiles[key]
-                        ? "border-success/30 bg-success/8 text-fg/80"
-                        : "border-dashed border-fg/15 text-fg/50 hover:bg-fg/5",
-                    )}
-                  >
-                    <span className="font-medium">
-                      {t(roleLabelKey(role))}
-                    </span>
-                    {importFiles[key] ? (
-                      <span className="ml-2 text-fg/55">
-                        {importFiles[key]?.split(/[\\/]/).pop()}
-                      </span>
-                    ) : null}
-                  </button>
-                ))}
-              </div>
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowImport(false)}
-                  className="rounded-[9px] px-3 py-1.5 text-xs font-medium text-fg/55 hover:text-fg/80"
-                >
-                  {t("common.buttons.cancel")}
-                </button>
-                <button
-                  type="button"
-                  disabled={!importName.trim()}
-                  onClick={() => void submitImport()}
-                  className="rounded-[9px] border border-accent/35 bg-accent/12 px-3.5 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/20 disabled:opacity-40"
-                >
-                  {t("common.buttons.save")}
-                </button>
-              </div>
-            </div>
-          ) : null}
-
-          {models.length === 0 && !showImport ? (
+          {models.length === 0 ? (
             <p className="rounded-[10px] border border-dashed border-fg/12 bg-surface/30 px-3.5 py-3 text-sm text-fg/45">
               {t("imageGeneration.local.noModels")}
             </p>
@@ -416,50 +265,27 @@ export function LocalImageGenSection() {
             models.map((entry) => (
               <div
                 key={entry.id}
-                className="rounded-[10px] border border-fg/10 bg-surface/40 px-3.5 py-3"
+                className="flex items-center justify-between gap-3 rounded-[10px] border border-fg/10 bg-surface/40 px-3.5 py-3"
               >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-medium text-fg">{entry.name}</div>
-                    <div className="mt-0.5 text-xs uppercase text-fg/45">
-                      {entry.family}
-                      {entry.totalBytes > 0 ? ` · ${formatBytes(entry.totalBytes)}` : ""}
-                    </div>
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-medium text-fg">{entry.name}</div>
+                  <div className="mt-0.5 text-xs uppercase text-fg/45">
+                    {entry.family}
+                    {entry.totalBytes > 0 ? ` · ${formatBytes(entry.totalBytes)}` : ""}
+                    {!entry.complete ? (
+                      <span className="ml-2 normal-case text-warning/80">
+                        {t("imageGeneration.local.incomplete")}
+                      </span>
+                    ) : null}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => void deleteEntry(entry)}
-                    className="shrink-0 rounded-[8px] p-1.5 text-fg/40 transition-colors hover:bg-danger/10 hover:text-danger/80"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
                 </div>
-                {!entry.complete ? (
-                  <p className="mt-2 text-xs text-warning/80">
-                    {t("imageGeneration.local.missingFiles")}
-                  </p>
-                ) : null}
-                <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                  {ROLE_KEYS.map(({ role, key }) => {
-                    const filePath = entry.files[key];
-                    return (
-                      <button
-                        key={role}
-                        type="button"
-                        onClick={() => void attachFile(entry, role)}
-                        title={filePath ?? t("imageGeneration.local.attachHint")}
-                        className={cn(
-                          "rounded-full border px-2.5 py-0.5 text-xs transition-colors",
-                          filePath
-                            ? "border-success/30 bg-success/8 text-fg/70 hover:bg-success/15"
-                            : "border-dashed border-fg/15 text-fg/40 hover:bg-fg/5",
-                        )}
-                      >
-                        {t(roleLabelKey(role))}
-                      </button>
-                    );
-                  })}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => void deleteEntry(entry)}
+                  className="shrink-0 rounded-[8px] p-1.5 text-fg/40 transition-colors hover:bg-danger/10 hover:text-danger/80"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </div>
             ))
           )}

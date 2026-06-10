@@ -2557,6 +2557,7 @@ export const enMessages = {
     sections: {
       generation: "Generation Parameters",
       runtime: "Runtime",
+      configuration: "Configuration",
       reasoning: "Reasoning",
       reasoningThinking: "Reasoning (Thinking)",
       promptCaching: "Prompt Caching",
@@ -2636,6 +2637,7 @@ export const enMessages = {
       displayName: "Display name",
       modelPath: "Model Path (GGUF)",
       modelId: "Model ID",
+      localDiffusionModel: "Local Model",
     },
     placeholders: {
       displayName: "e.g. My Favorite ChatGPT",
@@ -2662,6 +2664,12 @@ export const enMessages = {
       mmprojEmpty: "No downloaded mmproj files yet",
       mmprojEmptyHint:
         "Download a multimodal projector from the Model Browser, or enter a path manually.",
+    },
+    localDiffusion: {
+      selectModel: "Select Local Model",
+      notSet: "Not set",
+      configurationHelp:
+        "Files this model passes to the engine. A checkpoint or diffusion model is required; encoders and VAE depend on the architecture. Changes apply immediately.",
     },
     modelSource: {
       useCatalog: "Use catalog",
@@ -2720,6 +2728,8 @@ export const enMessages = {
       output: "Output",
       automatic1111Fixed:
         "AUTOMATIC1111 models are fixed to text + image input and image output.",
+      localDiffusionFixed:
+        "Local diffusion models are fixed to text + image input and image output.",
     },
     runtimeSummary: {
       ram: "RAM",
@@ -2761,6 +2771,8 @@ export const enMessages = {
     generation: {
       automatic1111Help:
         "AUTOMATIC1111 uses Stable Diffusion controls here. These values become the default sampler settings for avatars, scene images, and other local diffusion requests.",
+      localDiffusionHelp:
+        "These values become the defaults for this model when generating avatars and scene images. Leave a field empty to use the engine default for this model type.",
       formatWidthHeight: "Format: width x height",
     },
     generationDescriptions: {
@@ -3608,19 +3620,13 @@ export const enMessages = {
       recommended: "recommended",
       modelsTitle: "Local Models",
       modelsDescription:
-        "Diffusion models available to the local engine. Download from Hugging Face or import files from disk.",
+        "Diffusion models available to the local engine. Manage each model's files in the model editor's Configuration tab.",
       browseHf: "Browse Hugging Face",
-      importModel: "Import",
-      importNamePlaceholder: "Model name",
-      importDone: "Model imported",
-      importFailed: "Import failed",
       updateFailed: "Failed to update model files",
       deleteFailed: "Failed to delete model",
-      noModels: "No local models yet. Download one from Hugging Face or import files from disk.",
-      missingFiles: "No checkpoint or diffusion model file yet. Attach one below.",
-      importHint:
-        "Pick the files this model needs. A checkpoint or diffusion model is required; encoders and VAE depend on the architecture.",
-      attachHint: "Attach a file for this role",
+      noModels: "No local models yet. Download one from Hugging Face or create a model with the Local Diffusion platform.",
+      missingFiles: "No checkpoint or diffusion model file yet. Attach one to finish setup.",
+      incomplete: "Incomplete",
       roles: {
         checkpoint: "Checkpoint",
         diffusionModel: "Diffusion model",

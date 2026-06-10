@@ -113,7 +113,7 @@ function useModelEditorState() {
 function getHardCappedScopes(
   providerId?: string | null,
 ): Pick<Model, "inputScopes" | "outputScopes"> | null {
-  if (providerId === "automatic1111") {
+  if (providerId === "automatic1111" || providerId === "localdiffusion") {
     return {
       inputScopes: ["text", "image"],
       outputScopes: ["image"],
@@ -124,7 +124,9 @@ function getHardCappedScopes(
 }
 
 function isImageOnlyProvider(providerId?: string | null): boolean {
-  return providerId === "automatic1111" || providerId === "stability";
+  return (
+    providerId === "automatic1111" || providerId === "stability" || providerId === "localdiffusion"
+  );
 }
 
 function cloneSnapshot<T>(value: T): T {
@@ -156,6 +158,15 @@ export function useModelEditorController(): ControllerReturn {
     }),
     [],
   );
+  const localDiffusionProvider = useMemo<ProviderCredential>(
+    () => ({
+      id: crypto.randomUUID(),
+      providerId: "localdiffusion",
+      label: "Local Diffusion",
+      apiKey: "",
+    }),
+    [],
+  );
 
   const visibleCapabilities = useMemo(
     () =>
@@ -173,22 +184,28 @@ export function useModelEditorController(): ControllerReturn {
           ? providers.filter(
               (provider) =>
                 provider.providerId === localProvider.providerId ||
+                provider.providerId === localDiffusionProvider.providerId ||
                 capabilityIds.has(provider.providerId),
             )
           : providers;
 
       if (isMobile) {
         return filteredProviders.filter(
-          (provider) => provider.providerId !== localProvider.providerId,
+          (provider) =>
+            provider.providerId !== localProvider.providerId &&
+            provider.providerId !== localDiffusionProvider.providerId,
         );
       }
-      const hasLocal = filteredProviders.some((p) => p.providerId === localProvider.providerId);
-      if (hasLocal) return filteredProviders;
-      return filteredProviders.length === 0
-        ? [localProvider]
-        : [...filteredProviders, localProvider];
+      const result = [...filteredProviders];
+      if (!result.some((p) => p.providerId === localProvider.providerId)) {
+        result.push(localProvider);
+      }
+      if (!result.some((p) => p.providerId === localDiffusionProvider.providerId)) {
+        result.push(localDiffusionProvider);
+      }
+      return result;
     },
-    [isMobile, localProvider, visibleCapabilities],
+    [isMobile, localProvider, localDiffusionProvider, visibleCapabilities],
   );
 
   useEffect(() => {
@@ -413,7 +430,7 @@ export function useModelEditorController(): ControllerReturn {
 
   const providerDisplay = useMemo(() => {
     return (prov: ProviderCredential) => {
-      if (prov.providerId === "llamacpp") {
+      if (prov.providerId === "llamacpp" || prov.providerId === "localdiffusion") {
         return prov.label;
       }
       const cap = capabilities.find((p) => p.id === prov.providerId);

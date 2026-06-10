@@ -76,6 +76,13 @@ import {
   getProviderCachingSupport,
 } from "../../../core/storage/schemas";
 import { getProviderIcon } from "../../../core/utils/providerIcons";
+import {
+  sdImportModel,
+  sdListModels,
+  sdUpdateModelFiles,
+  type SdModelEntry,
+  type SdModelFiles,
+} from "../../../core/local-diffusion";
 import { cn } from "../../design-tokens";
 import { openDocs } from "../../../core/utils/docs";
 import { useI18n } from "../../../core/i18n/context";
@@ -178,7 +185,13 @@ function getLlamaRuntimeDetailKey(
   return "editModel.runtime.detail.failed";
 }
 
-type EditorSectionKey = "generation" | "runtime" | "reasoning" | "caching" | "capabilities";
+type EditorSectionKey =
+  | "generation"
+  | "runtime"
+  | "configuration"
+  | "reasoning"
+  | "caching"
+  | "capabilities";
 
 const EDITOR_FADE_DURATION = 0.16;
 
@@ -296,6 +309,8 @@ export function EditModelPage() {
     "balanced" | "throughput" | "vram" | "cpu_ram" | null
   >(null);
   const [showPlatformSelector, setShowPlatformSelector] = useState(false);
+  const [sdEntries, setSdEntries] = useState<SdModelEntry[] | null>(null);
+  const [showSdModelPicker, setShowSdModelPicker] = useState(false);
   const [llamaContextInfo, setLlamaContextInfo] = useState<LlamaCppContextInfo | null>(null);
   const [llamaContextError, setLlamaContextError] = useState<string | null>(null);
   const [llamaContextLoading, setLlamaContextLoading] = useState(false);
@@ -885,6 +900,7 @@ export function EditModelPage() {
     if (!selectedProviderCredential) return false;
     if (
       selectedProviderCredential.providerId === "llamacpp" ||
+      selectedProviderCredential.providerId === "localdiffusion" ||
       selectedProviderCredential.providerId === "intenserp" ||
       selectedProviderCredential.providerId === "stability"
     ) {
@@ -1129,6 +1145,46 @@ export function EditModelPage() {
       ? t("editModel.localLibrary.mmprojEmptyHint")
       : t("hfBrowser.libraryEmptyHint");
   const isAutomatic1111Provider = editorModel?.providerId === "automatic1111";
+  const isLocalDiffusionModel = editorModel?.providerId === "localdiffusion";
+  const isFixedImageProvider = isAutomatic1111Provider || isLocalDiffusionModel;
+
+  useEffect(() => {
+    if (!isLocalDiffusionModel || sdEntries !== null) return;
+    sdListModels()
+      .then(setSdEntries)
+      .catch(() => setSdEntries([]));
+  }, [isLocalDiffusionModel, sdEntries]);
+
+  const selectedSdEntry = sdEntries?.find((entry) => entry.id === editorModel?.name) ?? null;
+
+  const attachSdFile = async (role: keyof SdModelFiles) => {
+    const selection = await open({
+      multiple: false,
+      filters: [{ name: "Model files", extensions: ["safetensors", "gguf", "ckpt", "sft"] }],
+    });
+    if (typeof selection !== "string") return;
+    try {
+      if (selectedSdEntry) {
+        await sdUpdateModelFiles(selectedSdEntry.id, { [role]: selection });
+      } else {
+        const fallbackName =
+          editorModel?.displayName?.trim() ||
+          selection.split(/[\\/]/).pop()?.replace(/\.(safetensors|gguf|ckpt|sft)$/i, "") ||
+          "Local model";
+        const entry = await sdImportModel(fallbackName, { [role]: selection });
+        handleModelNameChange(entry.id);
+        if (!editorModel?.displayName?.trim()) {
+          handleDisplayNameChange(entry.name);
+        }
+      }
+      setSdEntries(null);
+    } catch (err: any) {
+      toast.error(
+        t("imageGeneration.local.updateFailed"),
+        typeof err === "string" ? err : err?.message || String(err),
+      );
+    }
+  };
 
   // Get reasoning support for the current provider
   const reasoningSupport: ReasoningSupport = editorModel?.providerId
@@ -1232,6 +1288,9 @@ export function EditModelPage() {
   const activeDetailPanel = activePanel;
   const editorPanels: { key: EditorSectionKey; label: string }[] = [
     { key: "generation", label: t("editModel.sections.generation") },
+    ...(isLocalDiffusionModel
+      ? [{ key: "configuration" as const, label: t("editModel.sections.configuration") }]
+      : []),
     ...(hasRuntimePanel
       ? [{ key: "runtime" as const, label: t("editModel.sections.runtime") }]
       : []),
@@ -1252,7 +1311,7 @@ export function EditModelPage() {
       [key]: value,
     });
   }
-  const generationSummary = isAutomatic1111Provider
+  const generationSummary = isFixedImageProvider
     ? [
       modelAdvancedDraft.sdSteps != null ? `Steps ${modelAdvancedDraft.sdSteps}` : null,
       modelAdvancedDraft.sdCfgScale != null
@@ -1383,12 +1442,14 @@ export function EditModelPage() {
   useEffect(() => {
     if (activePanel === "runtime" && !hasRuntimePanel) {
       setActivePanel(showReasoningSection ? "reasoning" : "generation");
+    } else if (activePanel === "configuration" && !isLocalDiffusionModel) {
+      setActivePanel("generation");
     } else if (activePanel === "reasoning" && !showReasoningSection) {
       setActivePanel(hasRuntimePanel ? "runtime" : "generation");
     } else if (activePanel === "caching" && !showCachingSection) {
       setActivePanel("generation");
     }
-  }, [activePanel, hasRuntimePanel, showReasoningSection, showCachingSection]);
+  }, [activePanel, hasRuntimePanel, isLocalDiffusionModel, showReasoningSection, showCachingSection]);
 
   useEffect(() => {
     if (!showLlamaRuntimeReport) return;
@@ -1527,7 +1588,7 @@ export function EditModelPage() {
     enabled: boolean,
   ) => {
     if (!editorModel) return;
-    if (isAutomatic1111Provider) return;
+    if (isFixedImageProvider) return;
     const current = new Set((editorModel as any)[key] ?? ["text"]);
     if (enabled) current.add(scope);
     else current.delete(scope);
@@ -1842,6 +1903,87 @@ export function EditModelPage() {
                         </div>
                       </FieldBlock>
                     </div>
+                  ) : isLocalDiffusionModel ? (
+                    <div className="grid items-start grid-cols-1 gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+                      <FieldBlock label={t("editModel.fields.displayName")}>
+                        <input
+                          type="text"
+                          value={editorModel.displayName}
+                          onChange={(e) => handleDisplayNameChange(e.target.value)}
+                          placeholder={t("editModel.placeholders.displayName")}
+                          className="w-full rounded-lg border border-fg/10 bg-surface-el/20 px-4 py-3 text-fg placeholder-fg/40 transition focus:border-fg/30 focus:outline-none"
+                        />
+                      </FieldBlock>
+
+                      <FieldBlock label={t("editModel.fields.localDiffusionModel")}>
+                        <div className="space-y-3">
+                          <button
+                            type="button"
+                            onClick={() => setShowSdModelPicker(true)}
+                            className="flex w-full items-center justify-between rounded-lg border border-fg/10 bg-surface-el/20 px-4 py-3 text-left text-fg transition hover:bg-surface-el/30"
+                          >
+                            <div className="min-w-0">
+                              <span className="block truncate text-[13px] text-fg/85">
+                                {selectedSdEntry?.name ||
+                                  editorModel.name ||
+                                  t("editModel.localDiffusion.selectModel")}
+                              </span>
+                              {selectedSdEntry ? (
+                                <span className="block text-[12px] uppercase text-fg/40">
+                                  {selectedSdEntry.family}
+                                  {selectedSdEntry.totalBytes > 0
+                                    ? ` · ${formatBytes(selectedSdEntry.totalBytes)}`
+                                    : ""}
+                                </span>
+                              ) : null}
+                            </div>
+                            <ChevronDown className="h-4 w-4 shrink-0 text-fg/40" />
+                          </button>
+                          <BottomMenu
+                            isOpen={showSdModelPicker}
+                            onClose={() => setShowSdModelPicker(false)}
+                            title={t("editModel.localDiffusion.selectModel")}
+                          >
+                            <MenuSection>
+                              {!sdEntries || sdEntries.length === 0 ? (
+                                <div className="flex flex-col items-center gap-2 py-16 text-center">
+                                  <HardDrive size={32} className="text-fg/20" />
+                                  <p className="px-6 text-[13px] text-fg/40">
+                                    {t("imageGeneration.local.noModels")}
+                                  </p>
+                                </div>
+                              ) : (
+                                sdEntries
+                                  .filter((entry) => entry.complete)
+                                  .map((entry) => (
+                                    <MenuButton
+                                      key={entry.id}
+                                      icon={<HardDrive className="h-5 w-5 text-accent/60" />}
+                                      title={entry.name}
+                                      description={`${entry.family.toUpperCase()} · ${formatBytes(entry.totalBytes)}`}
+                                      color="from-accent/20 to-accent/10"
+                                      rightElement={
+                                        editorModel.name === entry.id ? (
+                                          <Check className="h-4 w-4 text-accent" />
+                                        ) : (
+                                          <ArrowRight className="h-4 w-4 text-fg/20" />
+                                        )
+                                      }
+                                      onClick={() => {
+                                        handleModelNameChange(entry.id);
+                                        if (!editorModel.displayName?.trim()) {
+                                          handleDisplayNameChange(entry.name);
+                                        }
+                                        setShowSdModelPicker(false);
+                                      }}
+                                    />
+                                  ))
+                              )}
+                            </MenuSection>
+                          </BottomMenu>
+                        </div>
+                      </FieldBlock>
+                    </div>
                   ) : (
                     <div className="grid items-start grid-cols-1 gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
                       <FieldBlock label={t("editModel.fields.displayName")}>
@@ -2088,10 +2230,12 @@ export function EditModelPage() {
                               </button>
                             </div>
 
-                            {isAutomatic1111Provider ? (
+                            {isFixedImageProvider ? (
                               <div className="space-y-5">
                                 <div className="text-[13px] leading-relaxed text-fg/55">
-                                  {t("editModel.generation.automatic1111Help")}
+                                  {isLocalDiffusionModel
+                                    ? t("editModel.generation.localDiffusionHelp")
+                                    : t("editModel.generation.automatic1111Help")}
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-x-6 gap-y-8 md:grid-cols-2 xl:grid-cols-3 xl:gap-x-8">
@@ -2552,6 +2696,64 @@ export function EditModelPage() {
                         )}
 
                         {/* Local llama.cpp Settings */}
+                        {activeDetailPanel === "configuration" && isLocalDiffusionModel && (
+                          <div className="space-y-4">
+                            <p className="text-[13px] leading-relaxed text-fg/55">
+                              {t("editModel.localDiffusion.configurationHelp")}
+                            </p>
+                            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                              {(
+                                [
+                                  ["checkpoint", t("imageGeneration.local.roles.checkpoint")],
+                                  ["diffusionModel", t("imageGeneration.local.roles.diffusionModel")],
+                                  ["clipL", t("imageGeneration.local.roles.clipL")],
+                                  ["clipG", t("imageGeneration.local.roles.clipG")],
+                                  ["t5xxl", t("imageGeneration.local.roles.t5xxl")],
+                                  ["llm", t("imageGeneration.local.roles.llm")],
+                                  ["llmVision", t("imageGeneration.local.roles.llmVision")],
+                                  ["vae", t("imageGeneration.local.roles.vae")],
+                                ] as Array<[keyof SdModelFiles, string]>
+                              ).map(([role, label]) => {
+                                const filePath = selectedSdEntry?.files?.[role] ?? null;
+                                const filename = filePath
+                                  ? filePath.split(/[\\/]/).pop()
+                                  : null;
+                                return (
+                                  <div
+                                    key={role}
+                                    className="flex items-center justify-between gap-3 rounded-lg border border-fg/10 bg-fg/5 px-3.5 py-3"
+                                  >
+                                    <div className="min-w-0">
+                                      <p className="text-[13px] font-medium text-fg/72">{label}</p>
+                                      <p
+                                        className={cn(
+                                          "truncate font-mono text-[12px]",
+                                          filename ? "text-fg/55" : "text-fg/30",
+                                        )}
+                                        title={filePath ?? undefined}
+                                      >
+                                        {filename ?? t("editModel.localDiffusion.notSet")}
+                                      </p>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => void attachSdFile(role)}
+                                      className="shrink-0 rounded-md border border-fg/10 px-2.5 py-1.5 text-[12px] font-medium text-fg/65 transition hover:border-fg/20 hover:bg-fg/5 hover:text-fg/90"
+                                    >
+                                      {t("common.buttons.browseFiles")}
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            {selectedSdEntry && !selectedSdEntry.complete ? (
+                              <p className="text-[12px] leading-relaxed text-warning/80">
+                                {t("imageGeneration.local.missingFiles")}
+                              </p>
+                            ) : null}
+                          </div>
+                        )}
+
                         {activeDetailPanel === "runtime" && isLocalModel && (
                           <div className="space-y-4">
                             <p className="text-[12px] text-fg/45">
@@ -4425,7 +4627,7 @@ export function EditModelPage() {
                                   <button
                                     key={scope}
                                     type="button"
-                                    disabled={isAutomatic1111Provider}
+                                    disabled={isFixedImageProvider}
                                     onClick={() =>
                                       toggleScope(
                                         "inputScopes",
@@ -4435,7 +4637,7 @@ export function EditModelPage() {
                                     }
                                     className={cn(
                                       "flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-[13px] transition",
-                                      isAutomatic1111Provider && "cursor-not-allowed opacity-60",
+                                      isFixedImageProvider && "cursor-not-allowed opacity-60",
                                       editorModel.inputScopes?.includes(scope as any)
                                         ? "border-accent/25 bg-accent/10 text-accent"
                                         : "border-fg/10 bg-fg/5 text-fg/55 hover:border-fg/20 hover:bg-fg/8 hover:text-fg/85",
@@ -4457,7 +4659,7 @@ export function EditModelPage() {
                                   <button
                                     key={scope}
                                     type="button"
-                                    disabled={isAutomatic1111Provider}
+                                    disabled={isFixedImageProvider}
                                     onClick={() =>
                                       toggleScope(
                                         "outputScopes",
@@ -4467,7 +4669,7 @@ export function EditModelPage() {
                                     }
                                     className={cn(
                                       "flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-[13px] transition",
-                                      isAutomatic1111Provider && "cursor-not-allowed opacity-60",
+                                      isFixedImageProvider && "cursor-not-allowed opacity-60",
                                       editorModel.outputScopes?.includes(scope as any)
                                         ? "border-accent/25 bg-accent/10 text-accent"
                                         : "border-fg/10 bg-fg/5 text-fg/55 hover:border-fg/20 hover:bg-fg/8 hover:text-fg/85",
@@ -4481,9 +4683,11 @@ export function EditModelPage() {
                                 ))}
                               </div>
                             </div>
-                            {isAutomatic1111Provider && (
+                            {isFixedImageProvider && (
                               <p className="text-[12px] leading-relaxed text-fg/45">
-                                {t("editModel.capabilities.automatic1111Fixed")}
+                                {isLocalDiffusionModel
+                                  ? t("editModel.capabilities.localDiffusionFixed")
+                                  : t("editModel.capabilities.automatic1111Fixed")}
                               </p>
                             )}
                           </div>
