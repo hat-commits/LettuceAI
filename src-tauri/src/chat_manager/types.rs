@@ -312,6 +312,14 @@ pub struct Settings {
 #[serde(rename_all = "camelCase")]
 pub struct AdvancedSettings {
     #[serde(default)]
+    pub llama_default_context_length: Option<u32>,
+    #[serde(default)]
+    pub llama_default_kv_cache_type: Option<String>,
+    #[serde(default)]
+    pub sd_default_offload_mode: Option<String>,
+    #[serde(default)]
+    pub sd_default_size: Option<String>,
+    #[serde(default)]
     pub summarisation_model_id: Option<String>,
     #[serde(default)]
     pub developer_mode_enabled: Option<bool>,

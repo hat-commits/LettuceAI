@@ -224,6 +224,21 @@ pub async fn sd_remove_binary(app: AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command]
+pub async fn sd_set_custom_binary(app: AppHandle, path: String) -> Result<SdBinaryInfo, String> {
+    let binary_path = std::path::PathBuf::from(path.trim());
+    if !binary_path.is_file() {
+        return Err(format!("File not found: {}", binary_path.display()));
+    }
+    let info = SdBinaryInfo {
+        path: binary_path.to_string_lossy().to_string(),
+        variant: "custom".to_string(),
+        release_tag: "external".to_string(),
+    };
+    binary::write_binary_info(&app, &info)?;
+    Ok(info)
+}
+
+#[tauri::command]
 pub async fn sd_cancel_generation() -> Result<bool, String> {
     super::generate::cancel().await
 }

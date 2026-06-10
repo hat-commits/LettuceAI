@@ -215,6 +215,10 @@ fn default_settings() -> Settings {
         app_state: serde_json::Value::Null,
         advanced_model_settings: AdvancedModelSettings::default(),
         advanced_settings: Some(AdvancedSettings {
+            llama_default_context_length: None,
+            llama_default_kv_cache_type: None,
+            sd_default_offload_mode: None,
+            sd_default_size: None,
             summarisation_model_id: None,
             dynamic_memory_summarizer_prompt_template_id: None,
             dynamic_memory_manager_prompt_template_id: None,

@@ -518,6 +518,7 @@ fn build_scene_generation_request(
     character: &Character,
     persona: Option<&Persona>,
     reference_images: SceneReferenceImages,
+    default_size: Option<String>,
 ) -> ImageGenerationRequest {
     let SceneReferenceImages {
         character_images,
@@ -691,6 +692,7 @@ fn build_scene_generation_request(
             .advanced_model_settings
             .as_ref()
             .and_then(|settings| settings.sd_size.clone())
+            .or(default_size)
             .or_else(|| Some("1024x1024".to_string())),
         quality: None,
         style: None,
@@ -1563,6 +1565,10 @@ pub async fn chat_generate_scene_image(
     };
 
     let reference_images = build_scene_reference_images(&app, &session, character, persona);
+    let default_size = settings
+        .advanced_settings
+        .as_ref()
+        .and_then(|advanced| advanced.sd_default_size.clone());
     let mut request = build_scene_generation_request(
         &scene_prompt,
         model,
@@ -1570,6 +1576,7 @@ pub async fn chat_generate_scene_image(
         character,
         persona,
         reference_images,
+        default_size,
     );
     request.session_id = Some(session.id.clone());
     request.character_id = Some(character.id.clone());

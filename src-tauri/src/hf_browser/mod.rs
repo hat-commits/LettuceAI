@@ -1241,22 +1241,55 @@ fn resolve_total_available(available_ram: u64, available_vram: u64, unified: boo
     }
 }
 
+pub(crate) struct LlamaRuntimeDefaults {
+    pub context_length: u64,
+    pub kv_bytes_per_value: f64,
+}
+
+pub(crate) fn llama_runtime_defaults(app: &AppHandle) -> LlamaRuntimeDefaults {
+    let settings: Option<crate::chat_manager::types::Settings> =
+        crate::storage_manager::settings::read_settings_typed(app)
+            .ok()
+            .flatten();
+    let advanced = settings.as_ref().and_then(|s| s.advanced_settings.as_ref());
+    let context_length = advanced
+        .and_then(|a| a.llama_default_context_length)
+        .map(u64::from)
+        .filter(|value| *value >= 512)
+        .unwrap_or(8192);
+    let kv_type = advanced
+        .and_then(|a| a.llama_default_kv_cache_type.clone())
+        .unwrap_or_else(|| "auto".to_string());
+    let kv_bytes_per_value = if kv_type == "auto" {
+        2.0
+    } else {
+        kv_bytes_per_value(&kv_type)
+    };
+    LlamaRuntimeDefaults {
+        context_length,
+        kv_bytes_per_value,
+    }
+}
+
 fn compute_scores(
     files: &[RunabilityFileInput],
     meta: Option<&GgufModelMeta>,
     available_ram: Option<u64>,
     available_vram: Option<u64>,
+    defaults: &LlamaRuntimeDefaults,
 ) -> Vec<RunabilityScore> {
     let ram = available_ram.unwrap_or(0);
     let vram = available_vram.unwrap_or(0);
     let unified = crate::llama_cpp::is_unified_memory();
     let total_available = resolve_total_available(ram, vram, unified);
 
-    // KV cache at 8192 context, F16 KV
-    let effective_ctx = meta.map(|m| effective_kv_context(m, 8192)).unwrap_or(8192);
+    let default_ctx = defaults.context_length;
+    let effective_ctx = meta
+        .map(|m| effective_kv_context(m, default_ctx))
+        .unwrap_or(default_ctx);
     let kv_8k: u64 = meta
         .and_then(kv_base_per_token)
-        .map(|base| (base * 2.0 * effective_ctx as f64) as u64) // F16 = 2.0 bytes
+        .map(|base| (base * defaults.kv_bytes_per_value * effective_ctx as f64) as u64)
         .unwrap_or(0);
     let active_ratio = meta.map(active_weight_ratio).unwrap_or(1.0);
 
@@ -1465,6 +1498,7 @@ fn build_recommendation(
     available_ram: u64,
     available_vram: u64,
     supports_gpu_offload: bool,
+    default_context_cap: u64,
 ) -> RecommendationData {
     let unified = crate::llama_cpp::is_unified_memory();
     let total_available = resolve_total_available(available_ram, available_vram, unified);
@@ -1581,7 +1615,7 @@ fn build_recommendation(
                 continue;
             }
 
-            let ctx = max_ctx.min(8192);
+            let ctx = max_ctx.min(default_context_cap);
             let effective_ctx = kv_ctx_cap.map(|cap| ctx.min(cap)).unwrap_or(ctx);
             let kv_bytes = kv_base
                 .map(|b| (b * bpv * effective_ctx as f64) as u64)
@@ -2722,11 +2756,13 @@ pub async fn hf_compute_runability(
         ),
     );
 
+    let defaults = llama_runtime_defaults(&app);
     Ok(compute_scores(
         &files,
         meta.as_ref(),
         available_ram,
         available_vram,
+        &defaults,
     ))
 }
 
@@ -2775,15 +2811,15 @@ pub async fn hf_compute_local_runability(
     let unified = crate::llama_cpp::is_unified_memory();
     let total_available = resolve_total_available(available_ram, available_vram, unified);
 
-    // KV cache at 8192 context, F16 KV
+    let defaults = llama_runtime_defaults(&app);
     let effective_ctx = meta
         .as_ref()
-        .map(|m| effective_kv_context(m, 8192))
-        .unwrap_or(8192);
+        .map(|m| effective_kv_context(m, defaults.context_length))
+        .unwrap_or(defaults.context_length);
     let kv_8k: u64 = meta
         .as_ref()
         .and_then(kv_base_per_token)
-        .map(|base| (base * 2.0 * effective_ctx as f64) as u64)
+        .map(|base| (base * defaults.kv_bytes_per_value * effective_ctx as f64) as u64)
         .unwrap_or(0);
 
     let quant_quality = quant_quality_score(&quantization);
@@ -2867,11 +2903,13 @@ pub async fn hf_get_recommendation_data(
         0
     };
 
+    let defaults = llama_runtime_defaults(&app);
     Ok(build_recommendation(
         &files,
         meta.as_ref(),
         available_ram,
         available_vram,
         supports_gpu_offload,
+        defaults.context_length,
     ))
 }

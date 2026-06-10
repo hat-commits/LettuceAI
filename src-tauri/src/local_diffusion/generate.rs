@@ -357,13 +357,29 @@ pub async fn generate(
         .join(uuid::Uuid::new_v4().to_string());
     fs::create_dir_all(&tmp_dir).map_err(|e| e.to_string())?;
 
+    let global_settings: Option<crate::chat_manager::types::Settings> =
+        crate::storage_manager::settings::read_settings_typed(app)
+            .ok()
+            .flatten();
+    let global_offload = global_settings
+        .as_ref()
+        .and_then(|s| s.advanced_settings.as_ref())
+        .and_then(|a| a.sd_default_offload_mode.clone());
     let user_mode = request
         .advanced_model_settings
         .as_ref()
-        .and_then(|s| s.sd_offload_mode.as_deref())
-        .unwrap_or("auto")
-        .to_string();
-    let mut result = run_generation(app, &binary_info.path, &entry, request, &tmp_dir, None).await;
+        .and_then(|s| s.sd_offload_mode.clone())
+        .or(global_offload)
+        .unwrap_or_else(|| "auto".to_string());
+    let mut result = run_generation(
+        app,
+        &binary_info.path,
+        &entry,
+        request,
+        &tmp_dir,
+        Some(user_mode.as_str()),
+    )
+    .await;
 
     if let Err(message) = &result {
         let retryable = user_mode == "auto"

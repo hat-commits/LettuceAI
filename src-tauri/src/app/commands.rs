@@ -367,6 +367,7 @@ macro_rules! invoke_handler {
             crate::local_diffusion::commands::sd_queue_binary_install,
             crate::local_diffusion::commands::sd_finalize_binary_install,
             crate::local_diffusion::commands::sd_remove_binary,
+            crate::local_diffusion::commands::sd_set_custom_binary,
             crate::local_diffusion::commands::sd_cancel_generation,
             crate::local_diffusion::commands::sd_register_hf_model,
             crate::hf_browser::sd::hf_compute_sd_runability,
