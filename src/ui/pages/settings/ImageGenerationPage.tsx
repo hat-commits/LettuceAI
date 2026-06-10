@@ -1,9 +1,6 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ChevronDown, Cpu, Image, LucideIcon, PenLine, Sparkles } from "lucide-react";
-
-import { LocalImageGenSection } from "./LocalImageGenSection";
-import { getPlatform } from "../../../core/utils/platform";
+import { Check, ChevronDown, Image, LucideIcon, PenLine, Sparkles } from "lucide-react";
 
 import { ModelSelectionBottomMenu } from "../../components/ModelSelectionBottomMenu";
 import {
@@ -418,9 +415,7 @@ export function ImageGenerationPage() {
     );
   }
 
-  const isDesktop = getPlatform().type === "desktop";
-
-  if (state.models.length === 0 && state.writerModels.length === 0 && !isDesktop) {
+  if (state.models.length === 0 && state.writerModels.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center px-6">
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-fg/10 bg-fg/5">
@@ -449,19 +444,6 @@ export function ImageGenerationPage() {
           )}
 
           <div className="space-y-7">
-            {!hasGenerationModels ? (
-              <div className="flex flex-col items-center rounded-[12px] border border-fg/10 bg-fg/5 px-6 py-8">
-                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl border border-fg/10 bg-fg/5">
-                  <Image className="h-6 w-6 text-fg/40" />
-                </div>
-                <h2 className="mb-1 text-base font-semibold text-fg">
-                  {t("imageGeneration.empty.title")}
-                </h2>
-                <p className="text-center text-sm text-fg/50">
-                  {t("imageGeneration.empty.description")}
-                </p>
-              </div>
-            ) : null}
             {hasGenerationModels ? (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
@@ -562,21 +544,6 @@ export function ImageGenerationPage() {
                 </div>
               </SettingsSection>
             </motion.div>
-            ) : null}
-
-            {isDesktop ? (
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.22, delay: 0.12, ease: "easeOut" }}
-              >
-                <SettingsSection
-                  title={t("imageGeneration.local.sectionTitle")}
-                  icon={<Cpu size={12} />}
-                >
-                  <LocalImageGenSection />
-                </SettingsSection>
-              </motion.div>
             ) : null}
           </div>
         </div>

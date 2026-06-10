@@ -3660,11 +3660,6 @@ export const enMessages = {
       sceneWriter: "Scene Writer",
     },
     local: {
-      sectionTitle: "Local Generation",
-      engineTitle: "Stable Diffusion Engine",
-      engineDescription:
-        "Download the stable-diffusion.cpp engine to generate images on this device without an API.",
-      engineInstalledDescription: "The local engine is installed and ready to generate images.",
       engineDownloading: "Downloading engine...",
       engineLoadingVariants: "Checking available builds...",
       engineInstalled: "Engine installed",
@@ -3672,17 +3667,9 @@ export const enMessages = {
       engineRemoveFailed: "Failed to remove engine",
       installEngine: "Download Engine",
       recommended: "recommended",
-      modelsTitle: "Local Models",
-      modelsDescription:
-        "Diffusion models available to the local engine. Manage each model's files in the model editor's Configuration tab.",
-      browseHf: "Browse Hugging Face",
       updateFailed: "Failed to update model files",
-      deleteFailed: "Failed to delete model",
       noModels: "No local models yet. Download one from Hugging Face or create a model with the Local Diffusion platform.",
       missingFiles: "No checkpoint or diffusion model file yet. Attach one to finish setup.",
-      incomplete: "Incomplete",
-      engineMissingTitle: "Engine not installed",
-      engineMissingDescription: "Set up the sd.cpp engine in Local Runtime Defaults.",
       roles: {
         checkpoint: "Checkpoint",
         diffusionModel: "Diffusion model",
