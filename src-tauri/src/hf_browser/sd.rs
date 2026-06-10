@@ -20,7 +20,16 @@ pub struct SdRunabilityScore {
 
 pub fn guess_family(filename: &str, size: u64) -> &'static str {
     let lower = filename.to_ascii_lowercase();
-    if lower.contains("flux") || lower.contains("chroma") {
+    if lower.contains("z_image") || lower.contains("z-image") || lower.contains("zimage") {
+        return "zimage";
+    }
+    if lower.contains("qwen") {
+        return "qwen-image";
+    }
+    if lower.contains("chroma") {
+        return "chroma";
+    }
+    if lower.contains("flux") {
         return "flux";
     }
     if lower.contains("sd3") || lower.contains("sd_3") || lower.contains("sd35") {
@@ -37,9 +46,15 @@ pub fn guess_family(filename: &str, size: u64) -> &'static str {
         "flux"
     } else if gib > 5.5 {
         "sdxl"
-    } else {
+    } else if gib > 0.0 {
         "sd15"
+    } else {
+        "model"
     }
+}
+
+fn needs_separate_components(family: &str) -> bool {
+    !matches!(family, "sd15" | "sdxl" | "model")
 }
 
 pub fn guess_role(filename: &str, size: u64) -> &'static str {
@@ -53,11 +68,23 @@ pub fn guess_role(filename: &str, size: u64) -> &'static str {
     if lower.contains("t5xxl") || lower.contains("t5-xxl") || lower.contains("t5_xxl") {
         return "t5xxl";
     }
-    if lower.contains("vae") || lower == "ae.safetensors" {
+    if lower.contains("vae") || lower == "ae.safetensors" || lower == "ae.sft" {
         return "vae";
     }
+    let llm_token = lower.contains("qwen3")
+        || lower.contains("qwen2")
+        || lower.contains("qwen-2")
+        || lower.contains("mistral")
+        || lower.contains("text_encoder")
+        || lower.contains("text-encoder");
+    if llm_token {
+        if lower.contains("vision") || lower.contains("mmproj") {
+            return "llmVision";
+        }
+        return "llm";
+    }
     let family = guess_family(filename, size);
-    if lower.ends_with(".gguf") && (family == "flux" || family == "sd3") {
+    if lower.ends_with(".gguf") || needs_separate_components(family) {
         return "diffusionModel";
     }
     "checkpoint"
@@ -65,18 +92,22 @@ pub fn guess_role(filename: &str, size: u64) -> &'static str {
 
 fn encoder_overhead_bytes(family: &str) -> f64 {
     match family {
-        "flux" => 5.5 * GIB,
+        "flux" | "chroma" => 5.5 * GIB,
         "sd3" => 6.9 * GIB,
-        _ => 0.0,
+        "zimage" => 3.0 * GIB,
+        "qwen-image" => 8.0 * GIB,
+        "sd15" | "sdxl" => 0.0,
+        _ => 3.0 * GIB,
     }
 }
 
 fn activation_bytes_at_1024(family: &str) -> f64 {
     match family {
-        "flux" => 5.0 * GIB,
+        "flux" | "chroma" | "qwen-image" => 5.0 * GIB,
         "sd3" => 4.0 * GIB,
-        "sdxl" => 3.0 * GIB,
-        _ => 1.5 * GIB,
+        "sdxl" | "zimage" => 3.0 * GIB,
+        "sd15" => 1.5 * GIB,
+        _ => 3.0 * GIB,
     }
 }
 

@@ -116,6 +116,12 @@ fn merge_files(target: &mut SdModelFiles, incoming: SdModelFiles) {
     if incoming.t5xxl.is_some() {
         target.t5xxl = incoming.t5xxl;
     }
+    if incoming.llm.is_some() {
+        target.llm = incoming.llm;
+    }
+    if incoming.llm_vision.is_some() {
+        target.llm_vision = incoming.llm_vision;
+    }
     if incoming.vae.is_some() {
         target.vae = incoming.vae;
     }

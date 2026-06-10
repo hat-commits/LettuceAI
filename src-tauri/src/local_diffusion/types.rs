@@ -1,35 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum SdFamily {
-    Sd15,
-    Sdxl,
-    Sd3,
-    Flux,
-}
-
-impl SdFamily {
-    pub fn prefix(&self) -> &'static str {
-        match self {
-            SdFamily::Sd15 => "sd15",
-            SdFamily::Sdxl => "sdxl",
-            SdFamily::Sd3 => "sd3",
-            SdFamily::Flux => "flux",
-        }
-    }
-
-    pub fn parse(value: &str) -> Option<SdFamily> {
-        match value.trim().to_ascii_lowercase().as_str() {
-            "sd15" => Some(SdFamily::Sd15),
-            "sdxl" => Some(SdFamily::Sdxl),
-            "sd3" => Some(SdFamily::Sd3),
-            "flux" => Some(SdFamily::Flux),
-            _ => None,
-        }
-    }
-}
-
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SdModelFiles {
@@ -44,6 +14,10 @@ pub struct SdModelFiles {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub t5xxl: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub llm: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub llm_vision: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub vae: Option<String>,
 }
 
@@ -55,6 +29,8 @@ impl SdModelFiles {
             self.clip_l.as_ref(),
             self.clip_g.as_ref(),
             self.t5xxl.as_ref(),
+            self.llm.as_ref(),
+            self.llm_vision.as_ref(),
             self.vae.as_ref(),
         ]
         .into_iter()
@@ -62,33 +38,23 @@ impl SdModelFiles {
         .collect()
     }
 
-    pub fn missing_roles(&self, family: SdFamily) -> Vec<&'static str> {
-        let mut missing = Vec::new();
-        match family {
-            SdFamily::Sd15 | SdFamily::Sdxl => {
-                if self.checkpoint.is_none() {
-                    missing.push("checkpoint");
-                }
-            }
-            SdFamily::Flux | SdFamily::Sd3 => {
-                if self.diffusion_model.is_none() && self.checkpoint.is_none() {
-                    missing.push("diffusionModel");
-                }
-                if self.clip_l.is_none() {
-                    missing.push("clipL");
-                }
-                if family == SdFamily::Sd3 && self.clip_g.is_none() {
-                    missing.push("clipG");
-                }
-                if self.t5xxl.is_none() {
-                    missing.push("t5xxl");
-                }
-                if self.vae.is_none() {
-                    missing.push("vae");
-                }
-            }
+    pub fn has_main_model(&self) -> bool {
+        self.checkpoint.is_some() || self.diffusion_model.is_some()
+    }
+
+    pub fn set_role(&mut self, role: &str, path: String) -> Result<(), String> {
+        match role {
+            "checkpoint" => self.checkpoint = Some(path),
+            "diffusionModel" => self.diffusion_model = Some(path),
+            "clipL" => self.clip_l = Some(path),
+            "clipG" => self.clip_g = Some(path),
+            "t5xxl" => self.t5xxl = Some(path),
+            "llm" => self.llm = Some(path),
+            "llmVision" => self.llm_vision = Some(path),
+            "vae" => self.vae = Some(path),
+            other => return Err(format!("Unknown file role: {other}")),
         }
-        missing
+        Ok(())
     }
 }
 
@@ -97,7 +63,7 @@ impl SdModelFiles {
 pub struct SdModelEntry {
     pub id: String,
     pub name: String,
-    pub family: SdFamily,
+    pub family: String,
     pub files: SdModelFiles,
     pub source: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -107,12 +73,8 @@ pub struct SdModelEntry {
 }
 
 impl SdModelEntry {
-    pub fn missing_roles(&self) -> Vec<&'static str> {
-        self.files.missing_roles(self.family)
-    }
-
     pub fn is_complete(&self) -> bool {
-        self.missing_roles().is_empty()
+        self.files.has_main_model()
     }
 }
 
@@ -122,15 +84,12 @@ pub struct SdModelEntryDto {
     #[serde(flatten)]
     pub entry: SdModelEntry,
     pub complete: bool,
-    pub missing_roles: Vec<&'static str>,
 }
 
 impl From<SdModelEntry> for SdModelEntryDto {
     fn from(entry: SdModelEntry) -> Self {
-        let missing_roles = entry.missing_roles();
         SdModelEntryDto {
-            complete: missing_roles.is_empty(),
-            missing_roles,
+            complete: entry.is_complete(),
             entry,
         }
     }
@@ -150,4 +109,19 @@ pub struct SdStatus {
     pub binary: Option<SdBinaryInfo>,
     pub recommended_variant: String,
     pub models_dir: String,
+}
+
+pub fn family_slug(label: &str) -> String {
+    let slug: String = label
+        .trim()
+        .to_ascii_lowercase()
+        .chars()
+        .map(|ch| if ch.is_ascii_alphanumeric() { ch } else { '-' })
+        .collect();
+    let slug = slug.trim_matches('-').to_string();
+    if slug.is_empty() {
+        "model".to_string()
+    } else {
+        slug
+    }
 }

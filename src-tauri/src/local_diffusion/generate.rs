@@ -8,7 +8,7 @@ use tokio::sync::Mutex;
 
 use super::binary;
 use super::registry;
-use super::types::{SdFamily, SdModelEntry};
+use super::types::SdModelEntry;
 use crate::image_generator::storage::save_image_bytes;
 use crate::image_generator::types::{
     GeneratedImage, ImageGenerationRequest, ImageGenerationResponse,
@@ -16,54 +16,33 @@ use crate::image_generator::types::{
 
 static RUNNING: Mutex<Option<tokio::process::Child>> = Mutex::const_new(None);
 
-struct FamilyDefaults {
-    width: u32,
-    height: u32,
-    steps: u32,
-    cfg_scale: f64,
-}
+const DISTILLED_TOKENS: [&str; 5] = ["turbo", "schnell", "lightning", "hyper", "lcm"];
 
-fn defaults_for(entry: &SdModelEntry) -> FamilyDefaults {
-    match entry.family {
-        SdFamily::Sd15 => FamilyDefaults {
-            width: 512,
-            height: 512,
-            steps: 20,
-            cfg_scale: 7.0,
-        },
-        SdFamily::Sdxl => FamilyDefaults {
-            width: 1024,
-            height: 1024,
-            steps: 25,
-            cfg_scale: 6.0,
-        },
-        SdFamily::Sd3 => FamilyDefaults {
-            width: 1024,
-            height: 1024,
-            steps: 28,
-            cfg_scale: 4.5,
-        },
-        SdFamily::Flux => {
-            let schnell = entry.name.to_ascii_lowercase().contains("schnell")
-                || entry.id.to_ascii_lowercase().contains("schnell");
-            FamilyDefaults {
-                width: 1024,
-                height: 1024,
-                steps: if schnell { 4 } else { 20 },
-                cfg_scale: 1.0,
-            }
-        }
+fn model_text(entry: &SdModelEntry) -> String {
+    let mut text = format!("{} {} {}", entry.id, entry.name, entry.family);
+    for path in entry.files.all_paths() {
+        text.push(' ');
+        text.push_str(path);
     }
+    text.to_ascii_lowercase()
 }
 
-fn parse_size(size: Option<&str>, defaults: &FamilyDefaults) -> (u32, u32) {
-    let parsed = size.and_then(|value| {
-        let normalized = value.trim().to_ascii_lowercase();
-        let (w, h) = normalized.split_once('x')?;
-        Some((w.trim().parse::<u32>().ok()?, h.trim().parse::<u32>().ok()?))
-    });
-    let (width, height) = parsed.unwrap_or((defaults.width, defaults.height));
-    (round_to_64(width), round_to_64(height))
+fn is_distilled(entry: &SdModelEntry) -> bool {
+    let text = model_text(entry);
+    DISTILLED_TOKENS.iter().any(|token| text.contains(token))
+}
+
+fn is_guidance_distilled(entry: &SdModelEntry) -> bool {
+    let text = model_text(entry);
+    text.contains("flux") || text.contains("chroma")
+}
+
+fn parse_size(size: Option<&str>) -> Option<(u32, u32)> {
+    let value = size?;
+    let normalized = value.trim().to_ascii_lowercase();
+    let (w, h) = normalized.split_once('x')?;
+    let parsed = (w.trim().parse::<u32>().ok()?, h.trim().parse::<u32>().ok()?);
+    Some((round_to_64(parsed.0), round_to_64(parsed.1)))
 }
 
 fn round_to_64(value: u32) -> u32 {
@@ -110,17 +89,11 @@ fn build_args(
     out_path: &PathBuf,
     init_image: Option<&PathBuf>,
 ) -> Vec<String> {
-    let defaults = defaults_for(entry);
     let settings = request.advanced_model_settings.as_ref();
     let size = request
         .size
         .as_deref()
         .or_else(|| settings.and_then(|s| s.sd_size.as_deref()));
-    let (width, height) = parse_size(size, &defaults);
-    let steps = settings.and_then(|s| s.sd_steps).unwrap_or(defaults.steps);
-    let cfg_scale = settings
-        .and_then(|s| s.sd_cfg_scale)
-        .unwrap_or(defaults.cfg_scale);
 
     let mut args: Vec<String> = Vec::new();
     let files = &entry.files;
@@ -138,6 +111,12 @@ fn build_args(
     if let Some(t5xxl) = &files.t5xxl {
         args.extend(["--t5xxl".into(), t5xxl.clone()]);
     }
+    if let Some(llm) = &files.llm {
+        args.extend(["--llm".into(), llm.clone()]);
+    }
+    if let Some(llm_vision) = &files.llm_vision {
+        args.extend(["--llm_vision".into(), llm_vision.clone()]);
+    }
     if let Some(vae) = &files.vae {
         args.extend(["--vae".into(), vae.clone()]);
     }
@@ -148,17 +127,29 @@ fn build_args(
             args.extend(["-n".into(), negative.clone()]);
         }
     }
-    args.extend(["-W".into(), width.to_string()]);
-    args.extend(["-H".into(), height.to_string()]);
-    args.extend(["--steps".into(), steps.to_string()]);
-    args.extend(["--cfg-scale".into(), format!("{cfg_scale}")]);
-    if entry.family == SdFamily::Flux {
-        let schnell = entry.name.to_ascii_lowercase().contains("schnell")
-            || entry.id.to_ascii_lowercase().contains("schnell");
-        if !schnell {
-            args.extend(["--guidance".into(), "3.5".into()]);
-        }
+    if let Some((width, height)) = parse_size(size) {
+        args.extend(["-W".into(), width.to_string()]);
+        args.extend(["-H".into(), height.to_string()]);
     }
+
+    let distilled = is_distilled(entry);
+    let steps = settings
+        .and_then(|s| s.sd_steps)
+        .or(if distilled { Some(8) } else { None });
+    if let Some(steps) = steps {
+        args.extend(["--steps".into(), steps.to_string()]);
+    }
+    let cfg_scale = settings.and_then(|s| s.sd_cfg_scale).or(
+        if distilled || is_guidance_distilled(entry) {
+            Some(1.0)
+        } else {
+            None
+        },
+    );
+    if let Some(cfg_scale) = cfg_scale {
+        args.extend(["--cfg-scale".into(), format!("{cfg_scale}")]);
+    }
+
     if let Some(seed) = settings.and_then(|s| s.sd_seed) {
         args.extend(["-s".into(), seed.to_string()]);
     } else {
@@ -195,9 +186,8 @@ pub async fn generate(
         .ok_or_else(|| format!("Local diffusion model not found: {}", request.model))?;
     if !entry.is_complete() {
         return Err(format!(
-            "Model {} is missing required files: {}",
-            entry.name,
-            entry.missing_roles().join(", ")
+            "Model {} has no checkpoint or diffusion model file",
+            entry.name
         ));
     }
 

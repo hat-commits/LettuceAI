@@ -3,7 +3,9 @@ use tauri::AppHandle;
 use super::binary;
 use super::binary::{SdEngineVariant, SdQueuedInstall};
 use super::registry;
-use super::types::{SdBinaryInfo, SdFamily, SdModelEntry, SdModelEntryDto, SdModelFiles, SdStatus};
+use super::types::{
+    family_slug, SdBinaryInfo, SdModelEntry, SdModelEntryDto, SdModelFiles, SdStatus,
+};
 
 #[tauri::command]
 pub async fn sd_get_status(app: AppHandle) -> Result<SdStatus, String> {
@@ -23,14 +25,23 @@ pub async fn sd_list_models(app: AppHandle) -> Result<Vec<SdModelEntryDto>, Stri
         .collect())
 }
 
+fn derive_family(files: &SdModelFiles) -> String {
+    let main = files
+        .checkpoint
+        .as_deref()
+        .or(files.diffusion_model.as_deref())
+        .unwrap_or("");
+    let filename = main.rsplit(['/', '\\']).next().unwrap_or(main);
+    crate::hf_browser::sd::guess_family(filename, 0).to_string()
+}
+
 #[tauri::command]
 pub async fn sd_import_model(
     app: AppHandle,
     name: String,
-    family: String,
+    family: Option<String>,
     files: SdModelFiles,
 ) -> Result<SdModelEntryDto, String> {
-    let family = SdFamily::parse(&family).ok_or_else(|| format!("Unknown family: {family}"))?;
     let name = name.trim().to_string();
     if name.is_empty() {
         return Err("Model name is required".to_string());
@@ -39,8 +50,12 @@ pub async fn sd_import_model(
         return Err("At least one model file is required".to_string());
     }
     registry::validate_files_exist(&files)?;
+    let family = family
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty())
+        .unwrap_or_else(|| derive_family(&files));
     let entry = SdModelEntry {
-        id: format!("{}-{}", family.prefix(), uuid::Uuid::new_v4()),
+        id: format!("{}-{}", family_slug(&family), uuid::Uuid::new_v4()),
         name,
         family,
         total_bytes: registry::total_bytes(&files),
@@ -98,33 +113,26 @@ pub async fn sd_register_hf_model(
     repo: String,
     file_path: String,
     role: String,
-    family: String,
+    family: Option<String>,
     display_name: Option<String>,
 ) -> Result<SdModelEntryDto, String> {
-    let family = SdFamily::parse(&family).ok_or_else(|| format!("Unknown family: {family}"))?;
     if !std::path::PathBuf::from(&file_path).is_file() {
         return Err(format!("File not found: {file_path}"));
     }
 
     let mut files = SdModelFiles::default();
-    match role.as_str() {
-        "checkpoint" => files.checkpoint = Some(file_path),
-        "diffusionModel" => files.diffusion_model = Some(file_path),
-        "clipL" => files.clip_l = Some(file_path),
-        "clipG" => files.clip_g = Some(file_path),
-        "t5xxl" => files.t5xxl = Some(file_path),
-        "vae" => files.vae = Some(file_path),
-        other => return Err(format!("Unknown file role: {other}")),
-    }
+    files.set_role(&role, file_path)?;
 
     if let Some(existing) = registry::find_by_repo(&app, &repo).await? {
-        if existing.family == family {
-            return Ok(registry::update_model_files(&app, &existing.id, files)
-                .await?
-                .into());
-        }
+        return Ok(registry::update_model_files(&app, &existing.id, files)
+            .await?
+            .into());
     }
 
+    let family = family
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty())
+        .unwrap_or_else(|| derive_family(&files));
     let name = display_name
         .filter(|value| !value.trim().is_empty())
         .unwrap_or_else(|| {
@@ -134,7 +142,7 @@ pub async fn sd_register_hf_model(
                 .to_string()
         });
     let entry = SdModelEntry {
-        id: format!("{}-{}", family.prefix(), uuid::Uuid::new_v4()),
+        id: format!("{}-{}", family_slug(&family), uuid::Uuid::new_v4()),
         name,
         family,
         total_bytes: registry::total_bytes(&files),
