@@ -101,6 +101,31 @@ pub async fn generate_image(
     app: AppHandle,
     mut request: ImageGenerationRequest,
 ) -> Result<ImageGenerationResponse, String> {
+    if request.provider_id == crate::local_diffusion::PROVIDER_ID {
+        let result = crate::local_diffusion::generate::generate(&app, &request).await;
+        match &result {
+            Ok(response) => record_image_generation_usage(
+                &app,
+                &request,
+                crate::local_diffusion::PROVIDER_LABEL,
+                None,
+                true,
+                None,
+                response.images.len(),
+            ),
+            Err(err) => record_image_generation_usage(
+                &app,
+                &request,
+                crate::local_diffusion::PROVIDER_LABEL,
+                None,
+                false,
+                Some(err.clone()),
+                0,
+            ),
+        }
+        return result;
+    }
+
     let mut provider_label = request.provider_id.clone();
 
     if request.output_modalities.is_none() {

@@ -20,9 +20,13 @@ pub async fn save_image(app: &AppHandle, image_data: &str) -> Result<SavedGenera
         decode_raw_base64(image_data)?
     };
 
+    save_image_bytes(app, &bytes)
+}
+
+pub fn save_image_bytes(app: &AppHandle, bytes: &[u8]) -> Result<SavedGeneratedImage, String> {
     let asset_id = uuid::Uuid::new_v4().to_string();
-    let stored = storage_write_image_bytes(app, &asset_id, &bytes)?;
-    let (width, height) = image::load_from_memory(&bytes)
+    let stored = storage_write_image_bytes(app, &asset_id, bytes)?;
+    let (width, height) = image::load_from_memory(bytes)
         .map(|img| (Some(img.width()), Some(img.height())))
         .unwrap_or((None, None));
 

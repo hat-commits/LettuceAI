@@ -408,6 +408,23 @@ pub fn resolve_credential_for_model<'a>(
     settings: &'a Settings,
     model: &Model,
 ) -> Option<&'a ProviderCredential> {
+    if model
+        .provider_id
+        .eq_ignore_ascii_case(crate::local_diffusion::PROVIDER_ID)
+    {
+        static LOCAL_DIFFUSION_CREDENTIAL: OnceLock<ProviderCredential> = OnceLock::new();
+        return Some(LOCAL_DIFFUSION_CREDENTIAL.get_or_init(|| ProviderCredential {
+            id: "builtin-localdiffusion".to_string(),
+            provider_id: crate::local_diffusion::PROVIDER_ID.to_string(),
+            label: crate::local_diffusion::PROVIDER_LABEL.to_string(),
+            api_key: Some(String::new()),
+            base_url: None,
+            default_model: None,
+            headers: None,
+            config: None,
+        }));
+    }
+
     if model.provider_id.eq_ignore_ascii_case("llamacpp") {
         static LLAMA_CPP_CREDENTIAL: OnceLock<ProviderCredential> = OnceLock::new();
         return Some(LLAMA_CPP_CREDENTIAL.get_or_init(|| ProviderCredential {

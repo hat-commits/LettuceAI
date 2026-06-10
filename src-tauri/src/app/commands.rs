@@ -362,6 +362,7 @@ macro_rules! invoke_handler {
             crate::local_diffusion::commands::sd_queue_binary_install,
             crate::local_diffusion::commands::sd_finalize_binary_install,
             crate::local_diffusion::commands::sd_remove_binary,
+            crate::local_diffusion::commands::sd_cancel_generation,
             crate::ollama::ollama_pull_model,
             crate::ollama::ollama_inventory_list,
             crate::ollama::ollama_inventory_delete,

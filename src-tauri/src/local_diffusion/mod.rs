@@ -1,5 +1,6 @@
 pub mod binary;
 pub mod commands;
+pub mod generate;
 pub mod registry;
 pub mod types;
 

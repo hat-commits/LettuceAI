@@ -88,6 +88,11 @@ pub async fn sd_remove_binary(app: AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command]
+pub async fn sd_cancel_generation() -> Result<bool, String> {
+    super::generate::cancel().await
+}
+
+#[tauri::command]
 pub async fn sd_delete_model(
     app: AppHandle,
     model_id: String,
