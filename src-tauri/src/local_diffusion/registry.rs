@@ -101,6 +101,20 @@ pub async fn set_model_file(
     Ok(updated)
 }
 
+pub async fn set_measured(
+    app: &AppHandle,
+    model_id: &str,
+    measured: super::types::SdMeasuredProfile,
+) -> Result<(), String> {
+    let _guard = REGISTRY_LOCK.lock().await;
+    let mut entries = read_entries(app)?;
+    if let Some(entry) = entries.iter_mut().find(|existing| existing.id == model_id) {
+        entry.measured = Some(measured);
+        write_entries(app, &entries)?;
+    }
+    Ok(())
+}
+
 pub async fn remove_model(app: &AppHandle, model_id: &str) -> Result<Option<SdModelEntry>, String> {
     let _guard = REGISTRY_LOCK.lock().await;
     let mut entries = read_entries(app)?;

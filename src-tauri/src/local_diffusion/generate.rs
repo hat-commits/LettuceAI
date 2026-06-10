@@ -6,15 +6,86 @@ use tauri::{AppHandle, Emitter};
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::sync::Mutex;
 
+use std::sync::Mutex as StdMutex;
+use std::sync::Arc;
+
 use super::binary;
 use super::registry;
-use super::types::SdModelEntry;
+use super::types::{SdMeasuredProfile, SdModelEntry};
 use crate::image_generator::storage::save_image_bytes;
 use crate::image_generator::types::{
     GeneratedImage, ImageGenerationRequest, ImageGenerationResponse,
 };
 
 static RUNNING: Mutex<Option<tokio::process::Child>> = Mutex::const_new(None);
+
+#[derive(Debug, Default, Clone)]
+struct MemoryReport {
+    total_params_mb: f64,
+    text_encoders_mb: f64,
+    diffusion_mb: f64,
+    vae_mb: f64,
+    max_compute_vram_mb: f64,
+    has_params: bool,
+}
+
+struct MemoryParser {
+    params_re: regex::Regex,
+    compute_re: regex::Regex,
+    report: StdMutex<MemoryReport>,
+}
+
+impl MemoryParser {
+    fn new() -> Result<Self, String> {
+        Ok(MemoryParser {
+            params_re: regex::Regex::new(
+                r"total params memory size = ([0-9.]+)MB \(VRAM [0-9.]+MB, RAM [0-9.]+MB\): text_encoders ([0-9.]+)MB\([^)]*\), diffusion_model ([0-9.]+)MB\([^)]*\), vae ([0-9.]+)MB",
+            )
+            .map_err(|e| e.to_string())?,
+            compute_re: regex::Regex::new(r"compute buffer size: ([0-9.]+) MB\(VRAM\)")
+                .map_err(|e| e.to_string())?,
+            report: StdMutex::new(MemoryReport::default()),
+        })
+    }
+
+    fn parse_line(&self, line: &str) {
+        if let Some(captures) = self.params_re.captures(line) {
+            let parse = |index: usize| captures[index].parse::<f64>().unwrap_or(0.0);
+            if let Ok(mut report) = self.report.lock() {
+                report.total_params_mb = parse(1);
+                report.text_encoders_mb = parse(2);
+                report.diffusion_mb = parse(3);
+                report.vae_mb = parse(4);
+                report.has_params = true;
+            }
+        } else if let Some(captures) = self.compute_re.captures(line) {
+            let value = captures[1].parse::<f64>().unwrap_or(0.0);
+            if let Ok(mut report) = self.report.lock() {
+                if value > report.max_compute_vram_mb {
+                    report.max_compute_vram_mb = value;
+                }
+            }
+        }
+    }
+
+    fn snapshot(&self) -> MemoryReport {
+        self.report.lock().map(|r| r.clone()).unwrap_or_default()
+    }
+}
+
+const OOM_PATTERNS: [&str; 6] = [
+    "out of memory",
+    "failed to allocate",
+    "allocation failed",
+    "backend buffer failed",
+    "compute buffer failed",
+    "erroroutofdevicememory",
+];
+
+fn is_oom_error(message: &str) -> bool {
+    let lower = message.to_ascii_lowercase();
+    OOM_PATTERNS.iter().any(|pattern| lower.contains(pattern))
+}
 
 const DISTILLED_TOKENS: [&str; 5] = ["turbo", "schnell", "lightning", "hyper", "lcm"];
 
@@ -53,6 +124,15 @@ fn file_size(path: Option<&String>) -> f64 {
 
 fn offload_args(entry: &SdModelEntry, width: u32, height: u32, mode: &str) -> Vec<String> {
     const GIB: f64 = 1024.0 * 1024.0 * 1024.0;
+    const MIB: f64 = 1024.0 * 1024.0;
+    let full_gpu: Vec<String> = vec!["--diffusion-fa".into()];
+    let clip_cpu: Vec<String> = vec!["--clip-on-cpu".into(), "--diffusion-fa".into()];
+    let clip_vae_cpu: Vec<String> = vec![
+        "--clip-on-cpu".into(),
+        "--vae-on-cpu".into(),
+        "--diffusion-fa".into(),
+        "--vae-tiling".into(),
+    ];
     let mixed: Vec<String> = vec![
         "--offload-to-cpu".into(),
         "--diffusion-fa".into(),
@@ -69,34 +149,48 @@ fn offload_args(entry: &SdModelEntry, width: u32, height: u32, mode: &str) -> Ve
         return Vec::new();
     }
     if crate::llama_cpp::is_unified_memory() {
-        return Vec::new();
+        return full_gpu;
     }
     let budget = vram * 0.9;
 
-    let files = &entry.files;
-    let main = file_size(files.checkpoint.as_ref()).max(file_size(files.diffusion_model.as_ref()));
-    let encoders = file_size(files.clip_l.as_ref())
-        + file_size(files.clip_g.as_ref())
-        + file_size(files.t5xxl.as_ref())
-        + file_size(files.llm.as_ref())
-        + file_size(files.llm_vision.as_ref());
-    let vae = file_size(files.vae.as_ref());
-    let activations = crate::hf_browser::sd::estimate_activation_bytes(&entry.family, width, height);
-    let overhead = 0.6 * GIB;
+    let (encoders, main, vae, activations, overhead) = if let Some(measured) = entry.measured {
+        let pixel_scale = (width as f64 * height as f64)
+            / (measured.width as f64 * measured.height as f64).max(1.0);
+        let activations = if measured.max_compute_vram_mb > 0.0 {
+            measured.max_compute_vram_mb * MIB * pixel_scale
+        } else {
+            crate::hf_browser::sd::estimate_activation_bytes(&entry.family, width, height)
+        };
+        (
+            measured.text_encoders_mb * MIB,
+            measured.diffusion_mb * MIB,
+            measured.vae_mb * MIB,
+            activations,
+            0.4 * GIB,
+        )
+    } else {
+        let files = &entry.files;
+        let main =
+            file_size(files.checkpoint.as_ref()).max(file_size(files.diffusion_model.as_ref()));
+        let encoders = file_size(files.clip_l.as_ref())
+            + file_size(files.clip_g.as_ref())
+            + file_size(files.t5xxl.as_ref())
+            + file_size(files.llm.as_ref())
+            + file_size(files.llm_vision.as_ref());
+        let vae = file_size(files.vae.as_ref());
+        let activations =
+            crate::hf_browser::sd::estimate_activation_bytes(&entry.family, width, height);
+        (encoders, main, vae, activations, 0.6 * GIB)
+    };
 
     if main + encoders + vae + activations + overhead <= budget {
-        return Vec::new();
+        return full_gpu;
     }
     if main + vae + activations + overhead <= budget {
-        return vec!["--clip-on-cpu".into(), "--diffusion-fa".into()];
+        return clip_cpu;
     }
     if main + activations + overhead <= budget {
-        return vec![
-            "--clip-on-cpu".into(),
-            "--vae-on-cpu".into(),
-            "--diffusion-fa".into(),
-            "--vae-tiling".into(),
-        ];
+        return clip_vae_cpu;
     }
     mixed
 }
@@ -144,6 +238,7 @@ fn build_args(
     request: &ImageGenerationRequest,
     out_path: &PathBuf,
     init_image: Option<&PathBuf>,
+    mode_override: Option<&str>,
 ) -> Vec<String> {
     let settings = request.advanced_model_settings.as_ref();
     let size = request
@@ -190,9 +285,11 @@ fn build_args(
     }
 
     let (est_width, est_height) = parsed_size.unwrap_or((1024, 1024));
-    let offload_mode = settings
-        .and_then(|s| s.sd_offload_mode.as_deref())
-        .unwrap_or("auto");
+    let offload_mode = mode_override.unwrap_or_else(|| {
+        settings
+            .and_then(|s| s.sd_offload_mode.as_deref())
+            .unwrap_or("auto")
+    });
     args.extend(offload_args(entry, est_width, est_height, offload_mode));
 
     let distilled = is_distilled(entry);
@@ -235,6 +332,7 @@ fn build_args(
         args.extend(["--strength".into(), format!("{strength}")]);
     }
     args.extend(["-o".into(), out_path.to_string_lossy().to_string()]);
+    args.push("-v".into());
     args
 }
 
@@ -258,9 +356,64 @@ pub async fn generate(
         .join("tmp")
         .join(uuid::Uuid::new_v4().to_string());
     fs::create_dir_all(&tmp_dir).map_err(|e| e.to_string())?;
-    let result = run_generation(app, &binary_info.path, &entry, request, &tmp_dir).await;
+
+    let user_mode = request
+        .advanced_model_settings
+        .as_ref()
+        .and_then(|s| s.sd_offload_mode.as_deref())
+        .unwrap_or("auto")
+        .to_string();
+    let mut result = run_generation(app, &binary_info.path, &entry, request, &tmp_dir, None).await;
+
+    if let Err(message) = &result {
+        let retryable = user_mode == "auto"
+            && is_oom_error(message)
+            && !message.contains("already in progress");
+        if retryable {
+            crate::utils::log_warn(
+                app,
+                "local_diffusion",
+                "generation ran out of memory, retrying with full CPU offload".to_string(),
+            );
+            result =
+                run_generation(app, &binary_info.path, &entry, request, &tmp_dir, Some("mixed"))
+                    .await;
+        }
+    }
+
     let _ = fs::remove_dir_all(&tmp_dir);
-    result
+
+    match result {
+        Ok((response, report)) => {
+            if report.has_params {
+                let size = parse_size(
+                    request.size.as_deref().or_else(|| {
+                        request
+                            .advanced_model_settings
+                            .as_ref()
+                            .and_then(|s| s.sd_size.as_deref())
+                    }),
+                )
+                .unwrap_or((1024, 1024));
+                let _ = registry::set_measured(
+                    app,
+                    &entry.id,
+                    SdMeasuredProfile {
+                        total_params_mb: report.total_params_mb,
+                        text_encoders_mb: report.text_encoders_mb,
+                        diffusion_mb: report.diffusion_mb,
+                        vae_mb: report.vae_mb,
+                        max_compute_vram_mb: report.max_compute_vram_mb,
+                        width: size.0,
+                        height: size.1,
+                    },
+                )
+                .await;
+            }
+            Ok(response)
+        }
+        Err(message) => Err(message),
+    }
 }
 
 async fn run_generation(
@@ -269,7 +422,8 @@ async fn run_generation(
     entry: &SdModelEntry,
     request: &ImageGenerationRequest,
     tmp_dir: &PathBuf,
-) -> Result<ImageGenerationResponse, String> {
+    mode_override: Option<&str>,
+) -> Result<(ImageGenerationResponse, MemoryReport), String> {
     let init_image = match request.input_images.as_deref() {
         Some([single]) => {
             let bytes = decode_input_image(single)?;
@@ -281,7 +435,7 @@ async fn run_generation(
     };
 
     let out_path = tmp_dir.join("out.png");
-    let args = build_args(entry, request, &out_path, init_image.as_ref());
+    let args = build_args(entry, request, &out_path, init_image.as_ref(), mode_override);
     let offload_flags: Vec<&String> = args
         .iter()
         .filter(|arg| {
@@ -338,15 +492,18 @@ async fn run_generation(
     };
 
     let progress_re = regex::Regex::new(r"(\d+)/(\d+)").map_err(|e| e.to_string())?;
+    let memory_parser = Arc::new(MemoryParser::new()?);
     let mut stderr_tail: Vec<String> = Vec::new();
 
     let app_clone = app.clone();
     let re_clone = progress_re.clone();
+    let parser_clone = Arc::clone(&memory_parser);
     let stdout_task = tokio::spawn(async move {
         if let Some(stdout) = stdout {
             let mut lines = BufReader::new(stdout).lines();
             while let Ok(Some(line)) = lines.next_line().await {
                 emit_progress(&app_clone, &re_clone, &line);
+                parser_clone.parse_line(&line);
             }
         }
     });
@@ -354,6 +511,7 @@ async fn run_generation(
         let mut lines = BufReader::new(stderr).lines();
         while let Ok(Some(line)) = lines.next_line().await {
             emit_progress(app, &progress_re, &line);
+            memory_parser.parse_line(&line);
             stderr_tail.push(line);
             if stderr_tail.len() > 20 {
                 stderr_tail.remove(0);
@@ -411,11 +569,14 @@ async fn run_generation(
         });
     }
 
-    Ok(ImageGenerationResponse {
-        images,
-        model: request.model.clone(),
-        provider_id: request.provider_id.clone(),
-    })
+    Ok((
+        ImageGenerationResponse {
+            images,
+            model: request.model.clone(),
+            provider_id: request.provider_id.clone(),
+        },
+        memory_parser.snapshot(),
+    ))
 }
 
 fn emit_progress(app: &AppHandle, re: &regex::Regex, line: &str) {

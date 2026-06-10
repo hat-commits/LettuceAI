@@ -33,6 +33,16 @@ export interface SdModelFiles {
   vae?: string | null;
 }
 
+export interface SdMeasuredProfile {
+  totalParamsMb: number;
+  textEncodersMb: number;
+  diffusionMb: number;
+  vaeMb: number;
+  maxComputeVramMb: number;
+  width: number;
+  height: number;
+}
+
 export interface SdModelEntry {
   id: string;
   name: string;
@@ -43,6 +53,7 @@ export interface SdModelEntry {
   totalBytes: number;
   createdAt: number;
   complete: boolean;
+  measured?: SdMeasuredProfile | null;
 }
 
 export interface SdBinaryInfo {

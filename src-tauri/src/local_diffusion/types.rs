@@ -65,6 +65,18 @@ impl SdModelFiles {
     }
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SdMeasuredProfile {
+    pub total_params_mb: f64,
+    pub text_encoders_mb: f64,
+    pub diffusion_mb: f64,
+    pub vae_mb: f64,
+    pub max_compute_vram_mb: f64,
+    pub width: u32,
+    pub height: u32,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SdModelEntry {
@@ -77,6 +89,8 @@ pub struct SdModelEntry {
     pub repo: Option<String>,
     pub total_bytes: u64,
     pub created_at: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub measured: Option<SdMeasuredProfile>,
 }
 
 impl SdModelEntry {

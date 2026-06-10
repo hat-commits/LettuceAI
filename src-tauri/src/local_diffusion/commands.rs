@@ -62,6 +62,7 @@ pub async fn sd_import_model(
         source: "imported".to_string(),
         repo: None,
         created_at: crate::infra::utils::now_millis()?,
+        measured: None,
     };
     Ok(registry::upsert_model(&app, entry).await?.into())
 }
@@ -216,6 +217,7 @@ pub async fn sd_register_hf_model(
         source: "hf".to_string(),
         repo: Some(repo),
         created_at: crate::infra::utils::now_millis()?,
+        measured: None,
     };
     Ok(registry::upsert_model(&app, entry).await?.into())
 }
