@@ -23,6 +23,7 @@ mod host_api;
 mod image_generator;
 pub mod infra;
 mod llama_cpp;
+pub mod local_diffusion;
 pub mod migrations;
 pub mod models;
 pub mod ollama;
