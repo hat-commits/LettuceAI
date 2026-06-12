@@ -6220,6 +6220,7 @@ async fn generate_character_response(
         conversation_window(&recent_messages, manual_window)
     };
 
+    let no_chat_history = messages_for_generation.is_empty();
     let mut api_messages = build_messages_for_api(
         &messages_for_generation,
         &context.characters,
@@ -6236,11 +6237,12 @@ async fn generate_character_response(
     }
     messages_for_api.extend(api_messages);
 
-    let persona_name = persona.as_ref().map(|p| p.title.as_str()).unwrap_or("user");
-    messages_for_api.push(json!({
-        "role": "user",
-        "content": format!("[{}]: {}", persona_name, context.user_message)
-    }));
+    if no_chat_history {
+        messages_for_api.push(json!({
+            "role": "user",
+            "content": format!("[Begin the conversation. Respond as {}.]", selected_char_info.name)
+        }));
+    }
 
     let sampler_profile = if credential.provider_id == "llamacpp" {
         Some(resolve_llama_sampler_profile(model, settings))
