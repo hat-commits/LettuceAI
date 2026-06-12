@@ -11,9 +11,13 @@ pub(super) const MTP_DRAFT_MAX: u32 = 8;
 
 pub(super) struct MtpRuntime<'m> {
     pub(super) draft: LlamaContext<'m>,
+    pub(super) shared: bool,
+    pub(super) primed: bool,
     pub(super) draft_n: usize,
     pub(super) n_embd: usize,
     pub(super) carry_hidden: Vec<f32>,
+    pub(super) h_last: Vec<f32>,
+    pub(super) last_token: LlamaToken,
     pub(super) draft_last_row: i32,
     pub(super) pending: VecDeque<LlamaToken>,
     pub(super) rounds: u64,
@@ -71,29 +75,45 @@ pub(super) fn discover_external_mtp(model_path: &str) -> Option<String> {
 pub(super) fn create_runtime<'m>(
     target_model: &LlamaModel,
     draft_model: &'m LlamaModel,
+    target_ctx: &LlamaContext<'_>,
     backend: &LlamaBackend,
     draft_params: LlamaContextParams,
     draft_n: usize,
 ) -> Result<MtpRuntime<'m>, String> {
-    if draft_model.n_embd() != target_model.n_embd() {
+    let shared = if draft_model.n_embd() == target_model.n_embd() {
+        false
+    } else if draft_model.n_embd_out() == target_model.n_embd() {
+        true
+    } else {
         return Err(format!(
-            "MTP draft model embedding width {} does not match target model {}",
+            "MTP draft model widths (n_embd {}, n_embd_out {}) do not match target model width {}",
             draft_model.n_embd(),
+            draft_model.n_embd_out(),
             target_model.n_embd()
         ));
-    }
+    };
 
+    let mut params = draft_params
+        .with_ctx_type(LlamaContextType::Mtp)
+        .with_ctx_other(target_ctx);
+    if shared {
+        params = params.with_n_rs_seq(0);
+    }
     let draft = draft_model
-        .new_context(backend, draft_params.with_ctx_type(LlamaContextType::Mtp))
+        .new_context(backend, params)
         .map_err(|e| format!("failed to create MTP draft context: {e}"))?;
     let n_embd = usize::try_from(target_model.n_embd())
         .map_err(|_| "model n_embd does not fit into usize".to_string())?;
 
     Ok(MtpRuntime {
         draft,
+        shared,
+        primed: false,
         draft_n: draft_n.max(1),
         n_embd,
         carry_hidden: vec![0.0; n_embd],
+        h_last: vec![0.0; n_embd],
+        last_token: LlamaToken::new(0),
         draft_last_row: 0,
         pending: VecDeque::new(),
         rounds: 0,
@@ -110,7 +130,7 @@ pub(super) fn enable_nextn_embeddings(
         .set_embeddings_nextn(true, false)
         .map_err(|e| format!("failed to enable nextn embeddings on target context: {e}"))?;
     rt.draft
-        .set_embeddings_nextn(true, false)
+        .set_embeddings_nextn(true, rt.shared)
         .map_err(|e| format!("failed to enable nextn embeddings on MTP draft context: {e}"))?;
     Ok(())
 }
@@ -123,6 +143,14 @@ pub(super) fn prefill_draft_chunk(
     is_final_chunk: bool,
 ) -> Result<(), String> {
     if chunk_tokens.is_empty() {
+        return Ok(());
+    }
+
+    if rt.shared {
+        rt.h_last = target
+            .embeddings_nextn_ith(chunk_tokens.len() as i32 - 1)
+            .map_err(|e| format!("failed to read target nextn embeddings: {e}"))?
+            .to_vec();
         return Ok(());
     }
 
@@ -166,6 +194,10 @@ pub(super) fn mtp_round(
     pos: i32,
     max_pos: i32,
 ) -> Result<Vec<LlamaToken>, String> {
+    if rt.shared {
+        return mtp_round_shared(target, rt, sampler, model, pos, max_pos);
+    }
+
     rt.rounds += 1;
     let prefix_hidden = rt.carry_hidden.clone();
     let budget = (max_pos - pos - 1).max(0) as usize;
@@ -244,6 +276,98 @@ pub(super) fn mtp_round(
             .to_vec()
     };
     rollback_and_advance(target, rt, pos, matched, extra, &extra_hidden)?;
+    rt.accepted += accepted.len() as u64;
+
+    Ok(accepted)
+}
+
+fn mtp_round_shared(
+    target: &mut LlamaContext<'_>,
+    rt: &mut MtpRuntime<'_>,
+    sampler: &mut LlamaSampler,
+    model: &LlamaModel,
+    pos: i32,
+    max_pos: i32,
+) -> Result<Vec<LlamaToken>, String> {
+    rt.rounds += 1;
+
+    if !rt.primed {
+        rt.primed = true;
+        let first = sampler.sample(target, -1);
+        rt.carry_hidden = rt.h_last.clone();
+        rt.last_token = first;
+        rt.accepted += 1;
+        return Ok(vec![first]);
+    }
+
+    let steps = rt.draft_n.min((max_pos - pos).max(0) as usize);
+
+    let mut drafted: Vec<LlamaToken> = Vec::with_capacity(steps);
+    let mut input = rt.last_token;
+    let mut h_prev = rt.carry_hidden.clone();
+    for _ in 0..steps {
+        let mut batch = LlamaBatch::new_with_embeddings(1, rt.n_embd, 1);
+        batch
+            .add_with_embedding(input, &h_prev, pos - 1, &[0], true)
+            .map_err(|e| format!("failed to build MTP draft step batch: {e}"))?;
+        rt.draft
+            .decode(&mut batch)
+            .map_err(|e| format!("MTP draft step decode failed: {e}"))?;
+
+        let token = greedy_token(rt.draft.get_logits());
+        drafted.push(token);
+        if model.is_eog_token(token) {
+            break;
+        }
+        h_prev = rt
+            .draft
+            .embeddings_nextn_ith(0)
+            .map_err(|e| format!("failed to read MTP draft nextn embeddings: {e}"))?
+            .to_vec();
+        input = token;
+    }
+    rt.drafted += drafted.len() as u64;
+
+    let mut batch = LlamaBatch::new(drafted.len() + 1, 1);
+    batch
+        .add(rt.last_token, pos - 1, &[0], true)
+        .map_err(|e| format!("failed to build MTP verification batch: {e}"))?;
+    for (i, token) in drafted.iter().enumerate() {
+        batch
+            .add(*token, pos + i as i32, &[0], true)
+            .map_err(|e| format!("failed to build MTP verification batch: {e}"))?;
+    }
+    target
+        .decode(&mut batch)
+        .map_err(|e| format!("MTP verification decode failed: {e}"))?;
+
+    let mut matched = 0usize;
+    let mut sampled = sampler.sample(target, 0);
+    while matched < drafted.len() && sampled == drafted[matched] {
+        matched += 1;
+        sampled = sampler.sample(target, matched as i32);
+    }
+    let extra = sampled;
+
+    rt.carry_hidden = target
+        .embeddings_nextn_ith(matched as i32)
+        .map_err(|e| format!("failed to read target nextn embeddings: {e}"))?
+        .to_vec();
+
+    if matched < drafted.len() {
+        let clear_from = u32::try_from(pos + matched as i32)
+            .map_err(|_| "MTP rollback position does not fit into u32".to_string())?;
+        let rolled_back = target
+            .clear_kv_cache_seq(Some(0), Some(clear_from), None)
+            .map_err(|e| format!("failed to roll back target KV cache: {e}"))?;
+        if !rolled_back {
+            return Err(format!("target KV rollback failed at position {clear_from}"));
+        }
+    }
+
+    rt.last_token = extra;
+    let mut accepted = drafted[..matched].to_vec();
+    accepted.push(extra);
     rt.accepted += accepted.len() as u64;
 
     Ok(accepted)

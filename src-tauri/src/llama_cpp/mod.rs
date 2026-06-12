@@ -1736,6 +1736,7 @@ mod desktop {
                 match mtp::create_runtime(
                     model,
                     llama_mtp_draft_model.as_deref().unwrap_or(model),
+                    &ctx,
                     backend,
                     draft_params,
                     llama_mtp_draft_tokens as usize,
@@ -1746,8 +1747,15 @@ mod desktop {
                                 &app,
                                 "llama_cpp",
                                 format!(
-                                    "MTP active: draft_tokens={} ctx={} n_batch={}",
-                                    llama_mtp_draft_tokens, resolved_ctx_size, resolved_n_batch
+                                    "MTP active: mode={} draft_tokens={} ctx={} n_batch={}",
+                                    if runtime.shared {
+                                        "shared-assistant"
+                                    } else {
+                                        "embedded"
+                                    },
+                                    llama_mtp_draft_tokens,
+                                    resolved_ctx_size,
+                                    resolved_n_batch
                                 ),
                             );
                             Some(runtime)
