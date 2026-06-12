@@ -703,6 +703,38 @@ fn build_llama_extra_fields(model: &Model, settings: &Settings) -> Option<HashMa
     if let Some(v) = model
         .advanced_model_settings
         .as_ref()
+        .and_then(|a| a.llama_mtp_enabled)
+        .or(settings.advanced_model_settings.llama_mtp_enabled)
+    {
+        extra.insert("llamaMtpEnabled".to_string(), json!(v));
+    }
+    if let Some(v) = model
+        .advanced_model_settings
+        .as_ref()
+        .and_then(|a| a.llama_mtp_draft_tokens)
+        .or(settings.advanced_model_settings.llama_mtp_draft_tokens)
+        .filter(|v| *v > 0)
+    {
+        extra.insert("llamaMtpDraftTokens".to_string(), json!(v));
+    }
+    if let Some(v) = model
+        .advanced_model_settings
+        .as_ref()
+        .and_then(|a| a.llama_mtp_model_path.clone())
+        .or_else(|| {
+            settings
+                .advanced_model_settings
+                .llama_mtp_model_path
+                .clone()
+        })
+        .map(|v| v.trim().to_string())
+        .filter(|v| !v.is_empty())
+    {
+        extra.insert("llamaMtpModelPath".to_string(), json!(v));
+    }
+    if let Some(v) = model
+        .advanced_model_settings
+        .as_ref()
         .and_then(|a| a.llama_chat_template_preset.clone())
         .or_else(|| {
             settings
