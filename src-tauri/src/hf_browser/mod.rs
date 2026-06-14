@@ -411,9 +411,20 @@ pub(crate) async fn external_item_cancel_requested(queue_id: &str) -> bool {
     state.cancel_ids.contains(queue_id)
 }
 
-fn hf_models_dir(app: &AppHandle) -> Result<PathBuf, String> {
+fn default_hf_models_dir(app: &AppHandle) -> Result<PathBuf, String> {
     let lettuce_dir = crate::utils::lettuce_dir(app)?;
-    let dir = lettuce_dir.join("models").join("gguf");
+    Ok(lettuce_dir.join("models").join("gguf"))
+}
+
+fn custom_llm_models_dir(app: &AppHandle) -> Option<PathBuf> {
+    crate::infra::model_storage::read_custom_dir(app, "customLlmModelsDir")
+}
+
+fn hf_models_dir(app: &AppHandle) -> Result<PathBuf, String> {
+    let dir = match custom_llm_models_dir(app) {
+        Some(custom) => custom,
+        None => default_hf_models_dir(app)?,
+    };
     if !dir.exists() {
         std::fs::create_dir_all(&dir).map_err(|e| {
             crate::utils::err_msg(
@@ -2550,6 +2561,152 @@ pub async fn hf_delete_downloaded_model(app: AppHandle, file_path: String) -> Re
 pub async fn hf_get_gguf_models_dir(app: AppHandle) -> Result<String, String> {
     let dir = hf_models_dir(&app)?;
     Ok(dir.to_string_lossy().to_string())
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LlmModelsDirInfo {
+    path: String,
+    default_path: String,
+    is_custom: bool,
+    model_count: u32,
+}
+
+#[tauri::command]
+pub async fn hf_get_llm_models_dir(app: AppHandle) -> Result<LlmModelsDirInfo, String> {
+    let default_path = default_hf_models_dir(&app)?;
+    let is_custom = custom_llm_models_dir(&app).is_some();
+    let path = hf_models_dir(&app)?;
+    let model_count = crate::infra::model_storage::count_models_in_dir(&path);
+    Ok(LlmModelsDirInfo {
+        path: path.to_string_lossy().to_string(),
+        default_path: default_path.to_string_lossy().to_string(),
+        is_custom,
+        model_count,
+    })
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SetLlmModelsDirResult {
+    path: String,
+    moved_entries: u32,
+    rewired_models: u32,
+}
+
+#[tauri::command]
+pub async fn hf_set_llm_models_dir(
+    app: AppHandle,
+    new_dir: String,
+    move_existing: bool,
+) -> Result<SetLlmModelsDirResult, String> {
+    let new_path = PathBuf::from(new_dir.trim());
+    if new_path.as_os_str().is_empty() {
+        return Err("New models folder path is empty".to_string());
+    }
+
+    let old_path = hf_models_dir(&app)?;
+
+    std::fs::create_dir_all(&new_path).map_err(|e| {
+        crate::utils::err_msg(
+            module_path!(),
+            line!(),
+            format!("Failed to create models folder: {}", e),
+        )
+    })?;
+
+    let same = crate::infra::model_storage::paths_equal(&old_path, &new_path);
+
+    let (moved_entries, rewired_models) = if move_existing && !same {
+        crate::infra::model_storage::migrate_models_dir(&old_path, &new_path, |old, new| {
+            rewire_llama_model_paths(&app, old, new)
+        })?
+    } else {
+        (0, 0)
+    };
+
+    if crate::infra::model_storage::paths_equal(&new_path, &default_hf_models_dir(&app)?) {
+        persist_custom_llm_models_dir(&app, None)?;
+    } else {
+        persist_custom_llm_models_dir(&app, Some(new_path.to_string_lossy().as_ref()))?;
+    }
+
+    Ok(SetLlmModelsDirResult {
+        path: new_path.to_string_lossy().to_string(),
+        moved_entries,
+        rewired_models,
+    })
+}
+
+fn rewire_llama_model_paths(
+    app: &AppHandle,
+    old_prefix: &str,
+    new_prefix: &str,
+) -> Result<u32, String> {
+    let mut conn = crate::storage_manager::db::open_db(app)?;
+    let tx = conn
+        .transaction()
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+
+    let rows: Vec<(String, String, Option<String>)> = {
+        let mut stmt = tx
+            .prepare(
+                "SELECT id, name, advanced_model_settings FROM models WHERE provider_id = 'llamacpp'",
+            )
+            .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+        let collected = stmt
+            .query_map([], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)))
+            .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+        collected
+    };
+
+    let mut count = 0u32;
+    for (id, name, advanced) in rows {
+        let new_name = crate::infra::model_storage::rewrite_path_prefix(&name, old_prefix, new_prefix);
+        let mut changed = new_name != name;
+        let new_advanced = match advanced.as_deref() {
+            Some(text) => match serde_json::from_str::<serde_json::Value>(text) {
+                Ok(mut value) => {
+                    if let Some(map) = value.as_object_mut() {
+                        for key in ["llamaMmprojPath", "llamaMtpModelPath"] {
+                            if let Some(serde_json::Value::String(current)) = map.get(key) {
+                                let rewritten =
+                                    crate::infra::model_storage::rewrite_path_prefix(current, old_prefix, new_prefix);
+                                if rewritten != *current {
+                                    map.insert(
+                                        key.to_string(),
+                                        serde_json::Value::String(rewritten),
+                                    );
+                                    changed = true;
+                                }
+                            }
+                        }
+                    }
+                    serde_json::to_string(&value).ok()
+                }
+                Err(_) => advanced.clone(),
+            },
+            None => None,
+        };
+        if changed {
+            tx.execute(
+                "UPDATE models SET name = ?1, advanced_model_settings = ?2 WHERE id = ?3",
+                rusqlite::params![new_name, new_advanced, id],
+            )
+            .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+            count += 1;
+        }
+    }
+
+    tx.commit()
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    Ok(count)
+}
+
+fn persist_custom_llm_models_dir(app: &AppHandle, dir: Option<&str>) -> Result<(), String> {
+    crate::infra::model_storage::persist_custom_dir(app, "customLlmModelsDir", dir)
 }
 
 #[tauri::command]

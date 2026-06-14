@@ -16,6 +16,83 @@ pub async fn sd_get_status(app: AppHandle) -> Result<SdStatus, String> {
     })
 }
 
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SdModelsDirInfo {
+    path: String,
+    default_path: String,
+    is_custom: bool,
+    model_count: u32,
+}
+
+#[tauri::command]
+pub async fn sd_get_models_dir(app: AppHandle) -> Result<SdModelsDirInfo, String> {
+    let default_path = registry::default_models_dir(&app)?;
+    let is_custom = registry::custom_models_dir(&app).is_some();
+    let path = registry::models_dir(&app)?;
+    let model_count = crate::infra::model_storage::count_models_in_dir(&path);
+    Ok(SdModelsDirInfo {
+        path: path.to_string_lossy().to_string(),
+        default_path: default_path.to_string_lossy().to_string(),
+        is_custom,
+        model_count,
+    })
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SetSdModelsDirResult {
+    path: String,
+    moved_entries: u32,
+    rewired_models: u32,
+}
+
+#[tauri::command]
+pub async fn sd_set_models_dir(
+    app: AppHandle,
+    new_dir: String,
+    move_existing: bool,
+) -> Result<SetSdModelsDirResult, String> {
+    let new_path = std::path::PathBuf::from(new_dir.trim());
+    if new_path.as_os_str().is_empty() {
+        return Err("New models folder path is empty".to_string());
+    }
+
+    let old_path = registry::models_dir(&app)?;
+    std::fs::create_dir_all(&new_path).map_err(|e| {
+        crate::utils::err_msg(
+            module_path!(),
+            line!(),
+            format!("Failed to create models folder: {}", e),
+        )
+    })?;
+
+    let same = crate::infra::model_storage::paths_equal(&old_path, &new_path);
+    let (moved_entries, rewired_models) = if move_existing && !same {
+        crate::infra::model_storage::migrate_models_dir(&old_path, &new_path, |old, new| {
+            registry::rewire_registry_paths(&app, old, new)
+        })?
+    } else {
+        (0, 0)
+    };
+
+    if crate::infra::model_storage::paths_equal(&new_path, &registry::default_models_dir(&app)?) {
+        crate::infra::model_storage::persist_custom_dir(&app, "customSdModelsDir", None)?;
+    } else {
+        crate::infra::model_storage::persist_custom_dir(
+            &app,
+            "customSdModelsDir",
+            Some(new_path.to_string_lossy().as_ref()),
+        )?;
+    }
+
+    Ok(SetSdModelsDirResult {
+        path: new_path.to_string_lossy().to_string(),
+        moved_entries,
+        rewired_models,
+    })
+}
+
 #[tauri::command]
 pub async fn sd_list_models(app: AppHandle) -> Result<Vec<SdModelEntryDto>, String> {
     Ok(registry::list_models(&app)

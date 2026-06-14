@@ -14,12 +14,74 @@ pub fn diffusion_root(app: &AppHandle) -> Result<PathBuf, String> {
     Ok(dir)
 }
 
-pub fn models_dir(app: &AppHandle) -> Result<PathBuf, String> {
-    let dir = crate::infra::utils::ensure_lettuce_dir(app)?
+pub fn default_models_dir(app: &AppHandle) -> Result<PathBuf, String> {
+    Ok(crate::infra::utils::ensure_lettuce_dir(app)?
         .join("models")
-        .join("diffusion");
+        .join("diffusion"))
+}
+
+pub fn custom_models_dir(app: &AppHandle) -> Option<PathBuf> {
+    let settings_json = crate::storage_manager::settings::internal_read_settings(app).ok()??;
+    let value: serde_json::Value = serde_json::from_str(&settings_json).ok()?;
+    let dir = value
+        .get("advancedSettings")?
+        .get("customSdModelsDir")?
+        .as_str()?
+        .trim()
+        .to_string();
+    if dir.is_empty() {
+        None
+    } else {
+        Some(PathBuf::from(dir))
+    }
+}
+
+pub fn models_dir(app: &AppHandle) -> Result<PathBuf, String> {
+    let dir = match custom_models_dir(app) {
+        Some(custom) => custom,
+        None => default_models_dir(app)?,
+    };
     fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     Ok(dir)
+}
+
+pub fn rewire_registry_paths(
+    app: &AppHandle,
+    old_prefix: &str,
+    new_prefix: &str,
+) -> Result<u32, String> {
+    let mut entries = read_entries(app)?;
+    let mut count = 0u32;
+    for entry in entries.iter_mut() {
+        let files = &mut entry.files;
+        let mut changed = false;
+        for slot in [
+            &mut files.checkpoint,
+            &mut files.diffusion_model,
+            &mut files.clip_l,
+            &mut files.clip_g,
+            &mut files.t5xxl,
+            &mut files.llm,
+            &mut files.llm_vision,
+            &mut files.vae,
+        ] {
+            if let Some(path) = slot {
+                let rewritten =
+                    crate::infra::model_storage::rewrite_path_prefix(path, old_prefix, new_prefix);
+                if &rewritten != path {
+                    *slot = Some(rewritten);
+                    changed = true;
+                }
+            }
+        }
+        if changed {
+            count += 1;
+        }
+    }
+    if count > 0 {
+        write_entries(app, &entries)?;
+    }
+    Ok(count)
 }
 
 fn registry_path(app: &AppHandle) -> Result<PathBuf, String> {

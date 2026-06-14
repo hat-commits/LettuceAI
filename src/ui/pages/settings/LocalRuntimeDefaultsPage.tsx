@@ -1,6 +1,23 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Brain, Cpu, Download, FolderOpen, Image, Layers, Ruler, Trash2 } from "lucide-react";
+import {
+  Brain,
+  Cpu,
+  Download,
+  FolderInput,
+  FolderOpen,
+  HardDrive,
+  Image,
+  Layers,
+  Loader2,
+  RotateCcw,
+  Ruler,
+  Trash2,
+  X,
+} from "lucide-react";
 import { open } from "@tauri-apps/plugin-dialog";
+import { invoke } from "@tauri-apps/api/core";
+
+import { BottomMenu, MenuButton, MenuButtonGroup, MenuDivider } from "../../components/BottomMenu";
 
 import {
   sdFinalizeBinaryInstall,
@@ -24,6 +41,21 @@ type RuntimeDefaults = {
   llamaDefaultKvCacheType: "auto" | "f16" | "q8_0" | "q4_0";
   sdDefaultOffloadMode: "auto" | "gpu" | "mixed";
   sdDefaultSize: string;
+};
+
+type ModelDirKind = "llm" | "sd";
+
+type LlmModelsDirInfo = {
+  path: string;
+  defaultPath: string;
+  isCustom: boolean;
+  modelCount: number;
+};
+
+type SetLlmModelsDirResult = {
+  path: string;
+  movedEntries: number;
+  rewiredModels: number;
 };
 
 function formatBytes(bytes: number): string {
@@ -82,7 +114,86 @@ export function LocalRuntimeDefaultsPage() {
   const [selectedVariant, setSelectedVariant] = useState<string>("");
   const [installing, setInstalling] = useState(false);
   const [defaults, setDefaults] = useState<RuntimeDefaults | null>(null);
+  const [modelsDir, setModelsDir] = useState<LlmModelsDirInfo | null>(null);
+  const [sdModelsDir, setSdModelsDir] = useState<LlmModelsDirInfo | null>(null);
+  const [pending, setPending] = useState<{ kind: ModelDirKind; dir: string } | null>(null);
+  const [movingDir, setMovingDir] = useState(false);
   const finalizedRef = useRef(false);
+
+  const refreshModelsDir = useCallback(async () => {
+    try {
+      setModelsDir(await invoke<LlmModelsDirInfo>("hf_get_llm_models_dir"));
+    } catch (err) {
+      console.error("Failed to load LLM models dir:", err);
+    }
+    try {
+      setSdModelsDir(await invoke<LlmModelsDirInfo>("sd_get_models_dir"));
+    } catch (err) {
+      console.error("Failed to load SD models dir:", err);
+    }
+  }, []);
+
+  const applyModelsDir = useCallback(
+    async (kind: ModelDirKind, newDir: string, moveExisting: boolean) => {
+      setMovingDir(true);
+      try {
+        const command = kind === "llm" ? "hf_set_llm_models_dir" : "sd_set_models_dir";
+        const result = await invoke<SetLlmModelsDirResult>(command, { newDir, moveExisting });
+        await refreshModelsDir();
+        if (moveExisting && result.movedEntries > 0) {
+          toast.success(
+            t("runtimeDefaults.folderChanged"),
+            t("runtimeDefaults.folderChangedMoved", { count: result.movedEntries }),
+          );
+        } else {
+          toast.success(t("runtimeDefaults.folderChanged"));
+        }
+      } catch (err) {
+        toast.error(
+          t("runtimeDefaults.folderChangeFailed"),
+          err instanceof Error ? err.message : String(err),
+        );
+      } finally {
+        setMovingDir(false);
+        setPending(null);
+      }
+    },
+    [refreshModelsDir, t],
+  );
+
+  const pickModelsFolder = useCallback(
+    async (kind: ModelDirKind) => {
+      const info = kind === "llm" ? modelsDir : sdModelsDir;
+      const selection = await open({ directory: true, multiple: false });
+      if (typeof selection !== "string") return;
+      if (info && selection === info.path) return;
+      if (info && info.modelCount > 0) {
+        setPending({ kind, dir: selection });
+      } else {
+        void applyModelsDir(kind, selection, false);
+      }
+    },
+    [modelsDir, sdModelsDir, applyModelsDir],
+  );
+
+  const resetModelsFolder = useCallback(
+    (kind: ModelDirKind) => {
+      const info = kind === "llm" ? modelsDir : sdModelsDir;
+      if (!info) return;
+      if (info.modelCount > 0) {
+        setPending({ kind, dir: info.defaultPath });
+      } else {
+        void applyModelsDir(kind, info.defaultPath, false);
+      }
+    },
+    [modelsDir, sdModelsDir, applyModelsDir],
+  );
+
+  const pendingInfo = pending
+    ? pending.kind === "llm"
+      ? modelsDir
+      : sdModelsDir
+    : null;
 
   const refreshStatus = useCallback(async () => {
     try {
@@ -94,6 +205,7 @@ export function LocalRuntimeDefaultsPage() {
 
   useEffect(() => {
     void refreshStatus();
+    void refreshModelsDir();
     readSettings()
       .then((settings) => {
         const advanced = settings.advancedSettings ?? {};
@@ -105,7 +217,7 @@ export function LocalRuntimeDefaultsPage() {
         });
       })
       .catch(() => {});
-  }, [refreshStatus]);
+  }, [refreshStatus, refreshModelsDir]);
 
   useEffect(() => {
     if (!status || status.binary || variants) return;
@@ -221,6 +333,57 @@ export function LocalRuntimeDefaultsPage() {
       );
     }
   };
+
+  const renderFolderRow = (kind: ModelDirKind, info: LlmModelsDirInfo | null, title: string) => (
+    <div className="rounded-xl border border-fg/10 bg-fg/5 px-4 py-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="rounded-lg border border-info/30 bg-info/10 p-1.5">
+            <HardDrive className="h-4 w-4 text-info/80" />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-fg">{title}</span>
+              <span className="rounded border border-fg/15 bg-fg/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-fg/55">
+                {info?.isCustom
+                  ? t("runtimeDefaults.modelsFolderCustomBadge")
+                  : t("runtimeDefaults.modelsFolderDefaultBadge")}
+              </span>
+            </div>
+            <p className="truncate font-mono text-[11px] text-fg/45" title={info?.path}>
+              {info?.path ?? ""}
+            </p>
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-1.5">
+          {info?.isCustom && (
+            <button
+              type="button"
+              onClick={() => resetModelsFolder(kind)}
+              disabled={movingDir}
+              title={t("runtimeDefaults.modelsFolderReset")}
+              className="rounded-lg p-2 text-fg/40 transition-colors hover:bg-fg/10 hover:text-fg/70 disabled:opacity-50"
+            >
+              <RotateCcw className="h-4 w-4" />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => void pickModelsFolder(kind)}
+            disabled={movingDir}
+            className="inline-flex items-center gap-2 rounded-xl border border-fg/10 bg-surface-el/20 px-3 py-2 text-sm font-medium text-fg/85 transition hover:bg-surface-el/30 disabled:opacity-50"
+          >
+            {movingDir ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <FolderOpen className="h-4 w-4 text-fg/45" />
+            )}
+            {t("runtimeDefaults.modelsFolderChange")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   if (!status || !defaults) {
     return (
@@ -343,6 +506,16 @@ export function LocalRuntimeDefaultsPage() {
           </div>
 
           <div className="space-y-4">
+            <SectionHeading label={t("runtimeDefaults.storageSection")} />
+            <p className="px-1 text-xs text-fg/50">{t("runtimeDefaults.storageDescription")}</p>
+
+            <div className="space-y-3">
+              {renderFolderRow("llm", modelsDir, t("runtimeDefaults.modelsFolderTitle"))}
+              {renderFolderRow("sd", sdModelsDir, t("runtimeDefaults.sdModelsFolderTitle"))}
+            </div>
+          </div>
+
+          <div className="space-y-4">
             <SectionHeading label={t("runtimeDefaults.llamaSection")} />
             <p className="px-1 text-xs text-fg/50">{t("runtimeDefaults.llamaDescription")}</p>
 
@@ -442,6 +615,47 @@ export function LocalRuntimeDefaultsPage() {
           </div>
         </div>
       </main>
+
+      <BottomMenu
+        isOpen={pending !== null}
+        onClose={() => {
+          if (!movingDir) setPending(null);
+        }}
+        title={t("runtimeDefaults.moveMenuTitle")}
+      >
+        <MenuButtonGroup>
+          <MenuButton
+            icon={movingDir ? <Loader2 className="h-5 w-5 animate-spin" /> : FolderInput}
+            title={movingDir ? t("runtimeDefaults.moveWorking") : t("runtimeDefaults.moveConfirm")}
+            description={
+              pendingInfo
+                ? `${t("runtimeDefaults.moveCount", { count: pendingInfo.modelCount })} ${t("runtimeDefaults.moveConfirmDescription")}`
+                : t("runtimeDefaults.moveConfirmDescription")
+            }
+            color="#34d399"
+            disabled={movingDir}
+            onClick={() => {
+              if (pending) void applyModelsDir(pending.kind, pending.dir, true);
+            }}
+          />
+          <MenuButton
+            icon={FolderOpen}
+            title={t("runtimeDefaults.moveKeep")}
+            description={t("runtimeDefaults.moveKeepDescription")}
+            disabled={movingDir}
+            onClick={() => {
+              if (pending) void applyModelsDir(pending.kind, pending.dir, false);
+            }}
+          />
+          <MenuDivider />
+          <MenuButton
+            icon={X}
+            title={t("common.buttons.cancel")}
+            disabled={movingDir}
+            onClick={() => setPending(null)}
+          />
+        </MenuButtonGroup>
+      </BottomMenu>
     </div>
   );
 }
