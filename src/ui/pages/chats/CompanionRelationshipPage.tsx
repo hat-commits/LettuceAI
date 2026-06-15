@@ -4,11 +4,16 @@ import {
   ArrowLeft,
   BookHeart,
   Brain,
+  Drama,
   Heart,
   Link2,
   Loader2,
+  ScrollText,
   Shield,
+  Shirt,
   Sparkles,
+  Star,
+  Target,
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
@@ -473,6 +478,11 @@ export function CompanionRelationshipPage() {
             <SectionLabel>{t("chats.companionRelationship.soul")}</SectionLabel>
             <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
               <SoulCard label={t("chats.companionRelationship.essence")} value={companion?.soul?.essence} icon={Sparkles} />
+              <SoulCard label={t("chats.companionRelationship.traits")} value={companion?.soul?.traits} icon={Drama} />
+              <SoulCard label={t("chats.companionRelationship.backstory")} value={companion?.soul?.backstory} icon={ScrollText} />
+              <SoulCard label={t("chats.companionRelationship.appearance")} value={companion?.soul?.appearance} icon={Shirt} />
+              <SoulCard label={t("chats.companionRelationship.goals")} value={companion?.soul?.goals} icon={Target} />
+              <SoulCard label={t("chats.companionRelationship.likes")} value={companion?.soul?.likes} icon={Star} />
               <SoulCard label={t("chats.companionRelationship.voice")} value={companion?.soul?.voice} icon={BookHeart} />
               <SoulCard label={t("chats.companionRelationship.relationalStyle")} value={companion?.soul?.relationalStyle} icon={Heart} />
               <SoulCard label={t("chats.companionRelationship.vulnerabilities")} value={companion?.soul?.vulnerabilities} icon={Heart} />

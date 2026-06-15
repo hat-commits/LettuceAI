@@ -3076,6 +3076,11 @@ export type CharacterMode = z.infer<typeof CharacterModeSchema>;
 
 export const CompanionSoulSchema = z.object({
   essence: z.string().default(""),
+  traits: z.string().default(""),
+  backstory: z.string().default(""),
+  appearance: z.string().default(""),
+  goals: z.string().default(""),
+  likes: z.string().default(""),
   voice: z.string().default(""),
   relationalStyle: z.string().default(""),
   vulnerabilities: z.string().default(""),
@@ -3184,6 +3189,11 @@ export type CompanionScheduledNote = z.infer<typeof CompanionScheduledNoteSchema
 export const CompanionConfigSchema = z.object({
   soul: CompanionSoulSchema.default({
     essence: "",
+    traits: "",
+    backstory: "",
+    appearance: "",
+    goals: "",
+    likes: "",
     voice: "",
     relationalStyle: "",
     vulnerabilities: "",

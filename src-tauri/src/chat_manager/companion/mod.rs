@@ -324,6 +324,16 @@ struct SoulConfig {
     #[serde(default)]
     essence: String,
     #[serde(default)]
+    traits: String,
+    #[serde(default)]
+    backstory: String,
+    #[serde(default)]
+    appearance: String,
+    #[serde(default)]
+    goals: String,
+    #[serde(default)]
+    likes: String,
+    #[serde(default)]
     voice: String,
     #[serde(default)]
     relational_style: String,
@@ -343,6 +353,11 @@ impl Default for SoulConfig {
     fn default() -> Self {
         Self {
             essence: String::new(),
+            traits: String::new(),
+            backstory: String::new(),
+            appearance: String::new(),
+            goals: String::new(),
+            likes: String::new(),
             voice: String::new(),
             relational_style: String::new(),
             vulnerabilities: String::new(),
@@ -549,6 +564,11 @@ pub fn render_prompt_state(
     ];
 
     push_soul_line(&mut lines, "Soul essence", &soul.essence);
+    push_soul_line(&mut lines, "Defining traits", &soul.traits);
+    push_soul_line(&mut lines, "Backstory", &soul.backstory);
+    push_soul_line(&mut lines, "Appearance", &soul.appearance);
+    push_soul_line(&mut lines, "Goals", &soul.goals);
+    push_soul_line(&mut lines, "Likes and favorites", &soul.likes);
     push_soul_line(&mut lines, "Companion voice", &soul.voice);
     push_soul_line(&mut lines, "Relational style", &soul.relational_style);
     push_soul_line(&mut lines, "Vulnerabilities", &soul.vulnerabilities);

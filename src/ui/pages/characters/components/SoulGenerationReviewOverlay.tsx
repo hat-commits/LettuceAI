@@ -18,6 +18,11 @@ import { normalizeCompanionConfig } from "../utils/companionDefaults";
 
 type SoulTextKey =
   | "essence"
+  | "traits"
+  | "backstory"
+  | "appearance"
+  | "goals"
+  | "likes"
   | "voice"
   | "relationalStyle"
   | "vulnerabilities"
@@ -42,6 +47,11 @@ interface SoulGenerationReviewOverlayProps {
 
 const TEXT_FIELDS: Array<{ key: SoulTextKey; label: string; rows: number }> = [
   { key: "essence", label: "Essence", rows: 3 },
+  { key: "traits", label: "Traits", rows: 2 },
+  { key: "backstory", label: "Backstory", rows: 3 },
+  { key: "appearance", label: "Appearance", rows: 2 },
+  { key: "goals", label: "Goals", rows: 2 },
+  { key: "likes", label: "Likes & Favorites", rows: 2 },
   { key: "voice", label: "Inner Voice", rows: 3 },
   { key: "relationalStyle", label: "Relational Style", rows: 3 },
   { key: "vulnerabilities", label: "Vulnerabilities", rows: 2 },

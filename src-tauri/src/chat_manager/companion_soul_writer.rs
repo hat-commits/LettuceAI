@@ -27,12 +27,17 @@ use crate::utils::{log_info, log_warn, now_millis};
 
 const MAX_LOOP_ITERATIONS: usize = 8;
 
-const COMPANION_SOUL_JSON_FALLBACK_PROMPT: &str = r#"Return only JSON. Format: {"operations":[{"name":"set_identity","arguments":{"essence":"...","voice":"...","relationalStyle":"...","vulnerabilities":"...","habits":"...","boundaries":"..."}},{"name":"set_baseline_affect","arguments":{"warmth":0.5,"trust":0.5,"calm":0.5,"vulnerability":0.5,"longing":0.5,"hurt":0.5,"tension":0.5,"irritation":0.5,"affectionIntensity":0.5,"reassuranceNeed":0.5}},{"name":"set_regulation_style","arguments":{"suppression":0.5,"volatility":0.5,"recoverySpeed":0.5,"conflictAvoidance":0.5,"reassuranceSeeking":0.5,"protestBehavior":0.5,"emotionalTransparency":0.5,"attachmentActivation":0.5,"pride":0.5}},{"name":"set_relationship_defaults","arguments":{"closeness":0.2,"trust":0.3,"affection":0.2,"tension":0.05}},{"name":"done","arguments":{"notes":"optional"}}]}. End with done. Numeric fields are optional; baseline and regulation values clamp to [0,1], and relationship closeness/trust/affection clamp to [-1,1] (negative means the character starts disliking/distrusting/distant from the user) while relationship tension clamps to [0,1]. Do not use markdown."#;
+const COMPANION_SOUL_JSON_FALLBACK_PROMPT: &str = r#"Return only JSON. Format: {"operations":[{"name":"set_identity","arguments":{"essence":"...","traits":"...","backstory":"...","appearance":"...","goals":"...","likes":"...","voice":"...","relationalStyle":"...","vulnerabilities":"...","habits":"...","boundaries":"..."}},{"name":"set_baseline_affect","arguments":{"warmth":0.5,"trust":0.5,"calm":0.5,"vulnerability":0.5,"longing":0.5,"hurt":0.5,"tension":0.5,"irritation":0.5,"affectionIntensity":0.5,"reassuranceNeed":0.5}},{"name":"set_regulation_style","arguments":{"suppression":0.5,"volatility":0.5,"recoverySpeed":0.5,"conflictAvoidance":0.5,"reassuranceSeeking":0.5,"protestBehavior":0.5,"emotionalTransparency":0.5,"attachmentActivation":0.5,"pride":0.5}},{"name":"set_relationship_defaults","arguments":{"closeness":0.2,"trust":0.3,"affection":0.2,"tension":0.05}},{"name":"done","arguments":{"notes":"optional"}}]}. End with done. Numeric fields are optional; baseline and regulation values clamp to [0,1], and relationship closeness/trust/affection clamp to [-1,1] (negative means the character starts disliking/distrusting/distant from the user) while relationship tension clamps to [0,1]. Do not use markdown."#;
 
-const COMPANION_SOUL_XML_FALLBACK_PROMPT: &str = r#"Return only XML. Format: <soul_ops><set_identity><essence>...</essence><voice>...</voice><relationalStyle>...</relationalStyle><vulnerabilities>...</vulnerabilities><habits>...</habits><boundaries>...</boundaries></set_identity><set_baseline_affect warmth="0.5" trust="0.5" calm="0.5" vulnerability="0.5" longing="0.5" hurt="0.5" tension="0.5" irritation="0.5" affectionIntensity="0.5" reassuranceNeed="0.5" /><set_regulation_style suppression="0.5" volatility="0.5" recoverySpeed="0.5" conflictAvoidance="0.5" reassuranceSeeking="0.5" protestBehavior="0.5" emotionalTransparency="0.5" attachmentActivation="0.5" pride="0.5" /><set_relationship_defaults closeness="0.2" trust="0.3" affection="0.2" tension="0.05" /><done summary="optional" /></soul_ops>. End with <done />. Numeric fields are optional; baseline and regulation values clamp to [0,1], and relationship closeness/trust/affection clamp to [-1,1] (negative means the character starts disliking/distrusting/distant from the user) while relationship tension clamps to [0,1]. Do not use markdown."#;
+const COMPANION_SOUL_XML_FALLBACK_PROMPT: &str = r#"Return only XML. Format: <soul_ops><set_identity><essence>...</essence><traits>...</traits><backstory>...</backstory><appearance>...</appearance><goals>...</goals><likes>...</likes><voice>...</voice><relationalStyle>...</relationalStyle><vulnerabilities>...</vulnerabilities><habits>...</habits><boundaries>...</boundaries></set_identity><set_baseline_affect warmth="0.5" trust="0.5" calm="0.5" vulnerability="0.5" longing="0.5" hurt="0.5" tension="0.5" irritation="0.5" affectionIntensity="0.5" reassuranceNeed="0.5" /><set_regulation_style suppression="0.5" volatility="0.5" recoverySpeed="0.5" conflictAvoidance="0.5" reassuranceSeeking="0.5" protestBehavior="0.5" emotionalTransparency="0.5" attachmentActivation="0.5" pride="0.5" /><set_relationship_defaults closeness="0.2" trust="0.3" affection="0.2" tension="0.05" /><done summary="optional" /></soul_ops>. End with <done />. Numeric fields are optional; baseline and regulation values clamp to [0,1], and relationship closeness/trust/affection clamp to [-1,1] (negative means the character starts disliking/distrusting/distant from the user) while relationship tension clamps to [0,1]. Do not use markdown."#;
 
 const TEXT_FIELDS: &[&str] = &[
     "essence",
+    "traits",
+    "backstory",
+    "appearance",
+    "goals",
+    "likes",
     "voice",
     "relationalStyle",
     "vulnerabilities",
@@ -292,6 +297,11 @@ fn render_messages(
 fn build_tool_config() -> ToolConfig {
     let identity_props = json!({
         "essence": { "type": "string" },
+        "traits": { "type": "string" },
+        "backstory": { "type": "string" },
+        "appearance": { "type": "string" },
+        "goals": { "type": "string" },
+        "likes": { "type": "string" },
         "voice": { "type": "string" },
         "relationalStyle": { "type": "string" },
         "vulnerabilities": { "type": "string" },

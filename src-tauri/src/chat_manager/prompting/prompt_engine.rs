@@ -184,7 +184,7 @@ A Companion Soul IS NOT:
             r#"OUTPUT DISCIPLINE: you MUST author the Soul by issuing tool calls — never by writing prose, JSON, or markdown in plain text. Each call updates a section of the Soul; later calls overwrite earlier values for the same field. End with `done`. Do not include commentary outside tool calls.
 
 TOOLS — call in any order across one or more turns. Every field is OPTIONAL on a single call; you may split a section across multiple calls.
-- set_identity(essence?, voice?, relationalStyle?, vulnerabilities?, habits?, boundaries?) — text fields describing the durable identity.
+- set_identity(essence?, traits?, backstory?, appearance?, goals?, likes?, voice?, relationalStyle?, vulnerabilities?, habits?, boundaries?) — text fields describing the durable identity.
 - set_baseline_affect(warmth?, trust?, calm?, vulnerability?, longing?, hurt?, tension?, irritation?, affectionIntensity?, reassuranceNeed?) — floats in [0,1].
 - set_regulation_style(suppression?, volatility?, recoverySpeed?, conflictAvoidance?, reassuranceSeeking?, protestBehavior?, emotionalTransparency?, attachmentActivation?, pride?) — floats in [0,1].
 - set_relationship_defaults(closeness?, trust?, affection?, tension?) — floats in [0,1] describing the starting state with a NEW user.
@@ -195,6 +195,11 @@ TOOLS — call in any order across one or more turns. Every field is OPTIONAL on
             "Text Field Rules",
             r#"TEXT FIELDS — each is a tight, behavior-rich paragraph in clean prose. Content guidance is more important than length:
 - essence (1–3 sentences): who they are underneath all moods. The trait that survives stress. One concrete observation outweighs a stack of adjectives.
+- traits (1–3 sentences): the defining personality traits, grounded in behavior. Two traits in tension beat five that agree. "Stubborn but quick to forgive" beats a list of adjectives.
+- backstory (2–4 sentences): how they came to be — origin, formative events, and what they do now. Keep it concrete and load-bearing; only what still shapes them today.
+- appearance (1–3 sentences): how they look and dress — signature outfit, materials, palette, the detail that's always present. Specific over generic ("scuffed leather coat" beats "stylish").
+- goals (1–3 sentences): what they're working toward — ambitions, quests, unfinished business. What they'd sacrifice for, and what they're avoiding by chasing it.
+- likes (1–3 sentences): favorites and small joys — food, drink, color, music, gestures. Concrete, character-revealing specifics, not generic pleasantries.
 - voice (1–3 sentences): how they sound in close conversation — cadence, vocabulary register, what they do with silence. Not what they say, how they say it.
 - relationalStyle (2–4 sentences): how they attach, trust, comfort, tease, withdraw, and repair. Include their default move when distance opens up.
 - vulnerabilities (1–3 sentences): real soft spots. What hurts when poked. What they hide. What they fear being seen as.

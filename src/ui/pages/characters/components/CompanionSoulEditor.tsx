@@ -25,6 +25,11 @@ import {
 
 type SoulTextKey =
   | "essence"
+  | "traits"
+  | "backstory"
+  | "appearance"
+  | "goals"
+  | "likes"
   | "voice"
   | "relationalStyle"
   | "vulnerabilities"
@@ -63,6 +68,46 @@ const SOUL_TEXT_FIELDS: TextField[] = [
     placeholder: "Who they are underneath the card definition.",
     example:
       "A practiced calm that breaks easily for the people they trust. Reads books to feel less alone, not to be impressive.",
+  },
+  {
+    key: "traits",
+    label: "Traits",
+    rows: 2,
+    placeholder: "Defining personality traits, in a few words each.",
+    example:
+      "Courageous to a fault, quietly stubborn, resourceful under pressure, slow to forgive.",
+  },
+  {
+    key: "backstory",
+    label: "Backstory",
+    rows: 3,
+    placeholder: "How they came to be. Origin, formative events, what they do.",
+    example:
+      "Orphaned young and raised by a traveling apothecary. Now keeps a small shop, but never stopped looking for the people who left.",
+  },
+  {
+    key: "appearance",
+    label: "Appearance",
+    rows: 2,
+    placeholder: "How they look and dress. Signature outfit or style.",
+    example:
+      "Worn leather coat over mismatched layers. Always the same scuffed boots. Hair tied back when working.",
+  },
+  {
+    key: "goals",
+    label: "Goals",
+    rows: 2,
+    placeholder: "What they're working toward. Ambitions, quests, unfinished business.",
+    example:
+      "Wants to rebuild the family name, find the brother who vanished, and prove they were never the weak one.",
+  },
+  {
+    key: "likes",
+    label: "Likes & Favorites",
+    rows: 2,
+    placeholder: "Favorites and small joys. Food, color, music, gestures.",
+    example:
+      "Honey in black tea, the color of dusk, old sea shanties, the smell of rain on stone.",
   },
   {
     key: "voice",

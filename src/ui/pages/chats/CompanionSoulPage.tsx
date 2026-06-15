@@ -67,6 +67,11 @@ function openingContextFromCharacter(companion: CompanionConfig, sceneText: stri
   return [
     sceneText,
     soul.essence ? `Current essence: ${soul.essence}` : "",
+    soul.traits ? `Current traits: ${soul.traits}` : "",
+    soul.backstory ? `Current backstory: ${soul.backstory}` : "",
+    soul.appearance ? `Current appearance: ${soul.appearance}` : "",
+    soul.goals ? `Current goals: ${soul.goals}` : "",
+    soul.likes ? `Current likes: ${soul.likes}` : "",
     soul.relationalStyle ? `Current relational style: ${soul.relationalStyle}` : "",
   ]
     .filter(Boolean)

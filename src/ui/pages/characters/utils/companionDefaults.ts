@@ -6,6 +6,11 @@ export function createDefaultCompanionConfig(
   return {
     soul: {
       essence: "",
+      traits: "",
+      backstory: "",
+      appearance: "",
+      goals: "",
+      likes: "",
       voice: "",
       relationalStyle: "",
       vulnerabilities: "",
