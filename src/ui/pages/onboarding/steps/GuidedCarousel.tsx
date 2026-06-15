@@ -59,21 +59,59 @@ export function GuidedCarousel({
 }) {
   const { t } = useI18n();
   const [index, setIndex] = useState(0);
-  const [zoomed, setZoomed] = useState(false);
-  const slide = slides[index];
+  const [zoomSrc, setZoomSrc] = useState<string | null>(null);
   const multiple = slides.length > 1;
   const isDesktop = variant === "desktop";
 
+  const lightbox = (
+    <AnimatePresence>
+      {zoomSrc && <Lightbox src={zoomSrc} onClose={() => setZoomSrc(null)} />}
+    </AnimatePresence>
+  );
+
+  if (!isDesktop) {
+    return (
+      <div className="flex flex-col">
+        <div
+          className={cn(
+            "-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+            !multiple && "justify-center",
+          )}
+        >
+          {slides.map((s, i) => (
+            <div key={s.captionKey} className="flex w-[230px] shrink-0 snap-center flex-col">
+              <button
+                type="button"
+                onClick={() => setZoomSrc(s.src)}
+                className="group relative block w-full cursor-zoom-in overflow-hidden rounded-[1.75rem] border-2 border-white/15 bg-black shadow-2xl"
+              >
+                <img src={s.src} alt="" className="block h-auto w-full select-none" draggable={false} />
+                <span className="pointer-events-none absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full border border-white/15 bg-black/60 text-white/80 opacity-0 backdrop-blur transition group-hover:opacity-100">
+                  <ZoomIn size={14} />
+                </span>
+              </button>
+              <p className="mt-3 flex items-start justify-center gap-1.5 text-center text-[13px] leading-relaxed text-white/80 [text-shadow:0_1px_8px_rgba(0,0,0,0.8)]">
+                <span className="mt-px inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-[11px] font-semibold text-emerald-300">
+                  {i + 1}
+                </span>
+                <span>{t(`${captionBase}.${s.captionKey}` as TranslationKey)}</span>
+              </p>
+            </div>
+          ))}
+        </div>
+        {lightbox}
+      </div>
+    );
+  }
+
+  const slide = slides[index];
   return (
     <div className="flex flex-col items-center">
-      <div className={cn("relative w-full", isDesktop ? "max-w-none" : "max-w-[250px]")}>
+      <div className="relative w-full max-w-none">
         <button
           type="button"
-          onClick={() => setZoomed(true)}
-          className={cn(
-            "group relative block w-full cursor-zoom-in overflow-hidden border border-white/15 bg-black shadow-2xl",
-            isDesktop ? "rounded-xl" : "rounded-[1.75rem] border-2",
-          )}
+          onClick={() => setZoomSrc(slide.src)}
+          className="group relative block w-full cursor-zoom-in overflow-hidden rounded-xl border border-white/15 bg-black shadow-2xl"
         >
           <img src={slide.src} alt="" className="block h-auto w-full select-none" draggable={false} />
           <span className="pointer-events-none absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full border border-white/15 bg-black/60 text-white/80 opacity-0 backdrop-blur transition group-hover:opacity-100">
@@ -124,9 +162,7 @@ export function GuidedCarousel({
         <span>{t(`${captionBase}.${slide.captionKey}` as TranslationKey)}</span>
       </p>
 
-      <AnimatePresence>
-        {zoomed && <Lightbox src={slide.src} onClose={() => setZoomed(false)} />}
-      </AnimatePresence>
+      {lightbox}
     </div>
   );
 }
