@@ -288,7 +288,7 @@ fn render_messages(
 
     messages.push(json!({
         "role": "user",
-        "content": "Author the Companion Soul now. Issue tool calls (set_identity, set_baseline_affect, set_regulation_style, set_relationship_defaults) across one or more turns, then call done to finish.",
+        "content": "Author the Companion Soul now. Issue tool calls (set_identity, set_baseline_affect, set_regulation_style, set_relationship_defaults) across one or more turns, then call done to finish. Populate every identity text field you can ground from the inputs: essence, traits, backstory, appearance, goals, likes, voice, relationalStyle, vulnerabilities, habits, and boundaries.",
     }));
 
     messages
