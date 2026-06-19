@@ -1501,9 +1501,7 @@ pub struct BestRecommendation {
     pub viable: bool,
 }
 
-const KV_TYPES: &[(&str, f64)] = &[
-    ("f32", 4.0),
-    ("f16", 2.0),
+const RECOMMENDATION_KV_TYPES: &[(&str, f64)] = &[
     ("q8_1", 1.0625),
     ("q8_0", 1.0),
     ("q5_1", 0.75),
@@ -1683,7 +1681,7 @@ fn build_recommendation(
         }
 
         // Try each KV type, find the best scoring configuration for this file
-        for &(kv_name, bpv) in KV_TYPES {
+        for &(kv_name, bpv) in RECOMMENDATION_KV_TYPES {
             let max_ctx = if let Some(base) = kv_base {
                 max_context_for(
                     load_size,
