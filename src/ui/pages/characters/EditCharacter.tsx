@@ -50,6 +50,11 @@ import { useI18n } from "../../../core/i18n/context";
 import type { CharacterFileFormat } from "../../../core/storage/characterTransfer";
 import { convertFilePathToDataUrl } from "../../../core/storage/images";
 import {
+  insertSceneImageToken,
+  storeSceneImageFromFile,
+  storeSceneImageFromFilePath,
+} from "../../../core/scene/inlineImages";
+import {
   buildBackgroundLibrarySelectionKey,
   type BackgroundLibrarySelectionPayload,
 } from "../../components/AvatarPicker/librarySelection";
@@ -206,9 +211,10 @@ export function EditCharacterPage() {
   const [voiceSearchQuery, setVoiceSearchQuery] = React.useState("");
   const [exportMenuOpen, setExportMenuOpen] = React.useState(false);
   const [recalculatingGradient, setRecalculatingGradient] = React.useState(false);
-  const [sceneBackgroundLibraryTarget, setSceneBackgroundLibraryTarget] = React.useState<
-    "new" | "edit" | null
-  >(null);
+  const sceneContentRef = React.useRef<HTMLTextAreaElement | null>(null);
+  const sceneInlineImageInputRef = React.useRef<HTMLInputElement | null>(null);
+  const sceneNavRestoredRef = React.useRef(false);
+  const EDIT_CHARACTER_SCENE_DRAFT_KEY = "edit-character-scene-draft";
   const tabsId = React.useId();
   const tabPanelId = `${tabsId}-panel`;
   const characterTabId = `${tabsId}-tab-character`;
@@ -216,6 +222,7 @@ export function EditCharacterPage() {
   const settingsTabId = `${tabsId}-tab-settings`;
   const returnPath = `${location.pathname}${location.search}`;
   const sceneBackgroundLibraryReturnPath = `${returnPath}:scene-background`;
+  const sceneInlineImageLibraryReturnPath = `${returnPath}:scene-inline-image`;
 
   const {
     loading,
@@ -421,6 +428,85 @@ export function EditCharacterPage() {
     [editingSceneId, setFields],
   );
 
+  const handleInlineImageUpload = React.useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      const input = event.target;
+      if (!file) return;
+      const el = sceneContentRef.current;
+      const cursor = el?.selectionStart ?? el?.value.length ?? 0;
+      const current = el?.value ?? "";
+      try {
+        const stored = await storeSceneImageFromFile(file);
+        if (!stored) return;
+        const { content, nextCursor } = insertSceneImageToken(
+          current,
+          cursor,
+          stored.imageId,
+          stored.ext,
+        );
+        setFields(
+          editingSceneId !== null
+            ? { editingSceneContent: content }
+            : { newSceneContent: content },
+        );
+        requestAnimationFrame(() => {
+          const target = sceneContentRef.current;
+          if (target) {
+            target.focus();
+            target.setSelectionRange(nextCursor, nextCursor);
+          }
+        });
+      } catch (error) {
+        console.warn("EditCharacter: failed to store inline scene image", error);
+      } finally {
+        input.value = "";
+      }
+    },
+    [editingSceneId, setFields],
+  );
+
+  const buildSceneDraft = (extra: Record<string, unknown>) => ({
+    characterId,
+    editingSceneId,
+    editingSceneContent,
+    editingSceneDirection,
+    editingSceneBackgroundImagePath,
+    newSceneContent,
+    newSceneDirection,
+    newSceneBackgroundImagePath,
+    newSceneEditorOpen,
+    ...extra,
+  });
+
+  const persistSceneDraft = (extra: Record<string, unknown>) => {
+    sceneNavRestoredRef.current = false;
+    try {
+      sessionStorage.setItem(
+        EDIT_CHARACTER_SCENE_DRAFT_KEY,
+        JSON.stringify(buildSceneDraft(extra)),
+      );
+    } catch (error) {
+      console.error("Failed to persist scene editor draft:", error);
+    }
+  };
+
+  const handleChooseInlineImageFromLibrary = () => {
+    const el = sceneContentRef.current;
+    const cursor = el?.selectionStart ?? el?.value.length ?? 0;
+    persistSceneDraft({
+      inlineImageTarget: editingSceneId !== null ? "edit" : "new",
+      inlineImageCursor: cursor,
+    });
+    navigate("/library/images/pick", {
+      state: {
+        returnPath,
+        selectionStorageKey: sceneInlineImageLibraryReturnPath,
+        selectionKind: "background",
+      },
+    });
+  };
+
   const handleExportFormat = React.useCallback(
     async (format: CharacterFileFormat) => {
       await handleExport(format);
@@ -557,40 +643,106 @@ export function EditCharacterPage() {
   }, [loading, returnPath, setFields]);
 
   React.useEffect(() => {
-    if (loading) return;
+    if (loading || sceneNavRestoredRef.current) return;
 
-    const storageKey = buildBackgroundLibrarySelectionKey(sceneBackgroundLibraryReturnPath);
-    const rawSelection = sessionStorage.getItem(storageKey);
-    if (!rawSelection) return;
+    const draftRaw = sessionStorage.getItem(EDIT_CHARACTER_SCENE_DRAFT_KEY);
+    const bgKey = buildBackgroundLibrarySelectionKey(sceneBackgroundLibraryReturnPath);
+    const inlineKey = buildBackgroundLibrarySelectionKey(sceneInlineImageLibraryReturnPath);
+    const bgRaw = sessionStorage.getItem(bgKey);
+    const inlineRaw = sessionStorage.getItem(inlineKey);
 
-    sessionStorage.removeItem(storageKey);
+    if (!draftRaw && !bgRaw && !inlineRaw) return;
+    sceneNavRestoredRef.current = true;
 
-    let parsed: BackgroundLibrarySelectionPayload | null = null;
-    try {
-      parsed = JSON.parse(rawSelection) as BackgroundLibrarySelectionPayload;
-    } catch (error) {
-      console.error("Failed to parse scene background library selection:", error);
-      return;
+    sessionStorage.removeItem(EDIT_CHARACTER_SCENE_DRAFT_KEY);
+    sessionStorage.removeItem(bgKey);
+    sessionStorage.removeItem(inlineKey);
+
+    let draft: any = null;
+    if (draftRaw) {
+      try {
+        draft = JSON.parse(draftRaw);
+      } catch (error) {
+        console.error("Failed to parse scene editor draft:", error);
+      }
     }
+    if (draft && draft.characterId && draft.characterId !== characterId) return;
 
-    if (!parsed?.filePath) return;
+    const parseSelection = (raw: string | null): BackgroundLibrarySelectionPayload | null => {
+      if (!raw) return null;
+      try {
+        const parsed = JSON.parse(raw) as BackgroundLibrarySelectionPayload;
+        return parsed?.filePath ? parsed : null;
+      } catch {
+        return null;
+      }
+    };
+    const inlineSel = parseSelection(inlineRaw);
+    const bgSel = parseSelection(bgRaw);
 
     let cancelled = false;
     void (async () => {
-      const dataUrl = await convertFilePathToDataUrl(parsed.filePath);
-      if (!dataUrl || cancelled) return;
-      setFields(
-        sceneBackgroundLibraryTarget === "edit"
-          ? { editingSceneBackgroundImagePath: dataUrl }
-          : { newSceneBackgroundImagePath: dataUrl },
-      );
-      setSceneBackgroundLibraryTarget(null);
+      const next: Parameters<typeof setFields>[0] = {};
+      if (draft) {
+        next.editingSceneId = draft.editingSceneId ?? null;
+        next.editingSceneContent = draft.editingSceneContent ?? "";
+        next.editingSceneDirection = draft.editingSceneDirection ?? "";
+        next.editingSceneBackgroundImagePath = draft.editingSceneBackgroundImagePath ?? "";
+        next.newSceneContent = draft.newSceneContent ?? "";
+        next.newSceneDirection = draft.newSceneDirection ?? "";
+        next.newSceneBackgroundImagePath = draft.newSceneBackgroundImagePath ?? "";
+      }
+      const editing = (draft ? draft.editingSceneId : editingSceneId) !== null;
+
+      if (inlineSel) {
+        const stored = await storeSceneImageFromFilePath(inlineSel.filePath);
+        if (stored && !cancelled) {
+          const target = (draft?.inlineImageTarget ?? (editing ? "edit" : "new")) as "edit" | "new";
+          const cursor = typeof draft?.inlineImageCursor === "number" ? draft.inlineImageCursor : 0;
+          const baseContent =
+            target === "edit"
+              ? next.editingSceneContent ?? editingSceneContent
+              : next.newSceneContent ?? newSceneContent;
+          const { content } = insertSceneImageToken(
+            baseContent,
+            cursor,
+            stored.imageId,
+            stored.ext,
+          );
+          if (target === "edit") next.editingSceneContent = content;
+          else next.newSceneContent = content;
+        }
+      }
+
+      if (bgSel) {
+        const dataUrl = await convertFilePathToDataUrl(bgSel.filePath);
+        if (dataUrl && !cancelled) {
+          const bgTarget = (draft?.sceneBackgroundTarget ?? (editing ? "edit" : "new")) as
+            | "edit"
+            | "new";
+          if (bgTarget === "edit") next.editingSceneBackgroundImagePath = dataUrl;
+          else next.newSceneBackgroundImagePath = dataUrl;
+        }
+      }
+
+      if (cancelled) return;
+      if (Object.keys(next).length > 0) setFields(next);
+      if (draft?.newSceneEditorOpen) setNewSceneEditorOpen(true);
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [loading, sceneBackgroundLibraryReturnPath, sceneBackgroundLibraryTarget, setFields]);
+  }, [
+    loading,
+    characterId,
+    sceneBackgroundLibraryReturnPath,
+    sceneInlineImageLibraryReturnPath,
+    editingSceneId,
+    editingSceneContent,
+    newSceneContent,
+    setFields,
+  ]);
 
   const handleChooseBackgroundFromLibrary = React.useCallback(() => {
     navigate("/library/images/pick", {
@@ -601,19 +753,16 @@ export function EditCharacterPage() {
     });
   }, [navigate, returnPath]);
 
-  const handleChooseSceneBackgroundFromLibrary = React.useCallback(
-    (target: "new" | "edit") => {
-      setSceneBackgroundLibraryTarget(target);
-      navigate("/library/images/pick", {
-        state: {
-          returnPath,
-          selectionStorageKey: sceneBackgroundLibraryReturnPath,
-          selectionKind: "background",
-        },
-      });
-    },
-    [navigate, sceneBackgroundLibraryReturnPath],
-  );
+  const handleChooseSceneBackgroundFromLibrary = (target: "new" | "edit") => {
+    persistSceneDraft({ sceneBackgroundTarget: target });
+    navigate("/library/images/pick", {
+      state: {
+        returnPath,
+        selectionStorageKey: sceneBackgroundLibraryReturnPath,
+        selectionKind: "background",
+      },
+    });
+  };
 
   const loadVoices = React.useCallback(async () => {
     setLoadingVoices(true);
@@ -2284,6 +2433,7 @@ export function EditCharacterPage() {
                 <div className="space-y-2">
                   <div className="text-sm font-medium text-fg/80">{t("characters.edit.sceneLabel")}</div>
                   <textarea
+                    ref={sceneContentRef}
                     value={editingSceneId !== null ? editingSceneContent : newSceneContent}
                     onChange={(e) =>
                       setFields(
@@ -2310,6 +2460,23 @@ export function EditCharacterPage() {
                       <code className="text-accent/80">{"{{user}}"}</code>
                     </span>
                   </div>
+                  <input
+                    ref={sceneInlineImageInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(event) => {
+                      void handleInlineImageUpload(event);
+                    }}
+                  />
+                  <InlineImageToolbar
+                    addLabel={t("sceneImage.add")}
+                    uploadLabel={t("sceneImage.upload")}
+                    libraryLabel={t("sceneImage.fromLibrary")}
+                    hint={t("sceneImage.hint")}
+                    onUpload={() => sceneInlineImageInputRef.current?.click()}
+                    onLibrary={handleChooseInlineImageFromLibrary}
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -2689,6 +2856,50 @@ function SceneBackgroundCard({
         className={cn("w-full object-cover", compact ? "h-24" : "h-32")}
       />
       <div className="border-t border-fg/10 px-4 py-3 text-sm text-fg/60">{label}</div>
+    </div>
+  );
+}
+
+function InlineImageToolbar({
+  addLabel,
+  uploadLabel,
+  libraryLabel,
+  hint,
+  onUpload,
+  onLibrary,
+}: {
+  addLabel: string;
+  uploadLabel: string;
+  libraryLabel: string;
+  hint: string;
+  onUpload: () => void;
+  onLibrary: () => void;
+}) {
+  return (
+    <div className="rounded-xl border border-fg/10 bg-fg/5 px-3 py-2.5">
+      <div className="flex items-center gap-2">
+        <Image className="h-3.5 w-3.5 text-fg/50" />
+        <span className="text-xs font-medium text-fg/70">{addLabel}</span>
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onLibrary}
+            className="flex items-center gap-1.5 rounded-lg border border-fg/10 bg-fg/5 px-2.5 py-1.5 text-[11px] font-medium text-fg/70 transition active:scale-95 active:bg-fg/10"
+          >
+            <FolderOpen className="h-3.5 w-3.5" />
+            {libraryLabel}
+          </button>
+          <button
+            type="button"
+            onClick={onUpload}
+            className="flex items-center gap-1.5 rounded-lg border border-accent/30 bg-accent/10 px-2.5 py-1.5 text-[11px] font-medium text-accent/90 transition active:scale-95 active:bg-accent/20"
+          >
+            <Upload className="h-3.5 w-3.5" />
+            {uploadLabel}
+          </button>
+        </div>
+      </div>
+      <p className="mt-1.5 text-[10px] text-fg/40">{hint}</p>
     </div>
   );
 }
