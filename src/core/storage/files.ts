@@ -285,6 +285,8 @@ export const storageBridge = {
   audioLibraryList: () => invoke<unknown[]>("storage_list_audio_library"),
   audioLibraryLoadData: (storagePath: string) =>
     invoke<string>("storage_load_session_attachment", { storagePath }),
+  audioLibraryDeleteItem: (storagePath: string) =>
+    invoke("storage_delete_audio_library_item", { storagePath }) as Promise<void>,
   imageLibraryDownloadToDownloads: (filePath: string, filename?: string | null) =>
     invoke<string>("storage_download_image_to_downloads", {
       filePath,

@@ -2435,42 +2435,72 @@ export function ChatConversationPage() {
     if (!jumpToMessageId || loading) return;
 
     let cancelled = false;
-    let rafId: number | null = null;
+    const rafIds: number[] = [];
+    const timeoutIds: number[] = [];
     let highlightTimeoutId: number | null = null;
+
+    isAtBottomRef.current = false;
+    setIsAtBottom(false);
+
+    const centerOnMessage = () => {
+      const container = scrollContainerRef.current;
+      const element = document.getElementById(`message-${jumpToMessageId}`);
+      if (!container || !element) return false;
+      const containerRect = container.getBoundingClientRect();
+      const elementRect = element.getBoundingClientRect();
+      const delta =
+        elementRect.top -
+        containerRect.top -
+        Math.max(0, (container.clientHeight - element.clientHeight) / 2);
+      container.scrollTop += delta;
+      return true;
+    };
 
     const run = async () => {
       await ensureMessageLoaded(jumpToMessageId);
       if (cancelled) return;
 
-      let tries = 0;
-      const tryScroll = () => {
-        if (cancelled) return;
-        const element = document.getElementById(`message-${jumpToMessageId}`);
-        if (element) {
-          element.scrollIntoView({ behavior: "smooth", block: "center" });
-          element.classList.add("bg-white/10", "rounded-lg", "transition-colors", "duration-1000");
-          highlightTimeoutId = window.setTimeout(() => {
-            element.classList.remove("bg-white/10");
-          }, 2000);
-          return;
-        }
+      isAtBottomRef.current = false;
+      setIsAtBottom(false);
 
+      let tries = 0;
+      const attempt = () => {
+        if (cancelled) return;
+        const found = centerOnMessage();
+        if (found && tries === 0) {
+          const element = document.getElementById(`message-${jumpToMessageId}`);
+          element?.classList.add(
+            "bg-white/10",
+            "rounded-lg",
+            "transition-colors",
+            "duration-1000",
+          );
+          highlightTimeoutId = window.setTimeout(() => {
+            element?.classList.remove("bg-white/10");
+          }, 2000);
+        }
         tries += 1;
-        if (tries < 20) {
-          rafId = window.requestAnimationFrame(tryScroll);
+        if (!found && tries < 20) {
+          rafIds.push(window.requestAnimationFrame(attempt));
         }
       };
+      rafIds.push(window.requestAnimationFrame(attempt));
 
-      rafId = window.requestAnimationFrame(tryScroll);
+      for (const ms of [150, 450]) {
+        timeoutIds.push(
+          window.setTimeout(() => {
+            if (!cancelled) centerOnMessage();
+          }, ms),
+        );
+      }
     };
 
     void run();
 
     return () => {
       cancelled = true;
-      if (rafId !== null) {
-        window.cancelAnimationFrame(rafId);
-      }
+      rafIds.forEach((id) => window.cancelAnimationFrame(id));
+      timeoutIds.forEach((id) => window.clearTimeout(id));
       if (highlightTimeoutId !== null) {
         window.clearTimeout(highlightTimeoutId);
       }

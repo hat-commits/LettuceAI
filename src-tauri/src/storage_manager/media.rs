@@ -591,6 +591,7 @@ pub struct AudioLibraryItem {
     pub character_name: Option<String>,
     pub session_id: Option<String>,
     pub session_title: Option<String>,
+    pub message_id: Option<String>,
     pub role: Option<String>,
 }
 
@@ -641,6 +642,7 @@ fn collect_uploaded_audio(
     let rows = stmt
         .query_map([], |r| {
             Ok((
+                r.get::<_, String>(0)?,
                 r.get::<_, String>(1)?,
                 r.get::<_, i64>(2)?,
                 r.get::<_, String>(3)?,
@@ -653,8 +655,16 @@ fn collect_uploaded_audio(
         .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
 
     for row in rows {
-        let (session_id, created_at, role, attachments_json, character_id, session_title, char_name) =
-            row.map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+        let (
+            message_id,
+            session_id,
+            created_at,
+            role,
+            attachments_json,
+            character_id,
+            session_title,
+            char_name,
+        ) = row.map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
 
         let attachments: Vec<crate::chat_manager::types::ImageAttachment> =
             serde_json::from_str(&attachments_json).unwrap_or_default();
@@ -689,6 +699,7 @@ fn collect_uploaded_audio(
                 character_name: char_name.clone(),
                 session_id: Some(session_id.clone()),
                 session_title: session_title.clone(),
+                message_id: Some(message_id.clone()),
                 role: Some(role.clone()),
             });
         }
@@ -743,8 +754,108 @@ fn scan_tts_audio(root: &Path, out: &mut Vec<AudioLibraryItem>) -> Result<(), St
             character_name: None,
             session_id: None,
             session_title: None,
+            message_id: None,
             role: None,
         });
+    }
+
+    Ok(())
+}
+
+fn is_safe_audio_library_path(storage_path: &str) -> bool {
+    let path = PathBuf::from(storage_path);
+    if path.is_absolute() {
+        return false;
+    }
+    let mut components = path.components();
+    let Some(Component::Normal(first)) = components.next() else {
+        return false;
+    };
+    let bucket = first.to_string_lossy();
+    if !matches!(bucket.as_ref(), "sessions" | "tts_audio") {
+        return false;
+    }
+    path.components()
+        .all(|component| matches!(component, Component::Normal(_)))
+}
+
+fn remove_audio_attachment_reference(
+    app: &tauri::AppHandle,
+    storage_path: &str,
+) -> Result<(), String> {
+    let conn = crate::storage_manager::db::open_db(app)?;
+    let like = format!("%{}%", storage_path);
+    let mut stmt = conn
+        .prepare("SELECT id, attachments FROM messages WHERE attachments LIKE ?1")
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    let rows = stmt
+        .query_map([&like], |r| {
+            Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))
+        })
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+
+    let mut updates: Vec<(String, String)> = Vec::new();
+    for row in rows {
+        let (id, attachments_json) =
+            row.map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+        let mut attachments: Vec<crate::chat_manager::types::ImageAttachment> =
+            serde_json::from_str(&attachments_json).unwrap_or_default();
+        let before = attachments.len();
+        attachments.retain(|a| a.storage_path.as_deref() != Some(storage_path));
+        if attachments.len() != before {
+            let new_json = serde_json::to_string(&attachments).unwrap_or_else(|_| "[]".to_string());
+            updates.push((id, new_json));
+        }
+    }
+    drop(stmt);
+
+    for (id, json) in updates {
+        conn.execute(
+            "UPDATE messages SET attachments = ?1 WHERE id = ?2",
+            rusqlite::params![json, id],
+        )
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+pub fn storage_delete_audio_library_item(
+    app: tauri::AppHandle,
+    storage_path: String,
+) -> Result<(), String> {
+    if !is_safe_audio_library_path(&storage_path) {
+        return Err(crate::utils::err_msg(
+            module_path!(),
+            line!(),
+            format!("Unsafe audio library path: {}", storage_path),
+        ));
+    }
+
+    let root = storage_root(&app)?;
+    let full_path = root.join(&storage_path);
+
+    if full_path.exists() {
+        if !is_supported_audio_file(&full_path) {
+            return Err(crate::utils::err_msg(
+                module_path!(),
+                line!(),
+                format!("Unsupported audio library file: {}", storage_path),
+            ));
+        }
+        fs::remove_file(&full_path)
+            .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    }
+
+    if storage_path.starts_with("sessions/") {
+        if let Err(err) = remove_audio_attachment_reference(&app, &storage_path) {
+            log_warn(
+                &app,
+                "audio_library",
+                format!("failed to clean audio attachment reference: {}", err),
+            );
+        }
     }
 
     Ok(())

@@ -6491,6 +6491,14 @@ export const enMessages = {
         tts: "TTS",
         chat: "Chat",
       },
+      actions: {
+        menu: "Audio options",
+        openInChat: "Open in chat",
+        download: "Download",
+        delete: "Delete",
+        deleteConfirmTitle: "Delete audio?",
+        deleteConfirmDescription: "This permanently removes the audio file from this device.",
+      },
       empty: {
         title: "No audio yet",
         description: "Generated speech and audio you upload in chats will appear here",

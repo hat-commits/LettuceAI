@@ -1,9 +1,28 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FileAudio, Loader2, MessageSquareText, Pause, Play, Sparkles } from "lucide-react";
-import { listAudioLibraryItems, loadAudioLibraryItemData } from "../../../core/storage/repo";
+import {
+  Download,
+  FileAudio,
+  Loader2,
+  MessageSquareText,
+  MoreVertical,
+  Pause,
+  Play,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
+import {
+  deleteAudioLibraryItem,
+  downloadAudioLibraryItem,
+  listAudioLibraryItems,
+  loadAudioLibraryItemData,
+} from "../../../core/storage/repo";
 import type { AudioLibraryItem } from "../../../core/storage/repo";
+import { useNavigate } from "react-router-dom";
 import { useI18n } from "../../../core/i18n/context";
 import { cn, typography, interactive } from "../../design-tokens";
+import { BottomMenu, MenuButton } from "../../components";
+import { confirmBottomMenu } from "../../components/ConfirmBottomMenu";
+import { Routes } from "../../navigation";
 
 type AudioFilter = "All" | "Generated" | "Uploaded";
 
@@ -33,6 +52,7 @@ function formatTime(value: number): string {
 
 export function AudioLibraryPanel() {
   const { t } = useI18n();
+  const navigate = useNavigate();
   const [items, setItems] = useState<AudioLibraryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<AudioFilter>("All");
@@ -68,6 +88,56 @@ export function AudioLibraryPanel() {
     if (filter === "Uploaded") return items.filter((item) => item.source === "upload");
     return items;
   }, [items, filter]);
+
+  const [menuItem, setMenuItem] = useState<AudioLibraryItem | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  const openMenu = useCallback((item: AudioLibraryItem) => setMenuItem(item), []);
+
+  const handleOpenInChat = useCallback(
+    (item: AudioLibraryItem) => {
+      if (!item.characterId || !item.sessionId || !item.messageId) return;
+      setMenuItem(null);
+      navigate(
+        Routes.chatSession(item.characterId, item.sessionId, {
+          jumpToMessage: item.messageId,
+        }),
+      );
+    },
+    [navigate],
+  );
+
+  const handleDownload = useCallback(async (item: AudioLibraryItem) => {
+    setDownloadingId(item.id);
+    try {
+      await downloadAudioLibraryItem(item);
+    } catch (error) {
+      console.error("Failed to download audio:", error);
+    } finally {
+      setDownloadingId((current) => (current === item.id ? null : current));
+      setMenuItem(null);
+    }
+  }, []);
+
+  const handleDelete = useCallback(
+    async (item: AudioLibraryItem) => {
+      setMenuItem(null);
+      const confirmed = await confirmBottomMenu({
+        title: t("library.audio.actions.deleteConfirmTitle"),
+        message: t("library.audio.actions.deleteConfirmDescription"),
+        confirmLabel: t("library.audio.actions.delete"),
+        destructive: true,
+      });
+      if (!confirmed) return;
+      try {
+        await deleteAudioLibraryItem(item);
+        setItems((prev) => prev.filter((entry) => entry.id !== item.id));
+      } catch (error) {
+        console.error("Failed to delete audio:", error);
+      }
+    },
+    [t],
+  );
 
   if (loading) {
     return (
@@ -122,15 +192,51 @@ export function AudioLibraryPanel() {
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {filtered.map((item) => (
-            <AudioCard key={item.id} item={item} />
+            <AudioCard key={item.id} item={item} onOpenMenu={openMenu} />
           ))}
         </div>
       )}
+
+      <BottomMenu
+        isOpen={menuItem !== null}
+        onClose={() => setMenuItem(null)}
+        title={menuItem ? (menuItem.source === "tts" ? t("library.audio.generatedTitle") : menuItem.filename) : ""}
+      >
+        <div className="space-y-2">
+          {menuItem?.characterId && menuItem?.sessionId && menuItem?.messageId && (
+            <MenuButton
+              icon={MessageSquareText}
+              title={t("library.audio.actions.openInChat")}
+              description={menuItem.characterName ?? menuItem.sessionTitle ?? undefined}
+              onClick={() => {
+                if (menuItem) handleOpenInChat(menuItem);
+              }}
+            />
+          )}
+          <MenuButton
+            icon={Download}
+            title={t("library.audio.actions.download")}
+            loading={menuItem ? downloadingId === menuItem.id : false}
+            onClick={() => {
+              if (menuItem) void handleDownload(menuItem);
+            }}
+          />
+          <MenuButton
+            icon={Trash2}
+            title={t("library.audio.actions.delete")}
+            color="from-red-500 to-rose-500"
+            onClick={() => {
+              if (menuItem) void handleDelete(menuItem);
+            }}
+          />
+        </div>
+      </BottomMenu>
     </div>
   );
 }
 
-const AudioCard = memo(({ item }: { item: AudioLibraryItem }) => {
+const AudioCard = memo(
+  ({ item, onOpenMenu }: { item: AudioLibraryItem; onOpenMenu: (item: AudioLibraryItem) => void }) => {
   const { t } = useI18n();
   const audioRef = useRef<HTMLAudioElement>(null);
   const wantPlayRef = useRef(false);
@@ -274,8 +380,22 @@ const AudioCard = memo(({ item }: { item: AudioLibraryItem }) => {
           )}
         </div>
       </div>
+
+      <button
+        type="button"
+        onClick={() => onOpenMenu(item)}
+        className={cn(
+          "flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-full text-fg/45",
+          interactive.transition.fast,
+          "hover:bg-fg/10 hover:text-fg",
+        )}
+        aria-label={t("library.audio.actions.menu")}
+      >
+        <MoreVertical className="h-5 w-5" />
+      </button>
     </div>
   );
-});
+  },
+);
 
 AudioCard.displayName = "AudioCard";

@@ -90,6 +90,7 @@ const AudioLibraryItemSchema = z.object({
   characterName: z.string().nullable().optional(),
   sessionId: z.string().nullable().optional(),
   sessionTitle: z.string().nullable().optional(),
+  messageId: z.string().nullable().optional(),
   role: z.string().nullable().optional(),
 });
 
@@ -936,6 +937,18 @@ export async function listAudioLibraryItems(): Promise<AudioLibraryItem[]> {
 
 export async function loadAudioLibraryItemData(storagePath: string): Promise<string> {
   return storageBridge.audioLibraryLoadData(storagePath);
+}
+
+export async function downloadAudioLibraryItem(
+  item: Pick<AudioLibraryItem, "filePath" | "filename">,
+): Promise<string> {
+  return storageBridge.imageLibraryDownloadToDownloads(item.filePath, item.filename);
+}
+
+export async function deleteAudioLibraryItem(
+  item: Pick<AudioLibraryItem, "storagePath">,
+): Promise<void> {
+  await storageBridge.audioLibraryDeleteItem(item.storagePath);
 }
 
 export async function downloadImageLibraryItem(
