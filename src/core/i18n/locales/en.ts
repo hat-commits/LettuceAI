@@ -1671,6 +1671,8 @@ export const enMessages = {
         insertIntoMessage: "Insert into message",
         recent: "Recent",
         clear: "Clear",
+        menuDescription: "Roll dice and add the result to your message",
+        editNotation: "Edit dice notation",
       },
       image: {
         alt: "Widget image",

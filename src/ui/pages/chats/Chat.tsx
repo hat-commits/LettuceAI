@@ -20,7 +20,7 @@ import {
 } from "./components/widgets/editor/widgetFactories";
 import type { WidgetNode } from "../../../core/storage/chatWidgetSchemas";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
-import { ArrowLeftRight, ChevronDown, NotebookPen, User, X } from "lucide-react";
+import { ArrowLeftRight, ChevronDown, Dices, NotebookPen, Pencil, User, X } from "lucide-react";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import type {
   AccessibilitySettings,
@@ -84,6 +84,7 @@ import { ChatAppearanceDrawer } from "./components/appearance/ChatAppearanceDraw
 import { getChatColumnLayout } from "./utils/chatColumnLayout";
 import { getChatWidgetLayout, useViewportWidth } from "./utils/chatWidgetLayout";
 import { ChatWidgetArea } from "./components/ChatWidgetArea";
+import { WidgetDice } from "./components/widgets/WidgetDice";
 import {
   WidgetContextProvider,
   WidgetEditProvider,
@@ -269,6 +270,9 @@ export function ChatConversationPage() {
 
   // Help Me Reply states
   const [showPlusMenu, setShowPlusMenu] = useState(false);
+  const [showDiceMenu, setShowDiceMenu] = useState(false);
+  const [diceNotation, setDiceNotation] = useState("1d20");
+  const [diceEditing, setDiceEditing] = useState(false);
   const [swapPlaces, setSwapPlaces] = useState(false);
   const [showChoiceMenu, setShowChoiceMenu] = useState(false);
   const [showResultMenu, setShowResultMenu] = useState(false);
@@ -3152,6 +3156,15 @@ export function ChatConversationPage() {
             onClick={handleOpenAuthorNoteMenu}
           />
           <MenuButton
+            icon={Dices}
+            title={t("chats.widgets.dice.defaultTitle")}
+            description={t("chats.widgets.dice.menuDescription")}
+            onClick={() => {
+              setShowPlusMenu(false);
+              setShowDiceMenu(true);
+            }}
+          />
+          <MenuButton
             icon={ArrowLeftRight}
             title={swapPlaces ? t("chats.swapPlacesOn") : t("chats.swapPlaces")}
             description={
@@ -3168,6 +3181,68 @@ export function ChatConversationPage() {
                 : handleEnableSwapPlaces
             }
           />
+        </div>
+      </BottomMenu>
+
+      <BottomMenu
+        isOpen={showDiceMenu}
+        onClose={() => {
+          setShowDiceMenu(false);
+          setDiceEditing(false);
+        }}
+        title={t("chats.widgets.dice.defaultTitle")}
+        rightAction={
+          <button
+            type="button"
+            onClick={() => setDiceEditing((value) => !value)}
+            aria-label={t("chats.widgets.dice.editNotation")}
+            className={cn(
+              "flex h-8 w-8 items-center justify-center rounded-full border transition-colors",
+              diceEditing
+                ? "border-accent/40 bg-accent/15 text-accent"
+                : "border-fg/10 bg-fg/5 text-fg/70 hover:border-fg/20 hover:bg-fg/10 hover:text-fg",
+            )}
+          >
+            <Pencil size={14} />
+          </button>
+        }
+      >
+        <div className="space-y-3">
+          {diceEditing && (
+            <div className="flex items-center gap-2">
+              <input
+                value={diceNotation}
+                onChange={(event) => setDiceNotation(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") setDiceEditing(false);
+                }}
+                placeholder="1d20"
+                autoFocus
+                spellCheck={false}
+                autoCapitalize="none"
+                className="flex-1 rounded-xl border border-fg/10 bg-fg/5 px-3 py-2.5 font-mono text-sm text-fg placeholder-fg/40 transition focus:border-accent/40 focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setDiceEditing(false)}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-accent/30 bg-accent/15 text-accent transition hover:bg-accent/25"
+              >
+                <Check size={16} />
+              </button>
+            </div>
+          )}
+          <WidgetContextProvider
+            value={{
+              ...widgetCtxValue,
+              onInsertText: (text) => {
+                widgetCtxValue.onInsertText(text);
+                setShowDiceMenu(false);
+                setDiceEditing(false);
+              },
+            }}
+          >
+            <WidgetDice node={{ id: "mobile-dice", type: "dice", notation: diceNotation }} />
+          </WidgetContextProvider>
         </div>
       </BottomMenu>
 
