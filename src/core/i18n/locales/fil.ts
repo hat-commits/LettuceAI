@@ -3065,6 +3065,7 @@ export const filMessages: DeepPartialMessageTree<LocaleMessages> = {
       descriptionPlaceholder: "Maikling buod na ipinapakita sa mga card at listahan...",
       descriptionHint: "Opsyonal na maikling paglalarawan para sa UI; ang buong kahulugan ang ginagamit sa mga prompt.",
       companionPromptLabel: "Companion Prompt (Opsyonal)",
+      companionModeRequiredHint: "I-enable ang companion mode para mai-edit",
       systemPromptLabel: "System Prompt (Opsyonal)",
       loadingTemplates: "Naglo-load ng mga template...",
       useAppCompanionDefault: "Gamitin ang app companion default",

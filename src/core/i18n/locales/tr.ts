@@ -3065,6 +3065,7 @@ export const trMessages: DeepPartialMessageTree<LocaleMessages> = {
       descriptionPlaceholder: "Kartlarda ve listelerde gösterilen kısa özet...",
       descriptionHint: "Kullanıcı arayüzü için isteğe bağlı kısa açıklama; ",
       companionPromptLabel: "Tamamlayıcı İstem (İsteğe bağlı)",
+      companionModeRequiredHint: "Düzenlemek için yoldaş modunu etkinleştir",
       systemPromptLabel: "Sistem İstemi (İsteğe bağlı)",
       loadingTemplates: "Şablonlar yükleniyor...",
       useAppCompanionDefault: "Uygulama tamamlayıcısı varsayılanını kullan",

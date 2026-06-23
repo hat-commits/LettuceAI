@@ -3065,6 +3065,7 @@ export const frMessages: DeepPartialMessageTree<LocaleMessages> = {
       descriptionPlaceholder: "Court résumé affiché sur les cartes et les listes...",
       descriptionHint: "Description courte optionnelle pour l'interface ; la définition complète est utilisée dans les prompts.",
       companionPromptLabel: "Prompt compagnon (Optionnel)",
+      companionModeRequiredHint: "Activez le mode compagnon pour modifier",
       systemPromptLabel: "Prompt système (Optionnel)",
       loadingTemplates: "Chargement des modèles...",
       useAppCompanionDefault: "Utiliser le compagnon par défaut de l'app",

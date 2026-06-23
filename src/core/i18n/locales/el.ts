@@ -3065,6 +3065,7 @@ export const elMessages: DeepPartialMessageTree<LocaleMessages> = {
       descriptionPlaceholder: "Σύντομη περίληψη που εμφανίζεται στις κάρτες και λίστες...",
       descriptionHint: "Προαιρετική σύντομη περιγραφή για τη διεπαφή. Ο πλήρης ορισμός χρησιμοποιείται στις προτροπές.",
       companionPromptLabel: "Προτροπή Συντρόφου (Προαιρετικό)",
+      companionModeRequiredHint: "Ενεργοποιήστε τη λειτουργία companion για επεξεργασία",
       systemPromptLabel: "Προτροπή Συστήματος (Προαιρετικό)",
       loadingTemplates: "Φόρτωση προτύπων...",
       useAppCompanionDefault: "Χρήση προεπιλογής συντρόφου εφαρμογής",

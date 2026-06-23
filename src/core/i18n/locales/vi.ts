@@ -3065,6 +3065,7 @@ export const viMessages: DeepPartialMessageTree<LocaleMessages> = {
       descriptionPlaceholder: "Short summary shown on cards and lists...",
       descriptionHint: "Optional short description for the UI; the full definition is used in prompts.",
       companionPromptLabel: "Companion Prompt (Optional)",
+      companionModeRequiredHint: "Bật chế độ bạn đồng hành để chỉnh sửa",
       systemPromptLabel: "System Prompt (Optional)",
       loadingTemplates: "Loading templates...",
       useAppCompanionDefault: "Use app companion default",

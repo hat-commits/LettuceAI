@@ -3065,6 +3065,7 @@ export const ptMessages: DeepPartialMessageTree<LocaleMessages> = {
       descriptionPlaceholder: "Short summary shown on cards and lists...",
       descriptionHint: "Optional short description for the UI; the full definition is used in prompts.",
       companionPromptLabel: "Companion Prompt (Optional)",
+      companionModeRequiredHint: "Ative o modo companheiro para editar",
       systemPromptLabel: "System Prompt (Optional)",
       loadingTemplates: "Loading templates...",
       useAppCompanionDefault: "Use app companion default",

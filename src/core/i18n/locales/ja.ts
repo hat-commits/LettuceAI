@@ -3065,6 +3065,7 @@ export const jaMessages: DeepPartialMessageTree<LocaleMessages> = {
       descriptionPlaceholder: "カードやリストに表示される短い概要...",
       descriptionHint: "UI用のオプションの短い説明です。プロンプトでは完全な定義が使用されます。",
       companionPromptLabel: "コンパニオンプロンプト(任意)",
+      companionModeRequiredHint: "編集するにはコンパニオンモードを有効にしてください",
       systemPromptLabel: "システムプロンプト(任意)",
       loadingTemplates: "テンプレートを読み込み中...",
       useAppCompanionDefault: "アプリのコンパニオンデフォルトを使用",

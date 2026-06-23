@@ -3065,6 +3065,7 @@ export const koMessages: DeepPartialMessageTree<LocaleMessages> = {
       descriptionPlaceholder: "카드와 목록에 표시되는 짧은 요약...",
       descriptionHint: "UI용 선택적 짧은 설명; 전체 정의가 프롬프트에 사용됩니다.",
       companionPromptLabel: "동반자 프롬프트 (선택사항)",
+      companionModeRequiredHint: "편집하려면 컴패니언 모드를 활성화하세요",
       systemPromptLabel: "시스템 프롬프트 (선택사항)",
       loadingTemplates: "템플릿 로딩 중...",
       useAppCompanionDefault: "앱 동반자 기본값 사용",

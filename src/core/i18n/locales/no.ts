@@ -3065,6 +3065,7 @@ export const noMessages: DeepPartialMessageTree<LocaleMessages> = {
       descriptionPlaceholder: "Kort oppsummering vist på kort og lister...",
       descriptionHint: "Valgfri kort beskrivelse for grensesnittet; full definisjon brukes i prompter.",
       companionPromptLabel: "Kompanjong-prompt (valgfritt)",
+      companionModeRequiredHint: "Aktiver ledsager-modus for å redigere",
       systemPromptLabel: "Systemprompt (valgfritt)",
       loadingTemplates: "Laster maler...",
       useAppCompanionDefault: "Bruk app-kompanjong-standard",

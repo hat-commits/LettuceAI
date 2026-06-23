@@ -3065,6 +3065,7 @@ export const idMessages: DeepPartialMessageTree<LocaleMessages> = {
       descriptionPlaceholder: "Ringkasan pendek ditampilkan di kartu dan daftar...",
       descriptionHint: "Deskripsi pendek opsional untuk UI; definisi lengkap digunakan dalam prompt.",
       companionPromptLabel: "Prompt Companion (Opsional)",
+      companionModeRequiredHint: "Aktifkan mode pendamping untuk mengedit",
       systemPromptLabel: "Prompt Sistem (Opsional)",
       loadingTemplates: "Memuat template...",
       useAppCompanionDefault: "Gunakan companion bawaan aplikasi",

@@ -214,7 +214,7 @@ export function DescriptionStep({
                 rows={8}
                 placeholder={t("characters.details.definitionPlaceholder")}
                 className={cn(
-                  "w-full resize-none border bg-surface-el/20 px-4 py-3 text-base leading-relaxed text-fg placeholder-fg/40 backdrop-blur-xl lg:rows-12",
+                  "w-full resize-y border bg-surface-el/20 px-4 py-3 text-base leading-relaxed text-fg placeholder-fg/40 backdrop-blur-xl lg:rows-12",
                   radius.md,
                   interactive.transition.default,
                   "focus:bg-surface-el/30 focus:outline-none",
@@ -224,23 +224,6 @@ export function DescriptionStep({
                 )}
                 autoFocus
               />
-              {definition.trim() && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="pointer-events-none absolute bottom-3 right-3"
-                >
-                  <div
-                    className={cn(
-                      "flex h-7 w-7 items-center justify-center",
-                      radius.full,
-                      "border border-accent/30 bg-accent/15",
-                    )}
-                  >
-                    <Sparkles className="h-3.5 w-3.5 text-accent/80" />
-                  </div>
-                </motion.div>
-              )}
             </div>
             <p className={cn(typography.bodySmall.size, "text-fg/40")}>
               {t("characters.details.definitionDesc")}
@@ -282,7 +265,7 @@ export function DescriptionStep({
               rows={3}
               placeholder={t("characters.description.descriptionPlaceholder")}
               className={cn(
-                "w-full resize-none border bg-surface-el/20 px-4 py-3 text-base leading-relaxed text-fg placeholder-fg/40 backdrop-blur-xl",
+                "w-full resize-y border bg-surface-el/20 px-4 py-3 text-base leading-relaxed text-fg placeholder-fg/40 backdrop-blur-xl",
                 radius.md,
                 interactive.transition.default,
                 "focus:bg-surface-el/30 focus:outline-none",
@@ -296,305 +279,6 @@ export function DescriptionStep({
             </p>
           </div>
 
-          <div className={spacing.field}>
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="rounded-lg border border-fg/10 bg-fg/5 p-1.5">
-                  <Image className="h-4 w-4 text-fg/60" />
-                </div>
-                <h3 className="text-sm font-semibold text-fg">{t("characters.description.designReferencesLabel")}</h3>
-              </div>
-              <DesignReferenceEditor
-                designDescription={designDescription}
-                onDesignDescriptionChange={onDesignDescriptionChange}
-                referenceImages={designReferenceImageIds}
-                onReferenceImagesChange={onDesignReferenceImageIdsChange}
-                subjectName={name}
-                subjectDescription={definition || description}
-                avatarImage={avatarPath}
-                showHeader={false}
-                description={t("characters.description.designReferencesEditorHint")}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Prompt Selection */}
-          <div className={spacing.field}>
-            <label
-              className={cn(
-                typography.label.size,
-                typography.label.weight,
-                typography.label.tracking,
-                "uppercase text-fg/70",
-              )}
-            >
-              {mode === "companion"
-                ? t("characters.description.companionPromptLabel")
-                : t("characters.description.systemPromptLabel")}
-            </label>
-            {loadingTemplates ? (
-              <div
-                className={cn(
-                  "flex items-center gap-3 border border-fg/10 bg-surface-el/20 px-4 py-3 backdrop-blur-xl",
-                  radius.md,
-                )}
-              >
-                <Loader2 className="h-4 w-4 animate-spin text-fg/60" />
-                <span className={cn(typography.body.size, "text-fg/60")}>{t("characters.description.loadingTemplates")}</span>
-              </div>
-            ) : (
-              <div className="relative">
-                <select
-                  value={
-                    mode === "companion"
-                      ? (companionPromptTemplateId ?? "")
-                      : (systemPromptTemplateId ?? "")
-                  }
-                  onChange={(e) => {
-                    const next = e.target.value || null;
-                    if (mode === "companion") {
-                      onSelectCompanionPrompt(next);
-                    } else {
-                      onSelectSystemPrompt(next);
-                    }
-                  }}
-                  className={cn(
-                    "w-full appearance-none border bg-surface-el/20 px-4 py-3.5 pr-10 text-sm text-fg backdrop-blur-xl",
-                    radius.md,
-                    interactive.transition.default,
-                    "focus:border-fg/30 focus:bg-surface-el/30 focus:outline-none",
-                    (mode === "companion" ? companionPromptTemplateId : systemPromptTemplateId)
-                      ? "border-fg/20"
-                      : "border-fg/10",
-                  )}
-                >
-                  <option value="" className="bg-surface-el text-fg">
-                    {mode === "companion"
-                      ? t("characters.description.useAppCompanionDefault")
-                      : t("characters.description.useAppDefault")}
-                  </option>
-                  {(mode === "companion" ? companionPromptTemplates : directPromptTemplates).map((template) => (
-                    <option key={template.id} value={template.id} className="bg-surface-el text-fg">
-                      {template.name}
-                    </option>
-                  ))}
-                </select>
-                {/* Custom dropdown icon */}
-                <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
-                  <FileText className="h-4 w-4 text-fg/40" />
-                </div>
-              </div>
-            )}
-            <p className={cn(typography.bodySmall.size, "text-fg/40")}>
-              {mode === "companion"
-                ? t("characters.description.companionPromptHint")
-                : t("characters.description.systemPromptHint")}
-            </p>
-          </div>
-
-          <div className={spacing.field}>
-            <label
-              className={cn(
-                typography.label.size,
-                typography.label.weight,
-                typography.label.tracking,
-                "uppercase text-fg/70",
-              )}
-            >
-              {t("characters.description.groupChatConvLabel")}
-            </label>
-            {loadingTemplates ? (
-              <div
-                className={cn(
-                  "flex items-center gap-3 border border-fg/10 bg-surface-el/20 px-4 py-3 backdrop-blur-xl",
-                  radius.md,
-                )}
-              >
-                <Loader2 className="h-4 w-4 animate-spin text-fg/60" />
-                <span className={cn(typography.body.size, "text-fg/60")}>{t("characters.description.loadingTemplates")}</span>
-              </div>
-            ) : (
-              <div className="relative">
-                <select
-                  value={groupChatPromptTemplateId ?? ""}
-                  onChange={(e) => onSelectGroupChatPrompt(e.target.value || null)}
-                  className={cn(
-                    "w-full appearance-none border bg-surface-el/20 px-4 py-3.5 pr-10 text-sm text-fg backdrop-blur-xl",
-                    radius.md,
-                    interactive.transition.default,
-                    "focus:border-fg/30 focus:bg-surface-el/30 focus:outline-none",
-                    groupChatPromptTemplateId ? "border-fg/20" : "border-fg/10",
-                  )}
-                >
-                  <option value="" className="bg-surface-el text-fg">
-                    {t("characters.description.useAppDefault")}
-                  </option>
-                  {groupChatTemplates.map((template) => (
-                    <option key={template.id} value={template.id} className="bg-surface-el text-fg">
-                      {template.name}
-                    </option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
-                  <FileText className="h-4 w-4 text-fg/40" />
-                </div>
-              </div>
-            )}
-            <p className={cn(typography.bodySmall.size, "text-fg/40")}>
-              {t("characters.description.groupChatConvHint")}
-            </p>
-          </div>
-
-          <div className={spacing.field}>
-            <label
-              className={cn(
-                typography.label.size,
-                typography.label.weight,
-                typography.label.tracking,
-                "uppercase text-fg/70",
-              )}
-            >
-              {t("characters.description.groupChatRpLabel")}
-            </label>
-            {loadingTemplates ? (
-              <div
-                className={cn(
-                  "flex items-center gap-3 border border-fg/10 bg-surface-el/20 px-4 py-3 backdrop-blur-xl",
-                  radius.md,
-                )}
-              >
-                <Loader2 className="h-4 w-4 animate-spin text-fg/60" />
-                <span className={cn(typography.body.size, "text-fg/60")}>{t("characters.description.loadingTemplates")}</span>
-              </div>
-            ) : (
-              <div className="relative">
-                <select
-                  value={groupChatRoleplayPromptTemplateId ?? ""}
-                  onChange={(e) => onSelectGroupChatRoleplayPrompt(e.target.value || null)}
-                  className={cn(
-                    "w-full appearance-none border bg-surface-el/20 px-4 py-3.5 pr-10 text-sm text-fg backdrop-blur-xl",
-                    radius.md,
-                    interactive.transition.default,
-                    "focus:border-fg/30 focus:bg-surface-el/30 focus:outline-none",
-                    groupChatRoleplayPromptTemplateId ? "border-fg/20" : "border-fg/10",
-                  )}
-                >
-                  <option value="" className="bg-surface-el text-fg">
-                    {t("characters.description.useAppDefault")}
-                  </option>
-                  {groupChatRoleplayTemplates.map((template) => (
-                    <option key={template.id} value={template.id} className="bg-surface-el text-fg">
-                      {template.name}
-                    </option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
-                  <FileText className="h-4 w-4 text-fg/40" />
-                </div>
-              </div>
-            )}
-            <p className={cn(typography.bodySmall.size, "text-fg/40")}>
-              {t("characters.description.groupChatRpHint")}
-            </p>
-          </div>
-
-          {/* Voice Configuration */}
-          <div className={spacing.field}>
-            <label
-              className={cn(
-                typography.label.size,
-                typography.label.weight,
-                typography.label.tracking,
-                "uppercase text-fg/70",
-              )}
-            >
-              {t("characters.description.voiceLabel")}
-            </label>
-            {loadingVoices ? (
-              <div
-                className={cn(
-                  "flex items-center gap-3 border border-fg/10 bg-surface-el/20 px-4 py-3 backdrop-blur-xl",
-                  radius.md,
-                )}
-              >
-                <Loader2 className="h-4 w-4 animate-spin text-fg/60" />
-                <span className={cn(typography.body.size, "text-fg/60")}>{t("characters.description.loadingVoices")}</span>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setShowVoiceMenu(true)}
-                className={cn(
-                  "flex w-full items-center justify-between border bg-surface-el/20 px-4 py-3.5 text-left backdrop-blur-xl",
-                  radius.md,
-                  interactive.transition.default,
-                  "focus:border-fg/30 focus:bg-surface-el/30 focus:outline-none hover:bg-surface-el/30",
-                  voiceSelectionValue ? "border-fg/20" : "border-fg/10",
-                )}
-              >
-                <div className="flex items-center gap-2">
-                  <Volume2 className="h-5 w-5 text-fg/40" />
-                  <span
-                    className={cn("text-sm", voiceSelectionValue ? "text-fg" : "text-fg/50")}
-                  >
-                    {voiceSelectionValue
-                      ? (() => {
-                          if (voiceConfig?.source === "user") {
-                            const v = userVoices.find((uv) => uv.id === voiceConfig.userVoiceId);
-                            return v?.name || t("characters.description.customVoiceFallback");
-                          }
-                          if (voiceConfig?.source === "provider") {
-                            const pv = providerVoices[voiceConfig.providerId || ""]?.find(
-                              (pv) => pv.voiceId === voiceConfig.voiceId,
-                            );
-                            return pv?.name || t("characters.description.providerVoiceFallback");
-                          }
-                          return t("characters.description.selectedVoiceFallback");
-                        })()
-                      : t("characters.description.noVoiceAssigned")}
-                  </span>
-                </div>
-                <ChevronDown className="h-4 w-4 text-fg/40" />
-              </button>
-            )}
-            {voiceError && (
-              <p className={cn(typography.bodySmall.size, "font-medium text-danger")}>{voiceError}</p>
-            )}
-            {!loadingVoices && audioProviders.length === 0 && userVoices.length === 0 && (
-              <p className={cn(typography.bodySmall.size, "text-fg/40")}>
-                {t("characters.description.addVoicesHint")}
-              </p>
-            )}
-            <p className={cn(typography.bodySmall.size, "text-fg/40")}>
-              {t("characters.description.voiceAssignHint")}
-            </p>
-
-            {/* Voice Autoplay Toggle */}
-            <div
-              className={cn(
-                "flex items-center justify-between border border-fg/10 bg-surface-el/20 px-4 py-3 backdrop-blur-xl",
-                radius.md,
-                !voiceConfig && "opacity-50",
-              )}
-            >
-              <div>
-                <p className={cn(typography.body.size, "font-medium text-fg")}>{t("characters.description.autoplayLabel")}</p>
-                <p className={cn(typography.bodySmall.size, "mt-1 text-fg/50")}>
-                  {voiceConfig
-                    ? t("characters.description.autoplayOn")
-                    : t("characters.description.autoplayOff")}
-                </p>
-              </div>
-              <Switch
-                id="character-voice-autoplay"
-                checked={voiceAutoplay}
-                onChange={(next) => onVoiceAutoplayChange(next)}
-                disabled={!voiceConfig}
-              />
-            </div>
-          </div>
-          </div>
         </div>
 
         {/* Right sidebar: Settings (desktop) / continues stacked (mobile) */}
@@ -740,7 +424,349 @@ export function DescriptionStep({
               {t("characters.description.memoryHint")}
             </p>
           </div>
+
+          {/* Voice Configuration */}
+          <div className={spacing.field}>
+            <label
+              className={cn(
+                typography.label.size,
+                typography.label.weight,
+                typography.label.tracking,
+                "uppercase text-fg/70",
+              )}
+            >
+              {t("characters.description.voiceLabel")}
+            </label>
+            {loadingVoices ? (
+              <div
+                className={cn(
+                  "flex items-center gap-3 border border-fg/10 bg-surface-el/20 px-4 py-3 backdrop-blur-xl",
+                  radius.md,
+                )}
+              >
+                <Loader2 className="h-4 w-4 animate-spin text-fg/60" />
+                <span className={cn(typography.body.size, "text-fg/60")}>{t("characters.description.loadingVoices")}</span>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowVoiceMenu(true)}
+                className={cn(
+                  "flex w-full items-center justify-between border bg-surface-el/20 px-4 py-3.5 text-left backdrop-blur-xl",
+                  radius.md,
+                  interactive.transition.default,
+                  "focus:border-fg/30 focus:bg-surface-el/30 focus:outline-none hover:bg-surface-el/30",
+                  voiceSelectionValue ? "border-fg/20" : "border-fg/10",
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  <Volume2 className="h-5 w-5 text-fg/40" />
+                  <span
+                    className={cn("text-sm", voiceSelectionValue ? "text-fg" : "text-fg/50")}
+                  >
+                    {voiceSelectionValue
+                      ? (() => {
+                          if (voiceConfig?.source === "user") {
+                            const v = userVoices.find((uv) => uv.id === voiceConfig.userVoiceId);
+                            return v?.name || t("characters.description.customVoiceFallback");
+                          }
+                          if (voiceConfig?.source === "provider") {
+                            const pv = providerVoices[voiceConfig.providerId || ""]?.find(
+                              (pv) => pv.voiceId === voiceConfig.voiceId,
+                            );
+                            return pv?.name || t("characters.description.providerVoiceFallback");
+                          }
+                          return t("characters.description.selectedVoiceFallback");
+                        })()
+                      : t("characters.description.noVoiceAssigned")}
+                  </span>
+                </div>
+                <ChevronDown className="h-4 w-4 text-fg/40" />
+              </button>
+            )}
+            {voiceError && (
+              <p className={cn(typography.bodySmall.size, "font-medium text-danger")}>{voiceError}</p>
+            )}
+            {!loadingVoices && audioProviders.length === 0 && userVoices.length === 0 && (
+              <p className={cn(typography.bodySmall.size, "text-fg/40")}>
+                {t("characters.description.addVoicesHint")}
+              </p>
+            )}
+            <p className={cn(typography.bodySmall.size, "text-fg/40")}>
+              {t("characters.description.voiceAssignHint")}
+            </p>
+
+            {/* Voice Autoplay Toggle */}
+            <div
+              className={cn(
+                "flex items-center justify-between border border-fg/10 bg-surface-el/20 px-4 py-3 backdrop-blur-xl",
+                radius.md,
+                !voiceConfig && "opacity-50",
+              )}
+            >
+              <div>
+                <p className={cn(typography.body.size, "font-medium text-fg")}>{t("characters.description.autoplayLabel")}</p>
+                <p className={cn(typography.bodySmall.size, "mt-1 text-fg/50")}>
+                  {voiceConfig
+                    ? t("characters.description.autoplayOn")
+                    : t("characters.description.autoplayOff")}
+                </p>
+              </div>
+              <Switch
+                id="character-voice-autoplay"
+                checked={voiceAutoplay}
+                onChange={(next) => onVoiceAutoplayChange(next)}
+                disabled={!voiceConfig}
+              />
+            </div>
+          </div>
         </div>
+      </div>
+
+      {/* Design references */}
+      <div className={spacing.field}>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="rounded-lg border border-fg/10 bg-fg/5 p-1.5">
+              <Image className="h-4 w-4 text-fg/60" />
+            </div>
+            <h3 className="text-sm font-semibold text-fg">{t("characters.description.designReferencesLabel")}</h3>
+          </div>
+          <DesignReferenceEditor
+            designDescription={designDescription}
+            onDesignDescriptionChange={onDesignDescriptionChange}
+            referenceImages={designReferenceImageIds}
+            onReferenceImagesChange={onDesignReferenceImageIdsChange}
+            subjectName={name}
+            subjectDescription={definition || description}
+            avatarImage={avatarPath}
+            showHeader={false}
+            description={t("characters.description.designReferencesEditorHint")}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* System Prompt */}
+      <div className={spacing.field}>
+        <label
+          className={cn(
+            typography.label.size,
+            typography.label.weight,
+            typography.label.tracking,
+            "uppercase text-fg/70",
+          )}
+        >
+          {t("characters.description.systemPromptLabel")}
+        </label>
+        {loadingTemplates ? (
+          <div
+            className={cn(
+              "flex items-center gap-3 border border-fg/10 bg-surface-el/20 px-4 py-3 backdrop-blur-xl",
+              radius.md,
+            )}
+          >
+            <Loader2 className="h-4 w-4 animate-spin text-fg/60" />
+            <span className={cn(typography.body.size, "text-fg/60")}>{t("characters.description.loadingTemplates")}</span>
+          </div>
+        ) : (
+          <div className="relative">
+            <select
+              value={systemPromptTemplateId ?? ""}
+              onChange={(e) => onSelectSystemPrompt(e.target.value || null)}
+              className={cn(
+                "w-full appearance-none border bg-surface-el/20 px-4 py-3.5 pr-10 text-sm text-fg backdrop-blur-xl",
+                radius.md,
+                interactive.transition.default,
+                "focus:border-fg/30 focus:bg-surface-el/30 focus:outline-none",
+                systemPromptTemplateId ? "border-fg/20" : "border-fg/10",
+              )}
+            >
+              <option value="" className="bg-surface-el text-fg">
+                {t("characters.description.useAppDefault")}
+              </option>
+              {directPromptTemplates.map((template) => (
+                <option key={template.id} value={template.id} className="bg-surface-el text-fg">
+                  {template.name}
+                </option>
+              ))}
+            </select>
+            {/* Custom dropdown icon */}
+            <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+              <FileText className="h-4 w-4 text-fg/40" />
+            </div>
+          </div>
+        )}
+        <p className={cn(typography.bodySmall.size, "text-fg/40")}>
+          {t("characters.description.systemPromptHint")}
+        </p>
+      </div>
+
+      <div className={spacing.field}>
+        <label
+          className={cn(
+            typography.label.size,
+            typography.label.weight,
+            typography.label.tracking,
+            "uppercase text-fg/70",
+          )}
+        >
+          {t("characters.description.groupChatConvLabel")}
+        </label>
+        {loadingTemplates ? (
+          <div
+            className={cn(
+              "flex items-center gap-3 border border-fg/10 bg-surface-el/20 px-4 py-3 backdrop-blur-xl",
+              radius.md,
+            )}
+          >
+            <Loader2 className="h-4 w-4 animate-spin text-fg/60" />
+            <span className={cn(typography.body.size, "text-fg/60")}>{t("characters.description.loadingTemplates")}</span>
+          </div>
+        ) : (
+          <div className="relative">
+            <select
+              value={groupChatPromptTemplateId ?? ""}
+              onChange={(e) => onSelectGroupChatPrompt(e.target.value || null)}
+              className={cn(
+                "w-full appearance-none border bg-surface-el/20 px-4 py-3.5 pr-10 text-sm text-fg backdrop-blur-xl",
+                radius.md,
+                interactive.transition.default,
+                "focus:border-fg/30 focus:bg-surface-el/30 focus:outline-none",
+                groupChatPromptTemplateId ? "border-fg/20" : "border-fg/10",
+              )}
+            >
+              <option value="" className="bg-surface-el text-fg">
+                {t("characters.description.useAppDefault")}
+              </option>
+              {groupChatTemplates.map((template) => (
+                <option key={template.id} value={template.id} className="bg-surface-el text-fg">
+                  {template.name}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+              <FileText className="h-4 w-4 text-fg/40" />
+            </div>
+          </div>
+        )}
+        <p className={cn(typography.bodySmall.size, "text-fg/40")}>
+          {t("characters.description.groupChatConvHint")}
+        </p>
+      </div>
+
+      <div className={spacing.field}>
+        <label
+          className={cn(
+            typography.label.size,
+            typography.label.weight,
+            typography.label.tracking,
+            "uppercase text-fg/70",
+          )}
+        >
+          {t("characters.description.groupChatRpLabel")}
+        </label>
+        {loadingTemplates ? (
+          <div
+            className={cn(
+              "flex items-center gap-3 border border-fg/10 bg-surface-el/20 px-4 py-3 backdrop-blur-xl",
+              radius.md,
+            )}
+          >
+            <Loader2 className="h-4 w-4 animate-spin text-fg/60" />
+            <span className={cn(typography.body.size, "text-fg/60")}>{t("characters.description.loadingTemplates")}</span>
+          </div>
+        ) : (
+          <div className="relative">
+            <select
+              value={groupChatRoleplayPromptTemplateId ?? ""}
+              onChange={(e) => onSelectGroupChatRoleplayPrompt(e.target.value || null)}
+              className={cn(
+                "w-full appearance-none border bg-surface-el/20 px-4 py-3.5 pr-10 text-sm text-fg backdrop-blur-xl",
+                radius.md,
+                interactive.transition.default,
+                "focus:border-fg/30 focus:bg-surface-el/30 focus:outline-none",
+                groupChatRoleplayPromptTemplateId ? "border-fg/20" : "border-fg/10",
+              )}
+            >
+              <option value="" className="bg-surface-el text-fg">
+                {t("characters.description.useAppDefault")}
+              </option>
+              {groupChatRoleplayTemplates.map((template) => (
+                <option key={template.id} value={template.id} className="bg-surface-el text-fg">
+                  {template.name}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+              <FileText className="h-4 w-4 text-fg/40" />
+            </div>
+          </div>
+        )}
+        <p className={cn(typography.bodySmall.size, "text-fg/40")}>
+          {t("characters.description.groupChatRpHint")}
+        </p>
+      </div>
+
+      {/* Companion Prompt */}
+      <div className={cn(spacing.field, mode !== "companion" && "pointer-events-none opacity-50")}>
+        <div className="flex items-center justify-between">
+          <label
+            className={cn(
+              typography.label.size,
+              typography.label.weight,
+              typography.label.tracking,
+              "uppercase text-fg/70",
+            )}
+          >
+            {t("characters.description.companionPromptLabel")}
+          </label>
+          {mode !== "companion" && (
+            <span className="text-[11px] text-fg/45">{t("characters.description.companionModeRequiredHint")}</span>
+          )}
+        </div>
+        {loadingTemplates ? (
+          <div
+            className={cn(
+              "flex items-center gap-3 border border-fg/10 bg-surface-el/20 px-4 py-3 backdrop-blur-xl",
+              radius.md,
+            )}
+          >
+            <Loader2 className="h-4 w-4 animate-spin text-fg/60" />
+            <span className={cn(typography.body.size, "text-fg/60")}>{t("characters.description.loadingTemplates")}</span>
+          </div>
+        ) : (
+          <div className="relative">
+            <select
+              value={companionPromptTemplateId ?? ""}
+              disabled={mode !== "companion"}
+              onChange={(e) => onSelectCompanionPrompt(e.target.value || null)}
+              className={cn(
+                "w-full appearance-none border bg-surface-el/20 px-4 py-3.5 pr-10 text-sm text-fg backdrop-blur-xl",
+                radius.md,
+                interactive.transition.default,
+                "focus:border-fg/30 focus:bg-surface-el/30 focus:outline-none",
+                companionPromptTemplateId ? "border-fg/20" : "border-fg/10",
+              )}
+            >
+              <option value="" className="bg-surface-el text-fg">
+                {t("characters.description.useAppCompanionDefault")}
+              </option>
+              {companionPromptTemplates.map((template) => (
+                <option key={template.id} value={template.id} className="bg-surface-el text-fg">
+                  {template.name}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+              <FileText className="h-4 w-4 text-fg/40" />
+            </div>
+          </div>
+        )}
+        <p className={cn(typography.bodySmall.size, "text-fg/40")}>
+          {t("characters.description.companionPromptHint")}
+        </p>
+      </div>
       </div>
 
       {/* Error Display */}

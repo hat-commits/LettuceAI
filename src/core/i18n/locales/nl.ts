@@ -3065,6 +3065,7 @@ export const nlMessages: DeepPartialMessageTree<LocaleMessages> = {
       descriptionPlaceholder: "Korte samenvatting weergegeven op kaarten en lijsten...",
       descriptionHint: "Optionele korte beschrijving voor de UI; de volledige definitie wordt gebruikt in prompts.",
       companionPromptLabel: "Metgezelprompt (Optioneel)",
+      companionModeRequiredHint: "Schakel de companion-modus in om te bewerken",
       systemPromptLabel: "Systeemprompt (Optioneel)",
       loadingTemplates: "Sjablonen laden...",
       useAppCompanionDefault: "App-metgezelstandaard gebruiken",

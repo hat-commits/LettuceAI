@@ -3065,6 +3065,7 @@ export const plMessages: DeepPartialMessageTree<LocaleMessages> = {
       descriptionPlaceholder: "Krótkie podsumowanie wyświetlane na kartach i listach...",
       descriptionHint: "Opcjonalny krótki opis dla interfejsu; pełna definicja jest używana w promptach.",
       companionPromptLabel: "Prompt towarzysza (opcjonalnie)",
+      companionModeRequiredHint: "Włącz tryb towarzysza, aby edytować",
       systemPromptLabel: "Prompt systemowy (opcjonalnie)",
       loadingTemplates: "Ładowanie szablonów...",
       useAppCompanionDefault: "Użyj domyślnego towarzysza aplikacji",

@@ -3065,6 +3065,7 @@ export const zhHantMessages: DeepPartialMessageTree<LocaleMessages> = {
       descriptionPlaceholder: "顯示在卡片和清單上的簡短摘要...",
       descriptionHint: "選填的簡短 UI 描述；完整定義用於提示。",
       companionPromptLabel: "夥伴提示（選填）",
+      companionModeRequiredHint: "啟用伴侶模式以編輯",
       systemPromptLabel: "系統提示（選填）",
       loadingTemplates: "載入模板中...",
       useAppCompanionDefault: "使用應用程式夥伴預設值",

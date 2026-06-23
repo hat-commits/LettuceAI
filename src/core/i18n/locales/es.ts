@@ -3065,6 +3065,7 @@ export const esMessages: DeepPartialMessageTree<LocaleMessages> = {
       descriptionPlaceholder: "Resumen corto que se muestra en tarjetas y listas...",
       descriptionHint: "Descripción corta opcional para la interfaz; la definición completa se usa en los prompts.",
       companionPromptLabel: "Prompt de compañero (opcional)",
+      companionModeRequiredHint: "Activa el modo compañero para editar",
       systemPromptLabel: "Prompt de sistema (opcional)",
       loadingTemplates: "Cargando plantillas...",
       useAppCompanionDefault: "Usar predeterminado de compañero de la app",

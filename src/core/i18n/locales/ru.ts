@@ -3065,6 +3065,7 @@ export const ruMessages: DeepPartialMessageTree<LocaleMessages> = {
       descriptionPlaceholder: "Краткое резюме, отображаемое на карточках и списках...",
       descriptionHint: "Необязательное краткое описание пользовательского интерфейса; ",
       companionPromptLabel: "Сопутствующая подсказка (необязательно)",
+      companionModeRequiredHint: "Включите режим компаньона для редактирования",
       systemPromptLabel: "Системная подсказка (необязательно)",
       loadingTemplates: "Загрузка шаблонов...",
       useAppCompanionDefault: "Использовать приложение-компаньон по умолчанию",

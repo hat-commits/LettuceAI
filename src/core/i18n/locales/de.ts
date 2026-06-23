@@ -3065,6 +3065,7 @@ export const deMessages: DeepPartialMessageTree<LocaleMessages> = {
       descriptionPlaceholder: "Kurze Zusammenfassung, die auf Karten und Listen angezeigt wird...",
       descriptionHint: "Optionale kurze Beschreibung für die Oberfläche. Die vollständige Definition wird in Prompts verwendet.",
       companionPromptLabel: "Companion-Prompt (Optional)",
+      companionModeRequiredHint: "Companion-Modus aktivieren zum Bearbeiten",
       systemPromptLabel: "System-Prompt (Optional)",
       loadingTemplates: "Vorlagen werden geladen...",
       useAppCompanionDefault: "App-Companion-Standard verwenden",

@@ -3065,6 +3065,7 @@ export const hiMessages: DeepPartialMessageTree<LocaleMessages> = {
       descriptionPlaceholder: "कार्डों और सूचियों पर दिखाया जाने वाला संक्षिप्त सारांश...",
       descriptionHint: "UI के लिए वैकल्पिक संक्षिप्त विवरण; पूरी परिभाषा प्रॉम्प्ट में उपयोग होती है।",
       companionPromptLabel: "Companion Prompt (वैकल्पिक)",
+      companionModeRequiredHint: "संपादित करने के लिए कंपैनियन मोड सक्षम करें",
       systemPromptLabel: "System Prompt (वैकल्पिक)",
       loadingTemplates: "टेम्पलेट लोड हो रहे हैं...",
       useAppCompanionDefault: "ऐप companion डिफ़ॉल्ट उपयोग करें",

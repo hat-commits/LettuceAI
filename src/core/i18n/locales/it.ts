@@ -3065,6 +3065,7 @@ export const itMessages: DeepPartialMessageTree<LocaleMessages> = {
       descriptionPlaceholder: "Breve riepilogo mostrato su schede e liste...",
       descriptionHint: "Descrizione breve opzionale per l'interfaccia; la definizione completa è usata nei prompt.",
       companionPromptLabel: "Prompt companion (Opzionale)",
+      companionModeRequiredHint: "Attiva la modalità companion per modificare",
       systemPromptLabel: "Prompt di sistema (Opzionale)",
       loadingTemplates: "Caricamento modelli...",
       useAppCompanionDefault: "Usa impostazione companion predefinita dell'app",

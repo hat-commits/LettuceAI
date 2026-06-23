@@ -3069,6 +3069,7 @@ export const enMessages = {
       descriptionPlaceholder: "Short summary shown on cards and lists...",
       descriptionHint: "Optional short description for the UI; the full definition is used in prompts.",
       companionPromptLabel: "Companion Prompt (Optional)",
+      companionModeRequiredHint: "Enable companion mode to edit",
       systemPromptLabel: "System Prompt (Optional)",
       loadingTemplates: "Loading templates...",
       useAppCompanionDefault: "Use app companion default",
