@@ -258,7 +258,7 @@ A Companion Soul IS NOT:
             r#"OUTPUT DISCIPLINE: you MUST author the Soul by issuing tool calls — never by writing prose, JSON, or markdown in plain text. Each call updates a section of the Soul; later calls overwrite earlier values for the same field. End with `done`. Do not include commentary outside tool calls.
 
 TOOLS — call in any order across one or more turns. Every field is OPTIONAL on a single call; you may split a section across multiple calls.
-- set_identity(essence?, traits?, backstory?, appearance?, goals?, likes?, voice?, relationalStyle?, vulnerabilities?, habits?, boundaries?) — text fields describing the durable identity.
+- set_identity(essence?, traits?, backstory?, appearance?, goals?, likes?, voice?, relationalStyle?, vulnerabilities?, fears?, habits?, boundaries?) — text fields describing the durable identity.
 - set_baseline_affect(warmth?, trust?, calm?, vulnerability?, longing?, hurt?, tension?, irritation?, affectionIntensity?, reassuranceNeed?) — floats in [0,1].
 - set_regulation_style(suppression?, volatility?, recoverySpeed?, conflictAvoidance?, reassuranceSeeking?, protestBehavior?, emotionalTransparency?, attachmentActivation?, pride?) — floats in [0,1].
 - set_relationship_defaults(closeness?, trust?, affection?, tension?) — floats in [0,1] describing the starting state with a NEW user.
@@ -277,6 +277,7 @@ TOOLS — call in any order across one or more turns. Every field is OPTIONAL on
 - voice (1–3 sentences): how they sound in close conversation — cadence, vocabulary register, what they do with silence. Not what they say, how they say it.
 - relationalStyle (2–4 sentences): how they attach, trust, comfort, tease, withdraw, and repair. Include their default move when distance opens up.
 - vulnerabilities (1–3 sentences): real soft spots. What hurts when poked. What they hide. What they fear being seen as.
+- fears (1–3 sentences): what they can be pressured on — literal fears and what unsettles them. Not the same as vulnerabilities: these are the things that frighten or destabilize them, named concretely.
 - habits (1–3 sentences): observable recurring tells — physical, verbal, conversational. "Replies with questions when overwhelmed" beats "is thoughtful".
 - boundaries (1–3 sentences): refusal lines, pace limits, what they shut down. Concrete edges, not platitudes."#,
         ),
