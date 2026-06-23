@@ -22,6 +22,7 @@ import {
   X,
 } from "lucide-react";
 import { clearCompanionSoulGrowth, removeCompanionSoulGrowth } from "../../../core/companion/soul";
+import { confirmBottomMenu } from "../../components/ConfirmBottomMenu";
 import { useParams, useSearchParams } from "react-router-dom";
 import { cn, components, interactive, radius } from "../../design-tokens";
 import { Routes, useNavigationManager } from "../../navigation";
@@ -275,7 +276,7 @@ export function CompanionRelationshipPage() {
   const sessionId = searchParams.get("sessionId");
   const { go, backOrReplace } = useNavigationManager();
   const { t } = useI18n();
-  const { session, character, loading, error, memoryItems, reload } = useCompanionSessionData(
+  const { session, setSession, character, loading, error, memoryItems } = useCompanionSessionData(
     characterId,
     sessionId,
   );
@@ -292,10 +293,21 @@ export function CompanionRelationshipPage() {
 
   const handleClearGrowth = async () => {
     if (!session || clearingGrowth || soulGrowth.length === 0) return;
+    const confirmed = await confirmBottomMenu({
+      title: t("chats.companionRelationship.soulGrowthClearConfirmTitle"),
+      message: t("chats.companionRelationship.soulGrowthClearConfirmMessage"),
+      confirmLabel: t("chats.companionRelationship.soulGrowthClear"),
+      destructive: true,
+    });
+    if (!confirmed) return;
     setClearingGrowth(true);
     try {
       await clearCompanionSoulGrowth(session.id);
-      await reload();
+      setSession((prev) =>
+        prev?.companionState
+          ? { ...prev, companionState: { ...prev.companionState, soulGrowth: [] } }
+          : prev,
+      );
     } finally {
       setClearingGrowth(false);
     }
@@ -303,10 +315,29 @@ export function CompanionRelationshipPage() {
 
   const handleRemoveGrowth = async (storageIndex: number) => {
     if (!session || removingGrowth !== null || storageIndex < 0) return;
+    const confirmed = await confirmBottomMenu({
+      title: t("chats.companionRelationship.soulGrowthRemoveConfirmTitle"),
+      message: t("chats.companionRelationship.soulGrowthRemoveConfirmMessage"),
+      confirmLabel: t("chats.companionRelationship.soulGrowthRemove"),
+      destructive: true,
+    });
+    if (!confirmed) return;
     setRemovingGrowth(storageIndex);
     try {
       await removeCompanionSoulGrowth(session.id, storageIndex);
-      await reload();
+      setSession((prev) =>
+        prev?.companionState
+          ? {
+              ...prev,
+              companionState: {
+                ...prev.companionState,
+                soulGrowth: (prev.companionState.soulGrowth ?? []).filter(
+                  (_, i) => i !== storageIndex,
+                ),
+              },
+            }
+          : prev,
+      );
     } finally {
       setRemovingGrowth(null);
     }
