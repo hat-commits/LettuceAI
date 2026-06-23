@@ -112,6 +112,7 @@ export const PromptTemplateTypeSchema = z.enum([
   "designReferenceWriter",
   "companionSoulWriter",
   "companionGrowthcycle",
+  "companionConsolidation",
 ]);
 export type PromptTemplateType = z.infer<typeof PromptTemplateTypeSchema>;
 

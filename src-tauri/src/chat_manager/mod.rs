@@ -1,5 +1,6 @@
 mod commands;
 pub mod companion;
+pub mod companion_consolidation;
 pub mod companion_growth;
 pub mod companion_soul_writer;
 pub mod execution;

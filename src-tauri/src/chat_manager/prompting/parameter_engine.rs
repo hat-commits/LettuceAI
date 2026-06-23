@@ -645,6 +645,31 @@ fn companion_growthcycle_variables() -> Vec<PromptVariableDefinition> {
     ]
 }
 
+fn companion_consolidation_variables() -> Vec<PromptVariableDefinition> {
+    vec![
+        variable(
+            "{{companion.name}}",
+            "Companion Name",
+            "Name of the companion character.",
+        ),
+        variable(
+            "{{authored_core}}",
+            "Authored Core",
+            "The character's authored essence and traits (the original identity).",
+        ),
+        variable(
+            "{{current_core}}",
+            "Current Core Overlay",
+            "Active essence/traits growth entries with ids, so they can be revised or superseded.",
+        ),
+        variable(
+            "{{accumulated_growth}}",
+            "Accumulated Growth",
+            "The accumulated changeable growth entries with ids that the model may fold or retire.",
+        ),
+    ]
+}
+
 fn dedupe_variables(
     groups: impl IntoIterator<Item = Vec<PromptVariableDefinition>>,
 ) -> Vec<PromptVariableDefinition> {
@@ -684,6 +709,7 @@ pub fn prompt_type_label(prompt_type: PromptTemplateType) -> &'static str {
         PromptTemplateType::DesignReferenceWriter => "Design Reference Writer",
         PromptTemplateType::CompanionSoulWriter => "Companion Soul Writer",
         PromptTemplateType::CompanionGrowthcycle => "Companion Growthcycle",
+        PromptTemplateType::CompanionConsolidation => "Companion Consolidation",
     }
 }
 
@@ -768,6 +794,9 @@ pub fn allowed_variables_for_prompt_type(
         }
         PromptTemplateType::CompanionGrowthcycle => {
             dedupe_variables([time_variables(), companion_growthcycle_variables()])
+        }
+        PromptTemplateType::CompanionConsolidation => {
+            dedupe_variables([time_variables(), companion_consolidation_variables()])
         }
     }
 }
@@ -872,6 +901,10 @@ pub fn required_variables_for_prompt_type(prompt_type: PromptTemplateType) -> Ve
             "{{changeable_categories}}".to_string(),
             "{{new_memories}}".to_string(),
         ],
+        PromptTemplateType::CompanionConsolidation => vec![
+            "{{authored_core}}".to_string(),
+            "{{accumulated_growth}}".to_string(),
+        ],
     }
 }
 
@@ -938,6 +971,7 @@ pub fn build_parameter_engine() -> PromptParameterEngine {
         PromptTemplateType::DesignReferenceWriter,
         PromptTemplateType::CompanionSoulWriter,
         PromptTemplateType::CompanionGrowthcycle,
+        PromptTemplateType::CompanionConsolidation,
     ]
     .into_iter()
     .map(|prompt_type| PromptTypeDefinition {

@@ -247,6 +247,10 @@ function SoulCard({
 
 function growthCategoryLabelKey(category: string) {
   switch (category) {
+    case "essence":
+      return "chats.companionRelationship.essence" as const;
+    case "traits":
+      return "chats.companionRelationship.traits" as const;
     case "appearance":
       return "chats.companionRelationship.appearance" as const;
     case "goals":
@@ -625,7 +629,7 @@ export function CompanionRelationshipPage() {
                               {t(growthCategoryLabelKey(entry.category))}
                             </span>
                             <span className="rounded-full border border-fg/10 bg-fg/5 px-1.5 py-0.5 text-[9px] font-medium text-fg/55">
-                              {entry.kind === "adjust"
+                              {entry.kind === "adjust" || entry.kind === "consolidated"
                                 ? t("chats.companionRelationship.growthKindAdjust")
                                 : t("chats.companionRelationship.growthKindAdd")}
                             </span>

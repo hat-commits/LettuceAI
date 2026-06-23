@@ -1727,6 +1727,7 @@ async fn run_growthcycle_for_turn(
                     ),
                 );
             }
+            run_consolidation_for_turn(app, context, session, character).await;
         }
         Ok(_) => {}
         Err(err) => {
@@ -1734,6 +1735,44 @@ async fn run_growthcycle_for_turn(
                 app,
                 "companion_growth",
                 format!("growthcycle failed for session {}: {}", session.id, err),
+            );
+        }
+    }
+}
+
+async fn run_consolidation_for_turn(
+    app: &AppHandle,
+    context: &ChatContext,
+    session: &mut Session,
+    character: &Character,
+) {
+    match crate::chat_manager::companion_consolidation::maybe_run_consolidation(
+        app,
+        context,
+        &context.settings,
+        session,
+        character,
+    )
+    .await
+    {
+        Ok(changed) if changed > 0 => {
+            if let Err(err) = save_session(app, session) {
+                log_warn(
+                    app,
+                    "companion_consolidation",
+                    format!(
+                        "failed to persist consolidation for session {}: {}",
+                        session.id, err
+                    ),
+                );
+            }
+        }
+        Ok(_) => {}
+        Err(err) => {
+            log_warn(
+                app,
+                "companion_consolidation",
+                format!("consolidation failed for session {}: {}", session.id, err),
             );
         }
     }

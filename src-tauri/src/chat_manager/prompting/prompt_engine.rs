@@ -113,6 +113,84 @@ pub fn default_companion_growthcycle_prompt() -> String {
     join_entries(&default_companion_growthcycle_entries())
 }
 
+pub fn default_companion_consolidation_prompt() -> String {
+    join_entries(&default_companion_consolidation_entries())
+}
+
+pub fn default_companion_consolidation_entries() -> Vec<SystemPromptEntry> {
+    fn system_entry(id: &str, name: &str, content: &str) -> SystemPromptEntry {
+        SystemPromptEntry {
+            id: id.to_string(),
+            name: name.to_string(),
+            role: PromptEntryRole::System,
+            content: content.to_string(),
+            enabled: true,
+            injection_position: PromptEntryPosition::Relative,
+            injection_depth: 0,
+            conditional_min_messages: None,
+            interval_turns: None,
+            system_prompt: true,
+            conditions: None,
+            prompt_entry_payload: None,
+        }
+    }
+
+    fn user_entry(id: &str, name: &str, content: &str) -> SystemPromptEntry {
+        SystemPromptEntry {
+            id: id.to_string(),
+            name: name.to_string(),
+            role: PromptEntryRole::User,
+            content: content.to_string(),
+            enabled: true,
+            injection_position: PromptEntryPosition::Relative,
+            injection_depth: 0,
+            conditional_min_messages: None,
+            interval_turns: None,
+            system_prompt: false,
+            conditions: None,
+            prompt_entry_payload: None,
+        }
+    }
+
+    vec![
+        system_entry(
+            "companion_consolidation_task",
+            "Task",
+            r#"You run Consolidation: a rare, deep pass over a companion's accumulated personality growth. The character has an authored core (essence and traits) plus a stack of smaller accumulated changes called growth. Your job is to decide, only when a clear and sustained pattern has formed across many of those changes, whether the character's CORE identity has genuinely shifted, and to fold redundant growth into a cleaner state.
+
+Most of the time the core does not move. A core change must reflect a long arc across multiple growth entries, never a single moment."#,
+        ),
+        system_entry(
+            "companion_consolidation_rules",
+            "Rules",
+            r#"RULES:
+- Only adjust essence or traits when several accumulated growth entries point the same direction over time. Evolve the core, never replace it: keep what is still true and add or revise only the part that genuinely changed.
+- Never invent traits that the accumulated growth does not support.
+- When revising an existing core overlay entry, put its id in supersedes.
+- In retire, list the ids of accumulated growth entries whose meaning is now absorbed into the core or has become stable/redundant, so they can be retired and the log stays small.
+- Backstory and history are never changed here.
+
+OUTPUT DISCIPLINE: call consolidate_soul exactly once. Both coreAdjustments and retire may be empty if nothing has consolidated. Do not write prose, JSON, or markdown outside the tool call."#,
+        ),
+        user_entry(
+            "companion_consolidation_payload",
+            "Payload",
+            r#"Companion: {{companion.name}}
+
+Authored core identity (the original essence and traits):
+{{authored_core}}
+
+Current core overlay (essence/traits changes already applied; revise one via supersedes):
+{{current_core}}
+
+Accumulated changeable growth (the evidence; reference ids in retire to fold them):
+{{accumulated_growth}}
+
+Decide whether the core has genuinely shifted, and which accumulated growth to retire."#,
+        ),
+    ]
+}
+
 pub fn default_companion_growthcycle_entries() -> Vec<SystemPromptEntry> {
     fn system_entry(id: &str, name: &str, content: &str) -> SystemPromptEntry {
         SystemPromptEntry {

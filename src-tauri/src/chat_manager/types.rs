@@ -30,6 +30,7 @@ pub enum PromptTemplateType {
     DesignReferenceWriter,
     CompanionSoulWriter,
     CompanionGrowthcycle,
+    CompanionConsolidation,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
