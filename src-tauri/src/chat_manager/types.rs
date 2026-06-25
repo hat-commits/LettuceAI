@@ -962,6 +962,12 @@ pub struct Session {
     pub id: String,
     pub character_id: String,
     pub title: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub parent_session_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub branched_from_message_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub root_session_id: Option<String>,
     #[serde(default)]
     pub background_image_path: Option<String>,
     /// DEPRECATED: System prompts are now always rebuilt dynamically

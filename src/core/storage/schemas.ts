@@ -3477,6 +3477,9 @@ export const SessionSchema = z.object({
   id: z.uuid(),
   characterId: z.uuid(),
   title: z.string(),
+  parentSessionId: z.string().nullish(),
+  branchedFromMessageId: z.string().nullish(),
+  rootSessionId: z.string().nullish(),
   backgroundImagePath: z.string().nullish().optional(),
   mode: CharacterModeSchema.default("roleplay"),
   selectedSceneId: z.uuid().nullish(), // ID of the scene from character.scenes array

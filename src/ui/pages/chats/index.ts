@@ -3,6 +3,7 @@ export * from "./Chat";
 export * from "./ChatLayout";
 export * from "./ChatSettings";
 export * from "./ChatHistory";
+export * from "./ChatTreePage";
 export * from "./ChatMemories";
 export * from "./CompanionMemoryPage";
 export * from "./CompanionRelationshipPage";

@@ -59,6 +59,7 @@ import {
   ChatConversationPage,
   ChatSettingsPage,
   ChatHistoryPage,
+  ChatTreePage,
   ChatMemoriesPage,
   CompanionMemoryPage,
   CompanionRelationshipPage,
@@ -1236,6 +1237,7 @@ function AppContent() {
               </Route>
               <Route path="/chat/:characterId/search" element={<SearchMessagesPage />} />
               <Route path="/chat/:characterId/history" element={<ChatHistoryPage />} />
+              <Route path="/chat/:characterId/tree" element={<ChatTreePage />} />
               <Route
                 path="/chat/:characterId/companion/memories"
                 element={<CompanionMemoryPage />}

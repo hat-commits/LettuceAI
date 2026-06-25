@@ -1,5 +1,6 @@
 import {
   CSSProperties,
+  Fragment,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -101,8 +102,8 @@ import { BottomMenu, GuidedTour, MenuButton, useGuidedTour } from "../../compone
 import { AvatarImage } from "../../components/AvatarImage";
 import { DynamicMemoryApprovalGate } from "../../components/DynamicMemoryApprovalGate";
 import { useAvatar } from "../../hooks/useAvatar";
-import { Image, RefreshCw, Sparkles, Check, PenLine, Lock, FileAudio } from "lucide-react";
-import { radius, cn } from "../../design-tokens";
+import { Image, RefreshCw, Sparkles, Check, PenLine, Lock, FileAudio, GitBranch } from "lucide-react";
+import { radius, cn, typography } from "../../design-tokens";
 import { useI18n } from "../../../core/i18n/context";
 import { PersonaSelector } from "../group-chats/components/settings";
 import { sanitizeAssistantSceneDirective } from "./hooks/sceneImageProtocol";
@@ -484,6 +485,33 @@ export function ChatConversationPage() {
   useEffect(() => {
     setSessionForHeader(chatController.session);
   }, [chatController.session]);
+
+  const branchedFromMessageId = chatController.session?.branchedFromMessageId ?? null;
+  const parentSessionId = chatController.session?.parentSessionId ?? null;
+  const [parentBranchMeta, setParentBranchMeta] = useState<{
+    title: string;
+    characterId: string;
+  } | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    if (!parentSessionId || !branchedFromMessageId) {
+      setParentBranchMeta(null);
+      return;
+    }
+    void getSessionMeta(parentSessionId)
+      .then((parent) => {
+        if (cancelled) return;
+        setParentBranchMeta(
+          parent ? { title: parent.title, characterId: parent.characterId } : null,
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setParentBranchMeta(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [parentSessionId, branchedFromMessageId]);
 
   useEffect(() => {
     void asrWhisperListInstalledModels()
@@ -2744,9 +2772,41 @@ export function ChatConversationPage() {
                   }
                 : {};
 
+              const showBranchMarker =
+                !!branchedFromMessageId && message.id === branchedFromMessageId;
+
               return (
-                <motion.div
-                  key={message.id}
+                <Fragment key={message.id}>
+                  {showBranchMarker ? (
+                    <div className="my-3 flex items-center gap-2 px-2">
+                      <span className="h-px flex-1 bg-fg/10" />
+                      <button
+                        type="button"
+                        disabled={!parentBranchMeta}
+                        onClick={() => {
+                          if (!parentBranchMeta) return;
+                          navigate(
+                            Routes.chatSession(
+                              parentBranchMeta.characterId,
+                              parentSessionId,
+                            ),
+                          );
+                        }}
+                        className={cn(
+                          "inline-flex shrink-0 items-center gap-1.5 rounded-full border border-fg/10 bg-fg/4 px-3 py-1",
+                          typography.caption.size,
+                          "text-fg/55 transition-colors hover:bg-fg/8 hover:text-fg/80 disabled:pointer-events-none",
+                        )}
+                      >
+                        <GitBranch size={12} />
+                        {t("chats.branchTree.branchedFrom", {
+                          title: parentBranchMeta?.title ?? "",
+                        })}
+                      </button>
+                      <span className="h-px flex-1 bg-fg/10" />
+                    </div>
+                  ) : null}
+                  <motion.div
                   id={`message-${message.id}`}
                   className="scroll-mt-24 transition-colors duration-500"
                   layout="position"
@@ -2787,7 +2847,8 @@ export function ChatConversationPage() {
                       index === visibleMessages.length - 1
                     }
                   />
-                </motion.div>
+                  </motion.div>
+                </Fragment>
               );
             })}
           </LayoutGroup>

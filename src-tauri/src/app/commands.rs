@@ -97,6 +97,7 @@ macro_rules! invoke_handler {
             crate::storage_manager::personas::persona_default_get,
             crate::storage_manager::sessions::sessions_list_ids,
             crate::storage_manager::sessions::sessions_list_previews,
+            crate::storage_manager::sessions::sessions_list_branch_tree,
             crate::storage_manager::sessions::session_get,
             crate::storage_manager::sessions::session_get_meta,
             crate::storage_manager::sessions::session_message_count,

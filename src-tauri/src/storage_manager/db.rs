@@ -614,6 +614,9 @@ pub fn init_db(_app: &tauri::AppHandle, conn: &Connection) -> Result<(), String>
           id TEXT PRIMARY KEY,
           character_id TEXT NOT NULL,
           title TEXT NOT NULL,
+          parent_session_id TEXT,
+          branched_from_message_id TEXT,
+          root_session_id TEXT,
           background_image_path TEXT,
           system_prompt TEXT,
           selected_scene_id TEXT,
@@ -1398,6 +1401,9 @@ pub fn init_db(_app: &tauri::AppHandle, conn: &Connection) -> Result<(), String>
     let mut has_session_voice_autoplay = false;
     let mut has_session_persona_disabled = false;
     let mut has_session_advanced_model_settings = false;
+    let mut has_session_parent_session_id = false;
+    let mut has_session_branched_from_message_id = false;
+    let mut has_session_root_session_id = false;
     let mut rows_sessions = stmt_sessions
         .query([])
         .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
@@ -1412,6 +1418,9 @@ pub fn init_db(_app: &tauri::AppHandle, conn: &Connection) -> Result<(), String>
             "voice_autoplay" => has_session_voice_autoplay = true,
             "persona_disabled" => has_session_persona_disabled = true,
             "advanced_model_settings" => has_session_advanced_model_settings = true,
+            "parent_session_id" => has_session_parent_session_id = true,
+            "branched_from_message_id" => has_session_branched_from_message_id = true,
+            "root_session_id" => has_session_root_session_id = true,
             _ => {}
         }
     }
@@ -1430,6 +1439,32 @@ pub fn init_db(_app: &tauri::AppHandle, conn: &Connection) -> Result<(), String>
             [],
         );
     }
+    if !has_session_parent_session_id {
+        let _ = conn.execute(
+            "ALTER TABLE sessions ADD COLUMN parent_session_id TEXT",
+            [],
+        );
+    }
+    if !has_session_branched_from_message_id {
+        let _ = conn.execute(
+            "ALTER TABLE sessions ADD COLUMN branched_from_message_id TEXT",
+            [],
+        );
+    }
+    if !has_session_root_session_id {
+        let _ = conn.execute(
+            "ALTER TABLE sessions ADD COLUMN root_session_id TEXT",
+            [],
+        );
+    }
+    let _ = conn.execute(
+        "UPDATE sessions SET root_session_id = id WHERE root_session_id IS NULL",
+        [],
+    );
+    let _ = conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_sessions_root_session ON sessions(root_session_id)",
+        [],
+    );
 
     {
         let mut stmt = conn

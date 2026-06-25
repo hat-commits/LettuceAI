@@ -376,6 +376,10 @@ export const storageBridge = {
       characterId: characterId ?? null,
       limit: limit ?? null,
     }).then((s) => JSON.parse(s) as any[]),
+  sessionsListBranchTree: (sessionId: string) =>
+    invoke<string>("sessions_list_branch_tree", { sessionId }).then(
+      (s) => JSON.parse(s) as any[],
+    ),
   sessionGet: (id: string) =>
     invoke<string | null>("session_get", { id }).then((s) =>
       typeof s === "string" ? JSON.parse(s) : null,

@@ -51,6 +51,9 @@ const SessionPreviewSchema = z.object({
   archived: z.boolean(),
   lastMessage: z.string(),
   messageCount: z.number(),
+  parentSessionId: z.string().nullish(),
+  branchedFromMessageId: z.string().nullish(),
+  rootSessionId: z.string().nullish(),
 });
 
 export type SessionPreview = z.infer<typeof SessionPreviewSchema>;
@@ -1291,6 +1294,11 @@ export async function listSessionPreviews(
   return z.array(SessionPreviewSchema).parse(data);
 }
 
+export async function listBranchTree(sessionId: string): Promise<SessionPreview[]> {
+  const data = await storageBridge.sessionsListBranchTree(sessionId);
+  return z.array(SessionPreviewSchema).parse(data);
+}
+
 export async function saveAdvancedSettings(settings: Settings["advancedSettings"]): Promise<void> {
   await storageBridge.settingsSetAdvanced(settings);
   updateCachedSettings((current) => {
@@ -1573,6 +1581,9 @@ export async function createBranchedSession(
     id,
     characterId: sourceSession.characterId,
     title: `${sourceSession.title} (branch)`,
+    parentSessionId: sourceSession.id,
+    branchedFromMessageId: branchAtMessageId,
+    rootSessionId: sourceSession.rootSessionId ?? sourceSession.id,
     backgroundImagePath: sourceSession.backgroundImagePath,
     mode: sourceSession.mode ?? "roleplay",
     selectedSceneId: sourceSession.selectedSceneId,
@@ -1632,6 +1643,9 @@ export async function createBranchedSessionToCharacter(
     id,
     characterId: targetCharacterId,
     title: `Branch to ${characterName}`,
+    parentSessionId: sourceSession.id,
+    branchedFromMessageId: branchAtMessageId,
+    rootSessionId: sourceSession.rootSessionId ?? sourceSession.id,
     backgroundImagePath: undefined,
     mode: targetCharacter?.mode ?? "roleplay",
     selectedSceneId:

@@ -7,6 +7,7 @@ import {
   MessageCircle,
   AlertCircle,
   Edit3,
+  GitBranch,
   Search,
   X,
   Download,
@@ -264,6 +265,24 @@ export function ChatHistoryPage() {
               </p>
             </div>
           </div>
+          {(() => {
+            const treeSessionId = sessionId ?? sessions[0]?.id;
+            if (!characterId || !treeSessionId) return null;
+            return (
+              <button
+                onClick={() => go(Routes.chatTree(characterId, treeSessionId))}
+                className={cn(
+                  "flex shrink-0 items-center justify-center rounded-lg p-2 text-fg/55",
+                  interactive.transition.fast,
+                  "hover:bg-fg/6 hover:text-fg/85",
+                )}
+                aria-label={t("chats.branchTree.open")}
+                title={t("chats.branchTree.open")}
+              >
+                <GitBranch size={18} />
+              </button>
+            );
+          })()}
         </div>
       </header>
 

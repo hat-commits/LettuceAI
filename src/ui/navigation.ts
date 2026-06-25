@@ -12,6 +12,12 @@ export const Routes = {
   library: "/library",
   libraryPersonas: "/library?view=personas",
   chatHistory: (characterId: string) => `/chat/${characterId}/history`,
+  chatTree: (characterId: string, sessionId?: string | null) => {
+    const params = new URLSearchParams();
+    if (sessionId) params.set("sessionId", sessionId);
+    const query = params.toString();
+    return query ? `/chat/${characterId}/tree?${query}` : `/chat/${characterId}/tree`;
+  },
   chatSettings: (characterId: string) => `/chat/${characterId}/settings`,
   chatSettingsSession: (characterId: string, sessionId?: string | null) => {
     const params = new URLSearchParams();
