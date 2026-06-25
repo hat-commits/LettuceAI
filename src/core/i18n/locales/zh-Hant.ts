@@ -4750,6 +4750,17 @@ export const zhHantMessages: DeepPartialMessageTree<LocaleMessages> = {
     },
   },
   systemPrompts: {
+    updateProtected: {
+      button: "更新受保護項",
+      updating: "正在更新...",
+      title: "更新受保護的提示詞？",
+      warningTitle: "這將捨棄你的編輯",
+      warningBody: "每個內建（受保護）提示詞都會重設為其最新的內建版本，並重新連接到自動重新整理。你對受保護提示詞所做的變更將遺失。你自己的自訂提示詞不受影響。",
+      confirm: "更新到最新",
+      successTitle: "已更新受保護的提示詞",
+      successMessage: "所有受保護的提示詞都已重設為最新版本。",
+      failTitle: "更新失敗",
+    },
     filters: {
       all: "全部",
       system: "系統",

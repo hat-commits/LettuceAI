@@ -4750,6 +4750,17 @@ export const trMessages: DeepPartialMessageTree<LocaleMessages> = {
     pullToOllama: "Şuraya çek:",
   },
   systemPrompts: {
+    updateProtected: {
+      button: "Korumalıları güncelle",
+      updating: "Güncelleniyor...",
+      title: "Korumalı istemler güncellensin mi?",
+      warningTitle: "Bu, düzenlemelerinizi siler",
+      warningBody: "Her yerleşik (korumalı) istem, en son paketlenmiş sürümüne sıfırlanır ve otomatik yenilemeye yeniden bağlanır. Korumalı istemlerde yaptığınız değişiklikler kaybolur. Kendi özel istemleriniz etkilenmez.",
+      confirm: "En sona güncelle",
+      successTitle: "Korumalı istemler güncellendi",
+      successMessage: "Tüm korumalı istemler en son sürümüne sıfırlandı.",
+      failTitle: "Güncelleme başarısız",
+    },
     filters: {
       all: "Tümü",
       system: "Sistem",

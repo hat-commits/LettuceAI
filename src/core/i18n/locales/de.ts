@@ -4750,6 +4750,17 @@ export const deMessages: DeepPartialMessageTree<LocaleMessages> = {
     },
   },
   systemPrompts: {
+    updateProtected: {
+      button: "Geschützte aktualisieren",
+      updating: "Wird aktualisiert...",
+      title: "Geschützte Prompts aktualisieren?",
+      warningTitle: "Dies verwirft deine Änderungen",
+      warningBody: "Jeder integrierte (geschützte) Prompt wird auf seine neueste mitgelieferte Version zurückgesetzt und wieder mit der automatischen Aktualisierung verbunden. Änderungen, die du an geschützten Prompts vorgenommen hast, gehen verloren. Deine eigenen Prompts sind nicht betroffen.",
+      confirm: "Auf neueste aktualisieren",
+      successTitle: "Geschützte Prompts aktualisiert",
+      successMessage: "Alle geschützten Prompts wurden auf ihre neueste Version zurückgesetzt.",
+      failTitle: "Aktualisierung fehlgeschlagen",
+    },
     filters: {
       all: "Alle",
       system: "System",

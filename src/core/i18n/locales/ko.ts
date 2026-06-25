@@ -4750,6 +4750,17 @@ export const koMessages: DeepPartialMessageTree<LocaleMessages> = {
     },
   },
   systemPrompts: {
+    updateProtected: {
+      button: "보호된 항목 업데이트",
+      updating: "업데이트 중...",
+      title: "보호된 프롬프트를 업데이트할까요?",
+      warningTitle: "편집 내용이 삭제됩니다",
+      warningBody: "모든 내장(보호된) 프롬프트가 최신 번들 버전으로 재설정되고 자동 새로 고침에 다시 연결됩니다. 보호된 프롬프트에 적용한 변경 사항은 사라집니다. 직접 만든 프롬프트는 영향을 받지 않습니다.",
+      confirm: "최신으로 업데이트",
+      successTitle: "보호된 프롬프트 업데이트됨",
+      successMessage: "모든 보호된 프롬프트가 최신 버전으로 재설정되었습니다.",
+      failTitle: "업데이트 실패",
+    },
     filters: {
       all: "전체",
       system: "시스템",

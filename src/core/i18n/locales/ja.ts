@@ -4141,6 +4141,17 @@ export const jaMessages: DeepPartialMessageTree<LocaleMessages> = {
     },
   },
   systemPrompts: {
+    updateProtected: {
+      button: "保護対象を更新",
+      updating: "更新中...",
+      title: "保護されたプロンプトを更新しますか？",
+      warningTitle: "編集内容が破棄されます",
+      warningBody: "すべての組み込み（保護された）プロンプトが最新の同梱バージョンにリセットされ、自動更新に再接続されます。保護されたプロンプトに加えた変更は失われます。自作のプロンプトには影響しません。",
+      confirm: "最新に更新",
+      successTitle: "保護されたプロンプトを更新しました",
+      successMessage: "すべての保護されたプロンプトを最新バージョンにリセットしました。",
+      failTitle: "更新に失敗しました",
+    },
     filters: {
       all: "すべて",
       system: "システム",

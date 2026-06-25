@@ -4141,6 +4141,17 @@ export const idMessages: DeepPartialMessageTree<LocaleMessages> = {
     },
   },
   systemPrompts: {
+    updateProtected: {
+      button: "Perbarui yang dilindungi",
+      updating: "Memperbarui...",
+      title: "Perbarui prompt yang dilindungi?",
+      warningTitle: "Ini akan membuang hasil edit Anda",
+      warningBody: "Setiap prompt bawaan (dilindungi) disetel ulang ke versi bawaan terbarunya dan disambungkan kembali ke penyegaran otomatis. Perubahan yang Anda buat pada prompt yang dilindungi akan hilang. Prompt buatan Anda sendiri tidak terpengaruh.",
+      confirm: "Perbarui ke terbaru",
+      successTitle: "Prompt yang dilindungi diperbarui",
+      successMessage: "Semua prompt yang dilindungi disetel ulang ke versi terbarunya.",
+      failTitle: "Pembaruan gagal",
+    },
     filters: {
       all: "Semua",
       system: "Sistem",

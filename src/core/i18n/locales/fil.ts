@@ -4750,6 +4750,17 @@ export const filMessages: DeepPartialMessageTree<LocaleMessages> = {
     },
   },
   systemPrompts: {
+    updateProtected: {
+      button: "I-update ang protektado",
+      updating: "Ina-update...",
+      title: "I-update ang mga protektadong prompt?",
+      warningTitle: "Buburahin nito ang iyong mga edit",
+      warningBody: "Ang bawat built-in (protektado) na prompt ay ire-reset sa pinakabagong nakabundle na bersyon nito at muling ikokonekta sa auto-refresh. Mawawala ang mga pagbabagong ginawa mo sa mga protektadong prompt. Hindi maaapektuhan ang sarili mong mga prompt.",
+      confirm: "I-update sa pinakabago",
+      successTitle: "Na-update ang mga protektadong prompt",
+      successMessage: "Lahat ng protektadong prompt ay na-reset sa pinakabagong bersyon.",
+      failTitle: "Nabigo ang pag-update",
+    },
     filters: {
       all: "Lahat",
       system: "System",

@@ -4141,6 +4141,17 @@ export const itMessages: DeepPartialMessageTree<LocaleMessages> = {
     },
   },
   systemPrompts: {
+    updateProtected: {
+      button: "Aggiorna protetti",
+      updating: "Aggiornamento...",
+      title: "Aggiornare i prompt protetti?",
+      warningTitle: "Questo annulla le tue modifiche",
+      warningBody: "Ogni prompt integrato (protetto) viene ripristinato alla sua versione più recente inclusa e ricollegato all'aggiornamento automatico. Le modifiche apportate ai prompt protetti andranno perse. I tuoi prompt personalizzati non sono interessati.",
+      confirm: "Aggiorna all'ultima",
+      successTitle: "Prompt protetti aggiornati",
+      successMessage: "Tutti i prompt protetti sono stati ripristinati alla versione più recente.",
+      failTitle: "Aggiornamento non riuscito",
+    },
     filters: {
       all: "Tutti",
       system: "Sistema",

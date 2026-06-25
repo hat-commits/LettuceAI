@@ -4750,6 +4750,17 @@ export const frMessages: DeepPartialMessageTree<LocaleMessages> = {
     },
   },
   systemPrompts: {
+    updateProtected: {
+      button: "Mettre à jour les protégés",
+      updating: "Mise à jour...",
+      title: "Mettre à jour les prompts protégés ?",
+      warningTitle: "Cela annule vos modifications",
+      warningBody: "Chaque prompt intégré (protégé) est réinitialisé à sa dernière version fournie et reconnecté à l'actualisation automatique. Les modifications que vous avez apportées aux prompts protégés seront perdues. Vos prompts personnalisés ne sont pas affectés.",
+      confirm: "Mettre à jour",
+      successTitle: "Prompts protégés mis à jour",
+      successMessage: "Tous les prompts protégés ont été réinitialisés à leur dernière version.",
+      failTitle: "Échec de la mise à jour",
+    },
     filters: {
       all: "Tous",
       system: "Système",

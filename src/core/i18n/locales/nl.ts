@@ -4750,6 +4750,17 @@ export const nlMessages: DeepPartialMessageTree<LocaleMessages> = {
     },
   },
   systemPrompts: {
+    updateProtected: {
+      button: "Beschermde bijwerken",
+      updating: "Bijwerken...",
+      title: "Beschermde prompts bijwerken?",
+      warningTitle: "Dit verwerpt je bewerkingen",
+      warningBody: "Elke ingebouwde (beschermde) prompt wordt teruggezet naar de nieuwste meegeleverde versie en opnieuw verbonden met automatisch vernieuwen. Wijzigingen die je in beschermde prompts hebt aangebracht, gaan verloren. Je eigen prompts worden niet beïnvloed.",
+      confirm: "Bijwerken naar nieuwste",
+      successTitle: "Beschermde prompts bijgewerkt",
+      successMessage: "Alle beschermde prompts zijn teruggezet naar hun nieuwste versie.",
+      failTitle: "Bijwerken mislukt",
+    },
     filters: {
       all: "Alles",
       system: "Systeem",

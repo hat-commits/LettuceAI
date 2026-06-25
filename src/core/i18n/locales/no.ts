@@ -4750,6 +4750,17 @@ export const noMessages: DeepPartialMessageTree<LocaleMessages> = {
     },
   },
   systemPrompts: {
+    updateProtected: {
+      button: "Oppdater beskyttede",
+      updating: "Oppdaterer...",
+      title: "Oppdatere beskyttede prompts?",
+      warningTitle: "Dette forkaster endringene dine",
+      warningBody: "Hver innebygde (beskyttede) prompt tilbakestilles til sin nyeste medfølgende versjon og kobles til automatisk oppdatering igjen. Endringer du har gjort i beskyttede prompts går tapt. Dine egne prompts påvirkes ikke.",
+      confirm: "Oppdater til nyeste",
+      successTitle: "Beskyttede prompts oppdatert",
+      successMessage: "Alle beskyttede prompts ble tilbakestilt til sin nyeste versjon.",
+      failTitle: "Oppdatering mislyktes",
+    },
     filters: {
       all: "Alle",
       system: "System",

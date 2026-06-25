@@ -4750,6 +4750,17 @@ export const elMessages: DeepPartialMessageTree<LocaleMessages> = {
     },
   },
   systemPrompts: {
+    updateProtected: {
+      button: "Ενημέρωση προστατευμένων",
+      updating: "Ενημέρωση...",
+      title: "Ενημέρωση προστατευμένων prompts;",
+      warningTitle: "Αυτό απορρίπτει τις αλλαγές σας",
+      warningBody: "Κάθε ενσωματωμένο (προστατευμένο) prompt επαναφέρεται στην πιο πρόσφατη συνοδευτική του έκδοση και επανασυνδέεται με την αυτόματη ανανέωση. Οι αλλαγές που κάνατε στα προστατευμένα prompts θα χαθούν. Τα δικά σας prompts δεν επηρεάζονται.",
+      confirm: "Ενημέρωση στην πιο πρόσφατη",
+      successTitle: "Τα προστατευμένα prompts ενημερώθηκαν",
+      successMessage: "Όλα τα προστατευμένα prompts επαναφέρθηκαν στην πιο πρόσφατη έκδοσή τους.",
+      failTitle: "Η ενημέρωση απέτυχε",
+    },
     filters: {
       all: "Όλα",
       system: "Συστήματος",

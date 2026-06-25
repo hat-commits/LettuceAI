@@ -4227,6 +4227,17 @@ export const plMessages: DeepPartialMessageTree<LocaleMessages> = {
     },
   },
   systemPrompts: {
+    updateProtected: {
+      button: "Zaktualizuj chronione",
+      updating: "Aktualizowanie...",
+      title: "Zaktualizować chronione prompty?",
+      warningTitle: "To odrzuci Twoje zmiany",
+      warningBody: "Każdy wbudowany (chroniony) prompt zostanie przywrócony do najnowszej dołączonej wersji i ponownie podłączony do automatycznego odświeżania. Zmiany wprowadzone w chronionych promptach zostaną utracone. Twoje własne prompty nie zostaną zmienione.",
+      confirm: "Zaktualizuj do najnowszej",
+      successTitle: "Zaktualizowano chronione prompty",
+      successMessage: "Wszystkie chronione prompty przywrócono do najnowszej wersji.",
+      failTitle: "Aktualizacja nie powiodła się",
+    },
     filters: {
       all: "Wszystkie",
       system: "Systemowe",

@@ -4141,6 +4141,17 @@ export const viMessages: DeepPartialMessageTree<LocaleMessages> = {
     },
   },
   systemPrompts: {
+    updateProtected: {
+      button: "Cập nhật mục được bảo vệ",
+      updating: "Đang cập nhật...",
+      title: "Cập nhật các prompt được bảo vệ?",
+      warningTitle: "Thao tác này sẽ bỏ các chỉnh sửa của bạn",
+      warningBody: "Mỗi prompt tích hợp sẵn (được bảo vệ) sẽ được đặt lại về phiên bản đi kèm mới nhất và kết nối lại với tự động làm mới. Những thay đổi bạn đã thực hiện trên các prompt được bảo vệ sẽ bị mất. Các prompt tự tạo của bạn không bị ảnh hưởng.",
+      confirm: "Cập nhật lên mới nhất",
+      successTitle: "Đã cập nhật các prompt được bảo vệ",
+      successMessage: "Tất cả prompt được bảo vệ đã được đặt lại về phiên bản mới nhất.",
+      failTitle: "Cập nhật thất bại",
+    },
     filters: {
       all: "Tất cả",
       system: "Hệ thống",
