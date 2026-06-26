@@ -77,6 +77,7 @@ export const nlMessages: DeepPartialMessageTree<LocaleMessages> = {
       openLinkFailed: "Kan de link niet openen",
     },
     buttons: {
+      learnMore: "Meer informatie",
       cancel: "Annuleren",
       confirm: "Bevestigen",
       save: "Opslaan",
@@ -1578,6 +1579,8 @@ export const nlMessages: DeepPartialMessageTree<LocaleMessages> = {
         },
       },
       picker: {
+        learnMore: "Hoe widgets werken",
+        learnMoreDesc: "Open de gids voor chatwidgets",
         title: "Widget toevoegen",
       },
       config: {
@@ -6979,6 +6982,7 @@ export const nlMessages: DeepPartialMessageTree<LocaleMessages> = {
       experiencedDesc: "Sla de uitleg over en ga direct naar de installatie.",
     },
     learn: {
+      fullGuide: "Lees de volledige AI-basisgids",
       done: "Begrepen, ga verder",
       plainLabel: "Met andere woorden",
       app: {

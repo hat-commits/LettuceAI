@@ -77,6 +77,7 @@ export const ruMessages: DeepPartialMessageTree<LocaleMessages> = {
       openLinkFailed: "Не удалось открыть ссылку",
     },
     buttons: {
+      learnMore: "Подробнее",
       cancel: "Отмена",
       confirm: "Подтвердить",
       save: "Сохранить",
@@ -1578,6 +1579,8 @@ export const ruMessages: DeepPartialMessageTree<LocaleMessages> = {
         },
       },
       picker: {
+        learnMore: "Как работают виджеты",
+        learnMoreDesc: "Открыть руководство по виджетам чата",
         title: "Добавить виджет",
       },
       config: {
@@ -6979,6 +6982,7 @@ export const ruMessages: DeepPartialMessageTree<LocaleMessages> = {
       experiencedDesc: "Пропустить объяснения и сразу перейти к настройке.",
     },
     learn: {
+      fullGuide: "Читать полное руководство по основам ИИ",
       done: "Понятно, продолжить",
       plainLabel: "Другими словами",
       app: {

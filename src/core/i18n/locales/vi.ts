@@ -77,6 +77,7 @@ export const viMessages: DeepPartialMessageTree<LocaleMessages> = {
       openLinkFailed: "Không thể mở liên kết",
     },
     buttons: {
+      learnMore: "Tìm hiểu thêm",
       cancel: "Hủy",
       confirm: "Xác nhận",
       save: "Lưu",
@@ -1578,6 +1579,8 @@ export const viMessages: DeepPartialMessageTree<LocaleMessages> = {
         },
       },
       picker: {
+        learnMore: "Cách hoạt động của widget",
+        learnMoreDesc: "Mở hướng dẫn về widget trò chuyện",
         title: "Thêm tiện ích",
       },
       config: {
@@ -6370,6 +6373,7 @@ export const viMessages: DeepPartialMessageTree<LocaleMessages> = {
       experiencedDesc: "Bỏ qua phần giải thích và đi thẳng đến phần thiết lập.",
     },
     learn: {
+      fullGuide: "Đọc hướng dẫn đầy đủ về kiến thức cơ bản về AI",
       done: "Đã hiểu, tiếp tục",
       plainLabel: "Nói cách khác",
       app: {

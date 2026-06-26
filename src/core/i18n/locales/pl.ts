@@ -77,6 +77,7 @@ export const plMessages: DeepPartialMessageTree<LocaleMessages> = {
       openLinkFailed: "Nie można otworzyć linku",
     },
     buttons: {
+      learnMore: "Dowiedz się więcej",
       cancel: "Anuluj",
       confirm: "Potwierdź",
       save: "Zapisz",
@@ -1578,6 +1579,8 @@ export const plMessages: DeepPartialMessageTree<LocaleMessages> = {
         },
       },
       picker: {
+        learnMore: "Jak działają widżety",
+        learnMoreDesc: "Otwórz przewodnik po widżetach czatu",
         title: "Dodaj widżet",
       },
       config: {
@@ -6456,6 +6459,7 @@ export const plMessages: DeepPartialMessageTree<LocaleMessages> = {
       experiencedDesc: "Pomiń wyjaśnienia i przejdź bezpośrednio do konfiguracji.",
     },
     learn: {
+      fullGuide: "Przeczytaj pełny przewodnik po podstawach AI",
       done: "Rozumiem, kontynuuj",
       plainLabel: "Innymi słowy",
       app: {

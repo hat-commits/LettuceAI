@@ -77,6 +77,7 @@ export const esMessages: DeepPartialMessageTree<LocaleMessages> = {
       openLinkFailed: "No se pudo abrir el enlace",
     },
     buttons: {
+      learnMore: "Más información",
       cancel: "Cancelar",
       confirm: "Confirmar",
       save: "Guardar",
@@ -1578,6 +1579,8 @@ export const esMessages: DeepPartialMessageTree<LocaleMessages> = {
         },
       },
       picker: {
+        learnMore: "Cómo funcionan los widgets",
+        learnMoreDesc: "Abrir la guía de widgets de chat",
         title: "Añadir widget",
       },
       config: {
@@ -6979,6 +6982,7 @@ export const esMessages: DeepPartialMessageTree<LocaleMessages> = {
       experiencedDesc: "Sáltate la explicación y ve directo a la configuración.",
     },
     learn: {
+      fullGuide: "Leer la guía completa de conceptos básicos de IA",
       done: "Entendido, continuar",
       plainLabel: "En otras palabras",
       app: {

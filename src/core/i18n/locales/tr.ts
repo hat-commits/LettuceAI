@@ -77,6 +77,7 @@ export const trMessages: DeepPartialMessageTree<LocaleMessages> = {
       openLinkFailed: "Bağlantı açılamadı",
     },
     buttons: {
+      learnMore: "Daha fazla bilgi",
       cancel: "İptal",
       confirm: "Onayla",
       save: "Kaydet",
@@ -1578,6 +1579,8 @@ export const trMessages: DeepPartialMessageTree<LocaleMessages> = {
         },
       },
       picker: {
+        learnMore: "Widget'lar nasıl çalışır",
+        learnMoreDesc: "Sohbet widget'ları kılavuzunu aç",
         title: "Widget ekle",
       },
       config: {
@@ -7174,6 +7177,7 @@ export const trMessages: DeepPartialMessageTree<LocaleMessages> = {
       experiencedDesc: "Açıklamaları geç ve doğrudan kuruluma git.",
     },
     learn: {
+      fullGuide: "Yapay zeka temelleri kılavuzunun tamamını okuyun",
       done: "Anladım, devam et",
       plainLabel: "Başka bir deyişle",
       app: {

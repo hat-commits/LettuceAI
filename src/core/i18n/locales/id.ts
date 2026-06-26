@@ -77,6 +77,7 @@ export const idMessages: DeepPartialMessageTree<LocaleMessages> = {
       openLinkFailed: "Tidak dapat membuka tautan",
     },
     buttons: {
+      learnMore: "Pelajari selengkapnya",
       cancel: "Batal",
       confirm: "Konfirmasi",
       save: "Simpan",
@@ -1578,6 +1579,8 @@ export const idMessages: DeepPartialMessageTree<LocaleMessages> = {
         },
       },
       picker: {
+        learnMore: "Cara kerja widget",
+        learnMoreDesc: "Buka panduan widget chat",
         title: "Tambah widget",
       },
       config: {
@@ -6370,6 +6373,7 @@ export const idMessages: DeepPartialMessageTree<LocaleMessages> = {
       experiencedDesc: "Lewati penjelasan dan langsung ke pengaturan.",
     },
     learn: {
+      fullGuide: "Baca panduan lengkap Dasar-Dasar AI",
       done: "Mengerti, lanjutkan",
       plainLabel: "Dengan kata lain",
       app: {

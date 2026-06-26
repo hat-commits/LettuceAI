@@ -77,6 +77,7 @@ export const noMessages: DeepPartialMessageTree<LocaleMessages> = {
       openLinkFailed: "Kunne ikke åpne lenken",
     },
     buttons: {
+      learnMore: "Lær mer",
       cancel: "Avbryt",
       confirm: "Bekreft",
       save: "Lagre",
@@ -1578,6 +1579,8 @@ export const noMessages: DeepPartialMessageTree<LocaleMessages> = {
         },
       },
       picker: {
+        learnMore: "Slik fungerer widgets",
+        learnMoreDesc: "Åpne veiledningen for chat-widgets",
         title: "Legg til modul",
       },
       config: {
@@ -6979,6 +6982,7 @@ export const noMessages: DeepPartialMessageTree<LocaleMessages> = {
       experiencedDesc: "Hopp over forklaringen og gå rett til oppsettet.",
     },
     learn: {
+      fullGuide: "Les hele guiden til AI-grunnleggende",
       done: "Skjønner, fortsett",
       plainLabel: "Med andre ord",
       app: {

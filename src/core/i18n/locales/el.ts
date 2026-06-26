@@ -77,6 +77,7 @@ export const elMessages: DeepPartialMessageTree<LocaleMessages> = {
       openLinkFailed: "Δεν ήταν δυνατό το άνοιγμα του συνδέσμου",
     },
     buttons: {
+      learnMore: "Μάθετε περισσότερα",
       cancel: "Ακύρωση",
       confirm: "Επιβεβαίωση",
       save: "Αποθήκευση",
@@ -1827,6 +1828,8 @@ export const elMessages: DeepPartialMessageTree<LocaleMessages> = {
         },
       },
       picker: {
+        learnMore: "Πώς λειτουργούν τα widget",
+        learnMoreDesc: "Άνοιγμα οδηγού για τα widget συνομιλίας",
         title: "Προσθήκη widget",
       },
     },
@@ -6979,6 +6982,7 @@ export const elMessages: DeepPartialMessageTree<LocaleMessages> = {
       experiencedDesc: "Παραλείψτε τις εξηγήσεις και πηγαίνετε απευθείας στη ρύθμιση.",
     },
     learn: {
+      fullGuide: "Διαβάστε τον πλήρη οδηγό βασικών AI",
       done: "Κατάλαβα, συνέχεια",
       plainLabel: "Με άλλα λόγια",
       app: {

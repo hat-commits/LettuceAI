@@ -77,6 +77,7 @@ export const filMessages: DeepPartialMessageTree<LocaleMessages> = {
       openLinkFailed: "Hindi mabuksan ang link",
     },
     buttons: {
+      learnMore: "Matuto pa",
       cancel: "Kanselahin",
       confirm: "Kumpirmahin",
       save: "I-save",
@@ -1578,6 +1579,8 @@ export const filMessages: DeepPartialMessageTree<LocaleMessages> = {
         },
       },
       picker: {
+        learnMore: "Paano gumagana ang mga widget",
+        learnMoreDesc: "Buksan ang gabay sa chat widgets",
         title: "Magdagdag ng widget",
       },
       config: {
@@ -6979,6 +6982,7 @@ export const filMessages: DeepPartialMessageTree<LocaleMessages> = {
       experiencedDesc: "Laktawan ang paliwanag at dumiretso na sa setup.",
     },
     learn: {
+      fullGuide: "Basahin ang buong gabay sa AI Basics",
       done: "Nakuha ko na, ituloy",
       plainLabel: "Sa madaling salita",
       app: {

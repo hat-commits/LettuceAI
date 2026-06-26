@@ -77,6 +77,7 @@ export const hiMessages: DeepPartialMessageTree<LocaleMessages> = {
       openLinkFailed: "लिंक नहीं खोला जा सका",
     },
     buttons: {
+      learnMore: "और जानें",
       cancel: "रद्द करें",
       confirm: "पुष्टि करें",
       save: "सेव करें",
@@ -1578,6 +1579,8 @@ export const hiMessages: DeepPartialMessageTree<LocaleMessages> = {
         },
       },
       picker: {
+        learnMore: "विजेट कैसे काम करते हैं",
+        learnMoreDesc: "चैट विजेट गाइड खोलें",
         title: "विजेट जोड़ें",
       },
       config: {
@@ -6370,6 +6373,7 @@ export const hiMessages: DeepPartialMessageTree<LocaleMessages> = {
       experiencedDesc: "समझावनें वाले हिस्से को छोड़ें और सीधे सेटअप पर जाएँ।",
     },
     learn: {
+      fullGuide: "पूरी AI बेसिक्स गाइड पढ़ें",
       done: "समझ गया, आगे बढ़ें",
       plainLabel: "दूसरे शब्दों में",
       app: {

@@ -77,6 +77,7 @@ export const jaMessages: DeepPartialMessageTree<LocaleMessages> = {
       openLinkFailed: "リンクを開けませんでした",
     },
     buttons: {
+      learnMore: "詳しく見る",
       cancel: "キャンセル",
       confirm: "確認",
       save: "保存",
@@ -1578,6 +1579,8 @@ export const jaMessages: DeepPartialMessageTree<LocaleMessages> = {
         },
       },
       picker: {
+        learnMore: "ウィジェットの仕組み",
+        learnMoreDesc: "チャットウィジェットのガイドを開く",
         title: "ウィジェットを追加",
       },
       config: {
@@ -6370,6 +6373,7 @@ export const jaMessages: DeepPartialMessageTree<LocaleMessages> = {
       experiencedDesc: "説明をスキップして、すぐにセットアップに進みます。",
     },
     learn: {
+      fullGuide: "AIの基礎ガイドを読む",
       done: "了解しました、次へ",
       plainLabel: "言い換えると",
       app: {

@@ -77,6 +77,7 @@ export const koMessages: DeepPartialMessageTree<LocaleMessages> = {
       openLinkFailed: "링크를 열 수 없습니다",
     },
     buttons: {
+      learnMore: "자세히 알아보기",
       cancel: "취소",
       confirm: "확인",
       save: "저장",
@@ -1578,6 +1579,8 @@ export const koMessages: DeepPartialMessageTree<LocaleMessages> = {
         },
       },
       picker: {
+        learnMore: "위젯 작동 방식",
+        learnMoreDesc: "채팅 위젯 가이드 열기",
         title: "위젯 추가",
       },
       config: {
@@ -6979,6 +6982,7 @@ export const koMessages: DeepPartialMessageTree<LocaleMessages> = {
       experiencedDesc: "설명을 건너뛰고 바로 설정으로 이동합니다.",
     },
     learn: {
+      fullGuide: "AI 기초 가이드 전체 읽기",
       done: "확인, 계속",
       plainLabel: "다시 말해",
       app: {

@@ -77,6 +77,7 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       openLinkFailed: "无法打开链接",
     },
     buttons: {
+      learnMore: "了解更多",
       cancel: "取消",
       confirm: "确认",
       save: "保存",
@@ -1578,6 +1579,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
         },
       },
       picker: {
+        learnMore: "小组件如何运作",
+        learnMoreDesc: "打开聊天小组件指南",
         title: "添加组件",
       },
       config: {
@@ -6979,6 +6982,7 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       experiencedDesc: "跳过解释，直接进入设置。",
     },
     learn: {
+      fullGuide: "阅读完整的 AI 基础指南",
       done: "明白了，继续",
       plainLabel: "换句话说",
       app: {

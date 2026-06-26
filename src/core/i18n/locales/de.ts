@@ -77,6 +77,7 @@ export const deMessages: DeepPartialMessageTree<LocaleMessages> = {
       openLinkFailed: "Link konnte nicht geöffnet werden",
     },
     buttons: {
+      learnMore: "Mehr erfahren",
       cancel: "Abbrechen",
       confirm: "Bestätigen",
       save: "Speichern",
@@ -1578,6 +1579,8 @@ export const deMessages: DeepPartialMessageTree<LocaleMessages> = {
         },
       },
       picker: {
+        learnMore: "So funktionieren Widgets",
+        learnMoreDesc: "Anleitung zu Chat-Widgets öffnen",
         title: "Widget hinzufügen",
       },
       config: {
@@ -6979,6 +6982,7 @@ export const deMessages: DeepPartialMessageTree<LocaleMessages> = {
       experiencedDesc: "Erklärung überspringen und direkt zur Einrichtung gehen.",
     },
     learn: {
+      fullGuide: "Den vollständigen KI-Grundlagen-Leitfaden lesen",
       done: "Verstanden, weiter",
       plainLabel: "Anders gesagt",
       app: {

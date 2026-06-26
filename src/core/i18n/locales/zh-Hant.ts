@@ -77,6 +77,7 @@ export const zhHantMessages: DeepPartialMessageTree<LocaleMessages> = {
       openLinkFailed: "無法開啟連結",
     },
     buttons: {
+      learnMore: "瞭解更多",
       cancel: "取消",
       confirm: "確認",
       save: "儲存",
@@ -1534,6 +1535,8 @@ export const zhHantMessages: DeepPartialMessageTree<LocaleMessages> = {
         },
       },
       picker: {
+        learnMore: "小工具如何運作",
+        learnMoreDesc: "開啟聊天小工具指南",
         title: "添加元件 (Add widget)",
       },
       config: {
@@ -6979,6 +6982,7 @@ export const zhHantMessages: DeepPartialMessageTree<LocaleMessages> = {
       experiencedDesc: "跳過解釋，直接進入設定。",
     },
     learn: {
+      fullGuide: "閱讀完整的 AI 基礎指南",
       done: "明白了，繼續",
       plainLabel: "換句話說",
       app: {
