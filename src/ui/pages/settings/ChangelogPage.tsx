@@ -26,6 +26,220 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: "2.0.0 / 2.0.0",
+    date: "2026-06-27",
+    title: "2.0 — Living Companion Souls, Director Group Chats, Time Awareness & a Reinvented Desktop",
+    description:
+      "The largest LettuceAI release yet. Companions gain a living \"soul\" that grows from your conversations, a bipolar relationship model where warmth is earned, and full time awareness with an in-app clock you can override. Group chats get a hands-on Director mode, a participants bar, per-group appearance, and message search. The desktop app gets a custom title bar, rounded corners, and frameless resize. Plus MTP speculative decoding and the XTC sampler for local models, a guided bring-your-own-key onboarding, branch-tree navigation, two new providers, full localization, and a long tail of reliability work.",
+    changes: [
+      {
+        type: "feature",
+        description:
+          "Companion Souls: companions now carry a persistent soul the app writes and evolves over time — traits, backstory, appearance, goals, likes, and fears, each on its own mutability tier, including a very-slow tier with an overlay-rendered core.",
+      },
+      {
+        type: "feature",
+        description:
+          "Added a growth-cycle engine that grows and supersedes the soul from your new memories, plus a consolidation pass that merges accumulated growth, and a soul growth viewer to review, clear, or delete individual entries.",
+      },
+      {
+        type: "feature",
+        description:
+          "The soul generator now streams its output live and can be aborted mid-run.",
+      },
+      {
+        type: "feature",
+        description:
+          "Earned relationships: closeness, trust, and affection are now bipolar (they can go negative), shown as center-origin meters, and updated with a leaky, asymmetric, saturating model with worded prompt bands so warmth is earned slowly and erodes naturally.",
+      },
+      {
+        type: "feature",
+        description:
+          "Time awareness: give a companion a sense of now by overriding the in-chat clock (freeze it, set a custom time, or let it tick). It feeds prompt time, temporal memory queries, and memory stamps, and is also exposed as a time widget.",
+      },
+      {
+        type: "feature",
+        description:
+          "Replaced the native date/time control with a custom in-app picker: typeable hour/minute, a clickable month/year selector, wrapping time steppers, and a max year raised to the JS date ceiling.",
+      },
+      {
+        type: "feature",
+        description:
+          "Memories now show live relative time, are instructed to store absolute dates, and you can set or clear a memory's date with the picker. Dynamic memories can supersede older, outdated ones instead of piling up.",
+      },
+      {
+        type: "feature",
+        description:
+          "Director group chats: tap a character's avatar to choose who replies next. The selection drives the send button (no separate confirm/cancel), with action and cue styles, a configurable hint position, a sticky last pick, and a wiggle nudge if you send with nobody selected.",
+      },
+      {
+        type: "feature",
+        description:
+          "Added a group participants bar with per-character mention toggle, mute, and appearance controls, plus avatar-shape options and a solid/fading/transparent bar background.",
+      },
+      {
+        type: "feature",
+        description:
+          "Per-group chat appearance: a dedicated editor (desktop drawer and mobile page) backed by group-level appearance overrides.",
+      },
+      {
+        type: "feature",
+        description:
+          "Added group message search with a header button and jump-to-message that loads older messages from the database when needed, per-session author notes with an inline editor, desktop chat widgets fed real group data with a per-widget character picker, and per-message dynamic memory references.",
+      },
+      {
+        type: "feature",
+        description:
+          "Desktop gets a custom title bar with selectable designs, position, and size, rounded window corners, and edge-resize handles for the frameless window.",
+      },
+      {
+        type: "feature",
+        description:
+          "Added inline desktop search on Discovery with tag search, a pure-mode blur, and infinite scroll.",
+      },
+      {
+        type: "feature",
+        description:
+          "MTP speculative decoding for local models with bundled and external draft models, support for Gemma 4 shared-assistant drafters, and early-stop when draft confidence drops.",
+      },
+      {
+        type: "feature",
+        description:
+          "Added a per-model Full SWA Cache (swa-full) toggle and the new XTC (Exclude Top Choices) sampler, off by default.",
+      },
+      {
+        type: "feature",
+        description:
+          "Branch-tree navigation with a lineage view, branch comparison, and fork markers, plus a parent-branch confirm menu and child-fork indicators in chat.",
+      },
+      {
+        type: "feature",
+        description:
+          "Redesigned onboarding: a guided bring-your-own-key setup with a plain-language car metaphor, a free/paid choice, and screenshot-driven Gemini and OpenRouter flows, finishing with a one-tap embedding-memory download and a handoff into the in-app tour.",
+      },
+      {
+        type: "feature",
+        description:
+          "Added the Gemini Agent Platform (Express) and LiteRouter providers.",
+      },
+      {
+        type: "feature",
+        description:
+          "Dynamic memory run modes: an ask-first approval menu and a manual-gating setting, so memory updates can require your confirmation.",
+      },
+      {
+        type: "feature",
+        description:
+          "Audio input: upload, play back, and track token usage for audio in chat, plus a new Audio library tab listing TTS and chat-uploaded audio with player cards and a per-card actions menu.",
+      },
+      {
+        type: "feature",
+        description:
+          "Inline scene images rendered in chat, with image/GIF insert in the scene editors and an in-bubble indicator while a scene image prompt streams.",
+      },
+      {
+        type: "feature",
+        description:
+          "Reorganized Accessibility settings into a Customization page, added a custom chat input color with adaptive contrast, a resizable and collapsible appearance drawer, and a dice roll with editable notation in the plus menu.",
+      },
+      {
+        type: "feature",
+        description:
+          "Model browser author profiles with an author filter and in-profile search, configurable model folders with atomic migration, and a local runtime-defaults page.",
+      },
+      {
+        type: "feature",
+        description:
+          "Moved Kokoro voice setup into Voice providers with a guided download menu, and surfaced documentation links across the app with a completed docs map.",
+      },
+      {
+        type: "improvement",
+        description:
+          "Local-model runnability scoring now accounts for MTP next-n layers and QAT quants, and recommended KV cache is capped at Q8.",
+      },
+      {
+        type: "improvement",
+        description:
+          "Memory planning now accounts for sidecar memory, and MTP fields are forwarded through the provider extra-body allowlist, including in group chats.",
+      },
+      {
+        type: "improvement",
+        description:
+          "Added a Go to Models shortcut and warnings before deleting a prompt or model that is in use.",
+      },
+      {
+        type: "improvement",
+        description:
+          "Routed frontend user-facing strings through the locale system and translated the app across roughly 20 languages.",
+      },
+      {
+        type: "improvement",
+        description:
+          "Bulk update of protected prompts to the latest versions with full auto-refresh coverage and reset logging.",
+      },
+      {
+        type: "improvement",
+        description:
+          "Android backups are now written to Downloads via MediaStore and indexed for list and delete.",
+      },
+      {
+        type: "bugfix",
+        description:
+          "A turn save can no longer clobber concurrently-changed time preferences; the time override is preserved across state round-trips and kept synced to the live clock, with no more empty field or ticking jump-back.",
+      },
+      {
+        type: "bugfix",
+        description:
+          "Models no longer echo system timestamps back into their replies.",
+      },
+      {
+        type: "bugfix",
+        description:
+          "Partial vector migrations are now persisted so an aborted re-embed stops looping, and embedding failures are surfaced in the logs instead of failing silently.",
+      },
+      {
+        type: "bugfix",
+        description:
+          "The companion temporal filter is only applied when time awareness is enabled.",
+      },
+      {
+        type: "bugfix",
+        description:
+          "Group chat fixes: no more panic on a non-char-boundary log preview slice; continue no longer impersonates the persona or duplicates the last user turn; a null chat-appearance no longer breaks group parsing or hides the appearance button; and saving appearance no longer reloads the whole chat.",
+      },
+      {
+        type: "bugfix",
+        description:
+          "Every group session is now connected to a source group, with orphans backfilled, and scene messages are labeled correctly in the actions sheet.",
+      },
+      {
+        type: "bugfix",
+        description:
+          "Chat appearance and widget data are preserved when editing a character, the forceSendThinkingState setting persists correctly, and sidebar provider/model counts refresh on in-app changes.",
+      },
+      {
+        type: "bugfix",
+        description:
+          "Fullscreen overlays are correctly offset below the custom desktop title bar, and the corner toggle is guarded across decoration changes.",
+      },
+      {
+        type: "bugfix",
+        description:
+          "Fixed a doubled API version in the Gemini image URL and centered the image viewer when there is no prompt.",
+      },
+      {
+        type: "bugfix",
+        description:
+          "A stale Kokoro asset root now self-heals from synced platforms, and the real export/import error is surfaced instead of a generic one.",
+      },
+      {
+        type: "bugfix",
+        description:
+          "Decreasing relationship values render in a danger color, and deleting soul growth now asks for confirmation without a jarring full-page reload.",
+      },
+    ],
+  },
+  {
     version: "1.9.0 / 1.6.0",
     date: "2026-05-31",
     title: "Chat Widgets, a Live-Preview Appearance Drawer & Companion Memory Tools",
