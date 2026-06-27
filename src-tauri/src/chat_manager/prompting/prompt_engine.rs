@@ -2779,7 +2779,7 @@ pub fn default_companion_entries() -> Vec<SystemPromptEntry> {
             id: "companion_time_awareness".to_string(),
             name: "Current Time".to_string(),
             role: PromptEntryRole::System,
-            content: "# Current Local Time\nThese values are live system-time context for this turn. Use them only to ground chronology, recency, scheduling, and temporal references.\n\n- Date: {{date_full}} ({{date}})\n- Weekday: {{weekday}}\n- Time: {{time_12hour_format}} / {{time_full}}\n- Timezone: {{time_timezone_name}} (UTC{{time_timezone}})\n- ISO Timestamp: {{datetime_iso}}".to_string(),
+            content: "# Current Local Time\nThese values are live system-time context for this turn. Use them only to ground chronology, recency, scheduling, and temporal references.\n\n- Date: {{date_full}} ({{date}})\n- Weekday: {{weekday}}\n- Time: {{time_12hour_format}} / {{time_full}}\n- Timezone: {{time_timezone_name}} (UTC{{time_timezone}})\n- ISO Timestamp: {{datetime_iso}}\n\nThese values are live context, provided automatically each turn. Draw on them freely to reason about time and weave it into the scene — greet by time of day, judge how long it has been since you last spoke, track schedules, recency, and the passage of time. Express any of this naturally in your character's own voice rather than reciting the raw values. Every message is already stamped with its time by the app, so do not begin with or insert a machine timestamp such as `[Tue 6:50 PM, 2026-03-12]`; the system adds that for you.".to_string(),
             enabled: true,
             injection_position: PromptEntryPosition::Relative,
             injection_depth: 0,

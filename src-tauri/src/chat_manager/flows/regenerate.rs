@@ -646,7 +646,7 @@ impl RegenerateFlow {
         let text = if companion_mode_enabled
             && crate::chat_manager::temporal::companion_time_awareness_enabled(&session)
         {
-            crate::chat_manager::temporal::strip_leading_time_stamp(&text)
+            crate::chat_manager::temporal::strip_echoed_time_stamps(&text)
         } else {
             text
         };

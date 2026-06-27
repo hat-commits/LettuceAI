@@ -243,19 +243,27 @@ pub fn message_timestamp_prefix(created_at: u64, frame_delta: i64) -> String {
     format_message_timestamp(effective)
 }
 
-fn leading_timestamp_regex() -> &'static Regex {
+fn echoed_timestamp_regex() -> &'static Regex {
     static REGEX: OnceLock<Regex> = OnceLock::new();
     REGEX.get_or_init(|| {
-        Regex::new(r"(?i)^\s*\[\s*(?:[a-z]{3}\s+)?\d{1,2}:\d{2}\s*(?:am|pm)?[^\]]*\]\s*")
-            .expect("valid leading timestamp regex")
+        // Matches ONLY the app's own injected stamp, `[Tue 6:50 PM, 2026-03-12]`
+        // (see `format_message_timestamp`), anywhere in the text. The strict
+        // signature — 12-hour clock + AM/PM + ISO date inside brackets — keeps
+        // roleplay brackets like `[she smiles]` and other time formats intact.
+        // The weekday is optional in case a model drops or expands it.
+        Regex::new(
+            r"(?i)\[\s*(?:[a-z]{3,9}\s+)?\d{1,2}:\d{2}\s*(?:am|pm)\s*,?\s*\d{4}-\d{2}-\d{2}\s*\]\s*",
+        )
+        .expect("valid echoed timestamp regex")
     })
 }
 
-/// Removes a leading `[Tue 6:50 PM, 2026-03-12]`-style stamp that a model may
-/// echo back, so it is never persisted or re-stamped. Conservative: only matches
-/// brackets that contain a clock time, leaving roleplay brackets like `[she smiles]`.
-pub fn strip_leading_time_stamp(text: &str) -> String {
-    leading_timestamp_regex().replace(text, "").into_owned()
+/// Removes any `[Tue 6:50 PM, 2026-03-12]`-style stamp a model may echo back so
+/// it is never persisted or re-stamped. Strips matches wherever they appear, not
+/// just at the start. Conservative: only matches the app's own time format,
+/// leaving roleplay brackets like `[she smiles]` and unrelated timestamps alone.
+pub fn strip_echoed_time_stamps(text: &str) -> String {
+    echoed_timestamp_regex().replace_all(text, "").trim().to_string()
 }
 
 pub fn time_placeholder_values(reference_ms: u64) -> Vec<(&'static str, String)> {

@@ -566,7 +566,7 @@ impl ContinueFlow {
         let text = extract_text(api_response.data(), Some(&selected_credential.provider_id))
             .unwrap_or_default();
         let text = if time_stamp_enabled {
-            crate::chat_manager::temporal::strip_leading_time_stamp(&text)
+            crate::chat_manager::temporal::strip_echoed_time_stamps(&text)
         } else {
             text
         };
