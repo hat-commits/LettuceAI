@@ -1499,8 +1499,11 @@ pub struct BestRecommendation {
     pub viable: bool,
 }
 
+// Capped at q8_0: q8_0 is the highest-quality KV type we recommend. (Higher
+// options like q8_1/f16/f32 remain manually selectable but are never auto-picked;
+// q8_1 also has no matching UI dropdown option, which made the select fall back
+// to displaying "F32".)
 const RECOMMENDATION_KV_TYPES: &[(&str, f64)] = &[
-    ("q8_1", 1.0625),
     ("q8_0", 1.0),
     ("q5_1", 0.75),
     ("q5_0", 0.6875),
