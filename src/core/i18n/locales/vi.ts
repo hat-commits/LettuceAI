@@ -7109,6 +7109,10 @@ export const viMessages: DeepPartialMessageTree<LocaleMessages> = {
       minPDesc: "Ngưỡng xác suất tối thiểu.",
       typicalP: "Typical P",
       typicalPDesc: "Ngưỡng lấy mẫu điển hình.",
+      xtcProbability: "Xác suất XTC",
+      xtcProbabilityDesc: "Khả năng loại bỏ các token hàng đầu (0 = tắt). Tăng tính đa dạng.",
+      xtcThreshold: "Ngưỡng XTC",
+      xtcThresholdDesc: "Xác suất tối thiểu mà một token cần để đủ điều kiện bị XTC loại bỏ.",
       seed: "Seed",
       seedDesc: "Seed ngẫu nhiên. Để trống cho ngẫu nhiên.",
       ropeBase: "RoPE Base",
@@ -7252,6 +7256,10 @@ export const viMessages: DeepPartialMessageTree<LocaleMessages> = {
       typical: {
         label: "Typical P",
         desc: "Ưu tiên token thống kê điển hình trong phân phối hiện tại.",
+      },
+      xtc: {
+        label: "XTC",
+        desc: "Loại bỏ lựa chọn hàng đầu — bỏ các token xác suất cao để tăng đa dạng.",
       },
       temp: {
         label: "Temperature",
@@ -7815,6 +7823,8 @@ export const viMessages: DeepPartialMessageTree<LocaleMessages> = {
       samplerProfileDescription: "Mặc định cục bộ được tinh chỉnh cho độ ổn định hoặc suy luận",
       minP: "Min P",
       typicalP: "Typical P",
+      xtcProbability: "Xác suất XTC",
+      xtcThreshold: "Ngưỡng XTC",
       localOverride: "Ghi đè cục bộ",
       dryMultiplier: "DRY Multiplier",
       dryMultiplierDescription: "`0` vô hiệu hóa kiểm soát lặp lại chuỗi",

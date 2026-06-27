@@ -4406,6 +4406,8 @@ export const trMessages: DeepPartialMessageTree<LocaleMessages> = {
       samplerProfileDescription: "Kararlılık veya muhakeme için ayarlanmış yerel varsayılanlar",
       minP: "Min P",
       typicalP: "Tipik P",
+      xtcProbability: "XTC Olasılığı",
+      xtcThreshold: "XTC Eşiği",
       localOverride: "Yerel geçersiz kılma",
       dryMultiplier: "DRY Çarpanı",
       dryMultiplierDescription: "`0` dizi tekrar kontrolünü devre dışı bırakır",
@@ -7718,6 +7720,10 @@ export const trMessages: DeepPartialMessageTree<LocaleMessages> = {
       minPDesc: "Minimum olasılık eşiği.",
       typicalP: "Tipik P",
       typicalPDesc: "Tipik örnekleme eşiği.",
+      xtcProbability: "XTC Olasılığı",
+      xtcProbabilityDesc: "En olası tokenları hariç tutma şansı (0 = kapalı). Çeşitliliği artırır.",
+      xtcThreshold: "XTC Eşiği",
+      xtcThresholdDesc: "Bir tokenın XTC ile kaldırılabilmesi için gereken en düşük olasılık.",
       seed: "Seed",
       seedDesc: "Rastgele tohum. Rastgele için boş bırak.",
       ropeBase: "RoPE Base",
@@ -7861,6 +7867,10 @@ export const trMessages: DeepPartialMessageTree<LocaleMessages> = {
       typical: {
         label: "Tipik P",
         desc: "Mevcut dağılımda istatistiksel olarak tipik tokenleri tercih et.",
+      },
+      xtc: {
+        label: "XTC",
+        desc: "En İyi Seçenekleri Hariç Tut — çeşitlilik için yüksek olasılıklı tokenları atar.",
       },
       temp: {
         label: "Sıcaklık",

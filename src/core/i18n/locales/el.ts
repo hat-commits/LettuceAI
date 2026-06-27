@@ -4406,6 +4406,8 @@ export const elMessages: DeepPartialMessageTree<LocaleMessages> = {
       samplerProfileDescription: "Ρυθμισμένες τοπικές προεπιλογές για σταθερότητα ή συλλογισμό",
       minP: "Min P",
       typicalP: "Typical P",
+      xtcProbability: "Πιθανότητα XTC",
+      xtcThreshold: "Κατώφλι XTC",
       localOverride: "Τοπική αντικατάσταση",
       dryMultiplier: "DRY Multiplier",
       dryMultiplierDescription: "Το `0` απενεργοποιεί τον έλεγχο επανάληψης ακολουθίας",
@@ -7718,6 +7720,10 @@ export const elMessages: DeepPartialMessageTree<LocaleMessages> = {
       minPDesc: "Κατώτατο όριο πιθανότητας.",
       typicalP: "Typical P",
       typicalPDesc: "Τυπικό κατώτατο δειγματοληψίας.",
+      xtcProbability: "Πιθανότητα XTC",
+      xtcProbabilityDesc: "Πιθανότητα αποκλεισμού των κορυφαίων tokens (0 = ανενεργό). Αυξάνει την ποικιλία.",
+      xtcThreshold: "Κατώφλι XTC",
+      xtcThresholdDesc: "Ελάχιστη πιθανότητα που χρειάζεται ένα token για να αφαιρεθεί από το XTC.",
       seed: "Seed",
       seedDesc: "Τυχαίο seed. Αφήστε κενό για τυχαίο.",
       ropeBase: "RoPE Base",
@@ -7861,6 +7867,10 @@ export const elMessages: DeepPartialMessageTree<LocaleMessages> = {
       typical: {
         label: "Typical P",
         desc: "Προτίμηση στατιστικά τυπικών tokens στην τρέχουσα κατανομή.",
+      },
+      xtc: {
+        label: "XTC",
+        desc: "Αποκλεισμός κορυφαίων επιλογών — απορρίπτει tokens υψηλής πιθανότητας για ποικιλία.",
       },
       temp: {
         label: "Temperature",

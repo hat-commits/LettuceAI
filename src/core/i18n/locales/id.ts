@@ -7109,6 +7109,10 @@ export const idMessages: DeepPartialMessageTree<LocaleMessages> = {
       minPDesc: "Ambang batas probabilitas minimum.",
       typicalP: "Typical P",
       typicalPDesc: "Ambang batas sampling tipikal.",
+      xtcProbability: "Probabilitas XTC",
+      xtcProbabilityDesc: "Peluang mengecualikan token teratas (0 = nonaktif). Menambah variasi.",
+      xtcThreshold: "Ambang XTC",
+      xtcThresholdDesc: "Probabilitas minimum yang dibutuhkan token agar bisa dihapus oleh XTC.",
       seed: "Seed",
       seedDesc: "Seed acak. Kosongkan untuk acak.",
       ropeBase: "RoPE Base",
@@ -7252,6 +7256,10 @@ export const idMessages: DeepPartialMessageTree<LocaleMessages> = {
       typical: {
         label: "Typical P",
         desc: "Pilih token yang secara statistik tipikal dalam distribusi saat ini.",
+      },
+      xtc: {
+        label: "XTC",
+        desc: "Kecualikan Pilihan Teratas — membuang token berprobabilitas tinggi demi variasi.",
       },
       temp: {
         label: "Temperature",
@@ -9050,6 +9058,8 @@ export const idMessages: DeepPartialMessageTree<LocaleMessages> = {
       samplerProfileDescription: "Default lokal yang disetel untuk stabilitas atau penalaran",
       minP: "Min P",
       typicalP: "Typical P",
+      xtcProbability: "Probabilitas XTC",
+      xtcThreshold: "Ambang XTC",
       localOverride: "Penggantian lokal",
       dryMultiplier: "DRY Multiplier",
       dryMultiplierDescription: "`0` menonaktifkan kontrol pengulangan urutan",

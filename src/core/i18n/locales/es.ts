@@ -4406,6 +4406,8 @@ export const esMessages: DeepPartialMessageTree<LocaleMessages> = {
       samplerProfileDescription: "Valores locales ajustados para estabilidad o razonamiento",
       minP: "Min P",
       typicalP: "Typical P",
+      xtcProbability: "Probabilidad XTC",
+      xtcThreshold: "Umbral XTC",
       localOverride: "Anulación local",
       dryMultiplier: "Multiplicador DRY",
       dryMultiplierDescription: "`0` desactiva el control de repetición de secuencias",
@@ -7718,6 +7720,10 @@ export const esMessages: DeepPartialMessageTree<LocaleMessages> = {
       minPDesc: "Umbral mínimo de probabilidad.",
       typicalP: "Typical P",
       typicalPDesc: "Umbral de muestreo típico.",
+      xtcProbability: "Probabilidad XTC",
+      xtcProbabilityDesc: "Probabilidad de excluir los tokens principales (0 = desactivado). Aumenta la variedad.",
+      xtcThreshold: "Umbral XTC",
+      xtcThresholdDesc: "Probabilidad mínima que necesita un token para que XTC pueda eliminarlo.",
       seed: "Seed",
       seedDesc: "Semilla aleatoria. Dejar en blanco para aleatorio.",
       ropeBase: "RoPE Base",
@@ -7861,6 +7867,10 @@ export const esMessages: DeepPartialMessageTree<LocaleMessages> = {
       typical: {
         label: "Typical P",
         desc: "Preferir tokens estadísticamente típicos en la distribución actual.",
+      },
+      xtc: {
+        label: "XTC",
+        desc: "Excluir las opciones principales: descarta tokens de alta probabilidad para dar variedad.",
       },
       temp: {
         label: "Temperature",

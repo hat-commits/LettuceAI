@@ -4686,6 +4686,8 @@ export const nlMessages: DeepPartialMessageTree<LocaleMessages> = {
       samplerProfileDescription: "Afgestelde lokale standaardwaarden voor stabiliteit of redeneren",
       minP: "Min P",
       typicalP: "Typical P",
+      xtcProbability: "XTC-waarschijnlijkheid",
+      xtcThreshold: "XTC-drempel",
       localOverride: "Lokale overschrijving",
       dryMultiplier: "DRY-multiplier",
       dryMultiplierDescription: "`0` schakelt herhalingsbeheer van sequenties uit",
@@ -7718,6 +7720,10 @@ export const nlMessages: DeepPartialMessageTree<LocaleMessages> = {
       minPDesc: "Minimale waarschijnlijkheidsdrempel.",
       typicalP: "Typical P",
       typicalPDesc: "Typische samplingdrempel.",
+      xtcProbability: "XTC-waarschijnlijkheid",
+      xtcProbabilityDesc: "Kans om toptokens uit te sluiten (0 = uit). Vergroot de variatie.",
+      xtcThreshold: "XTC-drempel",
+      xtcThresholdDesc: "Minimale waarschijnlijkheid die een token nodig heeft om door XTC verwijderd te kunnen worden.",
       seed: "Seed",
       seedDesc: "Willekeurige seed. Laat leeg voor willekeurig.",
       ropeBase: "RoPE Base",
@@ -7861,6 +7867,10 @@ export const nlMessages: DeepPartialMessageTree<LocaleMessages> = {
       typical: {
         label: "Typical P",
         desc: "Statistisch typische tokens in de huidige verdeling verkiezen.",
+      },
+      xtc: {
+        label: "XTC",
+        desc: "Beste keuzes uitsluiten — verwijdert tokens met hoge waarschijnlijkheid voor meer variatie.",
       },
       temp: {
         label: "Temperature",

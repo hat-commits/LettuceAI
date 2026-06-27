@@ -4406,6 +4406,8 @@ export const zhHantMessages: DeepPartialMessageTree<LocaleMessages> = {
       samplerProfileDescription: "針對穩定性或推理進行調整的本地預設值",
       minP: "Min P",
       typicalP: "Typical P",
+      xtcProbability: "XTC 機率",
+      xtcThreshold: "XTC 閾值",
       localOverride: "本地覆蓋",
       dryMultiplier: "DRY 倍數",
       dryMultiplierDescription: "`0` 將禁用序列重複控制",
@@ -7718,6 +7720,10 @@ export const zhHantMessages: DeepPartialMessageTree<LocaleMessages> = {
       minPDesc: "最低機率閾值。",
       typicalP: "Typical P",
       typicalPDesc: "典型取樣閾值。",
+      xtcProbability: "XTC 機率",
+      xtcProbabilityDesc: "排除高機率詞元的機率（0 = 關閉）。提升多樣性。",
+      xtcThreshold: "XTC 閾值",
+      xtcThresholdDesc: "詞元需要達到的最低機率才會被 XTC 移除。",
       seed: "Seed",
       seedDesc: "隨機種子。留空為隨機。",
       ropeBase: "RoPE Base",
@@ -7861,6 +7867,10 @@ export const zhHantMessages: DeepPartialMessageTree<LocaleMessages> = {
       typical: {
         label: "Typical P",
         desc: "偏好目前分佈中統計上典型的 token。",
+      },
+      xtc: {
+        label: "XTC",
+        desc: "排除最佳選擇 — 捨棄高機率詞元以增加多樣性。",
       },
       temp: {
         label: "Temperature",

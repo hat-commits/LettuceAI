@@ -4406,6 +4406,8 @@ export const filMessages: DeepPartialMessageTree<LocaleMessages> = {
       samplerProfileDescription: "Tinuned na local defaults para sa stability o reasoning",
       minP: "Min P",
       typicalP: "Typical P",
+      xtcProbability: "Probabilidad ng XTC",
+      xtcThreshold: "Threshold ng XTC",
       localOverride: "Local override",
       dryMultiplier: "DRY Multiplier",
       dryMultiplierDescription: "Ina-disable ng `0` ang sequence repetition control",
@@ -7718,6 +7720,10 @@ export const filMessages: DeepPartialMessageTree<LocaleMessages> = {
       minPDesc: "Minimum probability threshold.",
       typicalP: "Typical P",
       typicalPDesc: "Typical sampling threshold.",
+      xtcProbability: "Probabilidad ng XTC",
+      xtcProbabilityDesc: "Tsansang i-exclude ang mga nangungunang token (0 = naka-off). Nagpapataas ng pagkakaiba-iba.",
+      xtcThreshold: "Threshold ng XTC",
+      xtcThresholdDesc: "Pinakamababang probabilidad na kailangan ng token para matanggal ito ng XTC.",
       seed: "Seed",
       seedDesc: "Random seed. Iwanang blangko para random.",
       ropeBase: "RoPE Base",
@@ -7861,6 +7867,10 @@ export const filMessages: DeepPartialMessageTree<LocaleMessages> = {
       typical: {
         label: "Typical P",
         desc: "Mas piliin ang statistically typical na mga token sa kasalukuyang distribusyon.",
+      },
+      xtc: {
+        label: "XTC",
+        desc: "Exclude Top Choices — inaalis ang mga high-probability na token para sa pagkakaiba-iba.",
       },
       temp: {
         label: "Temperature",

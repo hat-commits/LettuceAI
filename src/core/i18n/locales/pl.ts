@@ -7195,6 +7195,10 @@ export const plMessages: DeepPartialMessageTree<LocaleMessages> = {
       minPDesc: "Minimalny próg prawdopodobieństwa.",
       typicalP: "Typical P",
       typicalPDesc: "Typowy próg próbkowania.",
+      xtcProbability: "Prawdopodobieństwo XTC",
+      xtcProbabilityDesc: "Szansa na wykluczenie najlepszych tokenów (0 = wył.). Zwiększa różnorodność.",
+      xtcThreshold: "Próg XTC",
+      xtcThresholdDesc: "Minimalne prawdopodobieństwo, jakie musi mieć token, aby mógł zostać usunięty przez XTC.",
       seed: "Seed",
       seedDesc: "Ziarno losowe. Zostaw puste dla losowego.",
       ropeBase: "RoPE Base",
@@ -7338,6 +7342,10 @@ export const plMessages: DeepPartialMessageTree<LocaleMessages> = {
       typical: {
         label: "Typical P",
         desc: "Preferuj statystycznie typowe tokeny w bieżącym rozkładzie.",
+      },
+      xtc: {
+        label: "XTC",
+        desc: "Wyklucz najlepsze wybory — odrzuca tokeny o wysokim prawdopodobieństwie dla różnorodności.",
       },
       temp: {
         label: "Temperature",
@@ -7815,6 +7823,8 @@ export const plMessages: DeepPartialMessageTree<LocaleMessages> = {
       samplerProfileDescription: "Dostrojone domyślne wartości lokalne dla stabilności lub rozumowania",
       minP: "Min P",
       typicalP: "Typical P",
+      xtcProbability: "Prawdopodobieństwo XTC",
+      xtcThreshold: "Próg XTC",
       localOverride: "Nadpisanie lokalne",
       dryMultiplier: "Mnożnik DRY",
       dryMultiplierDescription: "`0` wyłącza kontrolę powtórzeń sekwencji",

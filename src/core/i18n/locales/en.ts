@@ -8116,6 +8116,10 @@ export const enMessages = {
         label: "Typical P",
         desc: "Prefer statistically typical tokens in the current distribution.",
       },
+      xtc: {
+        label: "XTC",
+        desc: "Exclude Top Choices — drop high-probability tokens for variety.",
+      },
       temp: {
         label: "Temperature",
         desc: "Flatten or sharpen the final distribution before selection.",

@@ -4406,6 +4406,8 @@ export const noMessages: DeepPartialMessageTree<LocaleMessages> = {
       samplerProfileDescription: "Tilpassede lokale standarder for stabilitet eller resonnering",
       minP: "Min P",
       typicalP: "Typical P",
+      xtcProbability: "XTC-sannsynlighet",
+      xtcThreshold: "XTC-terskel",
       localOverride: "Lokal overstyring",
       dryMultiplier: "DRY-multiplikator",
       dryMultiplierDescription: "`0` deaktiverer kontroll av sekvensrepetisjon",
@@ -7718,6 +7720,10 @@ export const noMessages: DeepPartialMessageTree<LocaleMessages> = {
       minPDesc: "Minimums sannsynlighetsterskel.",
       typicalP: "Typical P",
       typicalPDesc: "Typisk samplingterskel.",
+      xtcProbability: "XTC-sannsynlighet",
+      xtcProbabilityDesc: "Sjanse for å utelukke topp-tokener (0 = av). Øker variasjonen.",
+      xtcThreshold: "XTC-terskel",
+      xtcThresholdDesc: "Minste sannsynlighet et token må ha for å kunne fjernes av XTC.",
       seed: "Seed",
       seedDesc: "Tilfeldig seed. La stå tomt for tilfeldig.",
       ropeBase: "RoPE Base",
@@ -7861,6 +7867,10 @@ export const noMessages: DeepPartialMessageTree<LocaleMessages> = {
       typical: {
         label: "Typical P",
         desc: "Foretrekk statistisk typiske tokens i den nåværende fordelingen.",
+      },
+      xtc: {
+        label: "XTC",
+        desc: "Utelukk de beste valgene — forkaster tokener med høy sannsynlighet for variasjon.",
       },
       temp: {
         label: "Temperature",

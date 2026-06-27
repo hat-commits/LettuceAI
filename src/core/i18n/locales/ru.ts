@@ -4406,6 +4406,8 @@ export const ruMessages: DeepPartialMessageTree<LocaleMessages> = {
       samplerProfileDescription: "Подобранные локальные значения по умолчанию для стабильности или рассуждений",
       minP: "Min P",
       typicalP: "Typical P",
+      xtcProbability: "Вероятность XTC",
+      xtcThreshold: "Порог XTC",
       localOverride: "Локальное переопределение",
       dryMultiplier: "DRY Multiplier",
       dryMultiplierDescription: "`0` отключает контроль повторения последовательностей",
@@ -7718,6 +7720,10 @@ export const ruMessages: DeepPartialMessageTree<LocaleMessages> = {
       minPDesc: "Минимальный порог вероятности.",
       typicalP: "Типичный P",
       typicalPDesc: "Порог типичного сэмплирования.",
+      xtcProbability: "Вероятность XTC",
+      xtcProbabilityDesc: "Вероятность исключения топ-токенов (0 = выкл.). Повышает разнообразие.",
+      xtcThreshold: "Порог XTC",
+      xtcThresholdDesc: "Минимальная вероятность, необходимая токену для удаления через XTC.",
       seed: "Seed",
       seedDesc: "Случайный seed. Оставьте пустым для случайного.",
       ropeBase: "RoPE Base",
@@ -7861,6 +7867,10 @@ export const ruMessages: DeepPartialMessageTree<LocaleMessages> = {
       typical: {
         label: "Типичный P",
         desc: "Предпочитать статистически типичные токены в текущем распределении.",
+      },
+      xtc: {
+        label: "XTC",
+        desc: "Исключить топ-варианты — отбрасывает высоковероятные токены ради разнообразия.",
       },
       temp: {
         label: "Температура",

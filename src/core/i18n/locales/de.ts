@@ -4406,6 +4406,8 @@ export const deMessages: DeepPartialMessageTree<LocaleMessages> = {
       samplerProfileDescription: "Abgestimmte lokale Standardwerte für Stabilität oder Reasoning",
       minP: "Min P",
       typicalP: "Typical P",
+      xtcProbability: "XTC-Wahrscheinlichkeit",
+      xtcThreshold: "XTC-Schwellenwert",
       localOverride: "Lokale Überschreibung",
       dryMultiplier: "DRY-Multiplikator",
       dryMultiplierDescription: "`0` deaktiviert die Sequenzwiederholungskontrolle",
@@ -7718,6 +7720,10 @@ export const deMessages: DeepPartialMessageTree<LocaleMessages> = {
       minPDesc: "Minimaler Wahrscheinlichkeitsschwellenwert.",
       typicalP: "Typical P",
       typicalPDesc: "Typischer Sampling-Schwellenwert.",
+      xtcProbability: "XTC-Wahrscheinlichkeit",
+      xtcProbabilityDesc: "Wahrscheinlichkeit, Top-Tokens auszuschließen (0 = aus). Erhöht die Vielfalt.",
+      xtcThreshold: "XTC-Schwellenwert",
+      xtcThresholdDesc: "Mindestwahrscheinlichkeit, die ein Token für die XTC-Entfernung haben muss.",
       seed: "Seed",
       seedDesc: "Zufalls-Seed. Leer lassen für zufällig.",
       ropeBase: "RoPE Base",
@@ -7861,6 +7867,10 @@ export const deMessages: DeepPartialMessageTree<LocaleMessages> = {
       typical: {
         label: "Typical P",
         desc: "Statistisch typische Tokens in der aktuellen Verteilung bevorzugen.",
+      },
+      xtc: {
+        label: "XTC",
+        desc: "Top-Optionen ausschließen – verwirft hochwahrscheinliche Tokens für mehr Vielfalt.",
       },
       temp: {
         label: "Temperature",

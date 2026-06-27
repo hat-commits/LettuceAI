@@ -7109,6 +7109,10 @@ export const jaMessages: DeepPartialMessageTree<LocaleMessages> = {
       minPDesc: "最小確率しきい値。",
       typicalP: "Typical P",
       typicalPDesc: "典型的サンプリングしきい値。",
+      xtcProbability: "XTC 確率",
+      xtcProbabilityDesc: "上位トークンを除外する確率（0 = オフ）。多様性を高めます。",
+      xtcThreshold: "XTC しきい値",
+      xtcThresholdDesc: "トークンが XTC による除外対象となるために必要な最小確率。",
       seed: "Seed",
       seedDesc: "ランダムシード。空白でランダム。",
       ropeBase: "RoPE Base",
@@ -7252,6 +7256,10 @@ export const jaMessages: DeepPartialMessageTree<LocaleMessages> = {
       typical: {
         label: "Typical P",
         desc: "現在の分布で統計的に典型的なトークンを優先。",
+      },
+      xtc: {
+        label: "XTC",
+        desc: "上位の選択肢を除外 — 多様性のために高確率のトークンを捨てます。",
       },
       temp: {
         label: "Temperature",
@@ -9050,6 +9058,8 @@ export const jaMessages: DeepPartialMessageTree<LocaleMessages> = {
       samplerProfileDescription: "安定性または推論向けに調整されたローカル既定値",
       minP: "Min P",
       typicalP: "Typical P",
+      xtcProbability: "XTC 確率",
+      xtcThreshold: "XTC しきい値",
       localOverride: "ローカルオーバーライド",
       dryMultiplier: "DRY Multiplier",
       dryMultiplierDescription: "`0` でシーケンス反復制御を無効化",

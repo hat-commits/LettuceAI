@@ -4406,6 +4406,8 @@ export const koMessages: DeepPartialMessageTree<LocaleMessages> = {
       samplerProfileDescription: "안정성 또는 추론을 위한 조정된 로컬 기본값",
       minP: "Min P",
       typicalP: "Typical P",
+      xtcProbability: "XTC 확률",
+      xtcThreshold: "XTC 임계값",
       localOverride: "로컬 재정의",
       dryMultiplier: "DRY Multiplier",
       dryMultiplierDescription: "`0`은 시퀀스 반복 제어를 비활성화합니다",
@@ -7718,6 +7720,10 @@ export const koMessages: DeepPartialMessageTree<LocaleMessages> = {
       minPDesc: "최소 확률 임계값.",
       typicalP: "Typical P",
       typicalPDesc: "전형적 샘플링 임계값.",
+      xtcProbability: "XTC 확률",
+      xtcProbabilityDesc: "상위 토큰을 제외할 확률 (0 = 끔). 다양성을 높입니다.",
+      xtcThreshold: "XTC 임계값",
+      xtcThresholdDesc: "토큰이 XTC 제거 대상이 되기 위해 필요한 최소 확률.",
       seed: "Seed",
       seedDesc: "랜덤 시드. 비워두면 무작위.",
       ropeBase: "RoPE Base",
@@ -7861,6 +7867,10 @@ export const koMessages: DeepPartialMessageTree<LocaleMessages> = {
       typical: {
         label: "Typical P",
         desc: "현재 분포에서 통계적으로 전형적인 토큰을 선호합니다.",
+      },
+      xtc: {
+        label: "XTC",
+        desc: "상위 선택 제외 — 다양성을 위해 높은 확률의 토큰을 버립니다.",
       },
       temp: {
         label: "Temperature",
