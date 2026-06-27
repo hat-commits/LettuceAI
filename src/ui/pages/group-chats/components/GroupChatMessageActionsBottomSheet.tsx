@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Copy, Trash2, RotateCcw, Edit3, Users, Pin, PinOff, BookOpen, Brain } from "lucide-react";
+import { Copy, Trash2, RotateCcw, Edit3, Users, Pin, PinOff, BookOpen, Brain, Paintbrush } from "lucide-react";
 
 import type { Character, Settings, Model } from "../../../../core/storage/schemas";
 import { useAvatar } from "../../../hooks/useAvatar";
@@ -68,6 +68,7 @@ export function GroupChatMessageActionsBottomSheet({
   handleCopyMessage,
   setMessageAction,
   onRegenerate,
+  onOpenChatAppearance,
   characters,
 }: {
   messageAction: MessageActionState | null;
@@ -86,6 +87,7 @@ export function GroupChatMessageActionsBottomSheet({
   handleCopyMessage: () => Promise<void>;
   setMessageAction: (value: MessageActionState | null) => void;
   onRegenerate: (characterId?: string) => void;
+  onOpenChatAppearance?: () => void;
   characters: Character[];
 }) {
   const { t } = useI18n();
@@ -315,6 +317,21 @@ export function GroupChatMessageActionsBottomSheet({
                   disabled={actionBusy || messageAction.message.isPinned}
                   variant="danger"
                 />
+
+                {onOpenChatAppearance && (
+                  <>
+                    <div className="h-px bg-fg/5 my-2" />
+                    <ActionRow
+                      icon={Paintbrush}
+                      label={t("chats.actions.chatAppearance")}
+                      iconBg="bg-purple-500/20"
+                      onClick={() => {
+                        closeMessageActions();
+                        onOpenChatAppearance();
+                      }}
+                    />
+                  </>
+                )}
               </div>
             ) : (
               <div className="space-y-4">

@@ -2428,6 +2428,7 @@ export function GroupChatPage() {
             handleRegenerate(messageAction.message.id, charId);
           }
         }}
+        onOpenChatAppearance={handleOpenAppearance}
         characters={groupCharacters}
       />
 

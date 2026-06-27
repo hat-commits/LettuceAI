@@ -83,6 +83,7 @@ import {
   useAuthorNoteInlineEditor,
 } from "./components";
 import { ChatAppearanceDrawer } from "./components/appearance/ChatAppearanceDrawer";
+import { CompanionTimeOverrideCard } from "./components/CompanionTimeOverrideCard";
 import { getChatColumnLayout } from "./utils/chatColumnLayout";
 import { getChatWidgetLayout, useViewportWidth } from "./utils/chatWidgetLayout";
 import { ChatWidgetArea } from "./components/ChatWidgetArea";
@@ -103,7 +104,7 @@ import { BottomMenu, GuidedTour, MenuButton, useGuidedTour } from "../../compone
 import { AvatarImage } from "../../components/AvatarImage";
 import { DynamicMemoryApprovalGate } from "../../components/DynamicMemoryApprovalGate";
 import { useAvatar } from "../../hooks/useAvatar";
-import { Image, RefreshCw, Sparkles, Check, PenLine, Lock, FileAudio, GitBranch } from "lucide-react";
+import { Image, RefreshCw, Sparkles, Check, PenLine, Lock, FileAudio, GitBranch, History } from "lucide-react";
 import { radius, cn, typography } from "../../design-tokens";
 import { useI18n } from "../../../core/i18n/context";
 import { PersonaSelector } from "../group-chats/components/settings";
@@ -272,6 +273,7 @@ export function ChatConversationPage() {
 
   // Help Me Reply states
   const [showPlusMenu, setShowPlusMenu] = useState(false);
+  const [showTimeOverrideMenu, setShowTimeOverrideMenu] = useState(false);
   const [showBranchNavMenu, setShowBranchNavMenu] = useState(false);
   const [childForks, setChildForks] = useState<
     Map<string, Array<{ id: string; title: string; characterId: string }>>
@@ -1833,6 +1835,29 @@ export function ChatConversationPage() {
     }
   }, [draft, handleHelpMeReply]);
 
+  const handleApplyCompanionTimeOverride = useCallback(
+    async (override: CompanionTimeOverride | null) => {
+      const current = chatController.session;
+      if (!current) return;
+      const nextCompanionState = CompanionSessionStateSchema.parse({
+        ...(current.companionState ?? {}),
+        preferences: {
+          ...(current.companionState?.preferences ?? {}),
+          timeOverride: override ?? undefined,
+        },
+        updatedAt: Date.now(),
+      });
+      const next = {
+        ...current,
+        companionState: nextCompanionState,
+        updatedAt: Date.now(),
+      };
+      await saveSession(next);
+      setSessionForHeader(next);
+    },
+    [chatController, saveSession],
+  );
+
   const resetScenePromptFlow = useCallback(() => {
     setShowScenePromptModeMenu(false);
     setShowScenePromptEditorMenu(false);
@@ -3310,7 +3335,36 @@ export function ChatConversationPage() {
                 : handleEnableSwapPlaces
             }
           />
+          {(session?.mode ?? character?.mode) === "companion" &&
+            (session?.companionState?.preferences?.timeAwarenessEnabled ?? false) && (
+              <MenuButton
+                icon={History}
+                title={t("chats.timeOverride.title")}
+                description={
+                  session?.companionState?.preferences?.timeOverride?.mode === "frozen"
+                    ? t("chats.timeOverride.badgeFrozen")
+                    : session?.companionState?.preferences?.timeOverride
+                      ? t("chats.timeOverride.badgeCustom")
+                      : t("chats.timeOverride.badgeLive")
+                }
+                onClick={() => {
+                  setShowPlusMenu(false);
+                  setShowTimeOverrideMenu(true);
+                }}
+              />
+            )}
         </div>
+      </BottomMenu>
+
+      <BottomMenu
+        isOpen={showTimeOverrideMenu}
+        onClose={() => setShowTimeOverrideMenu(false)}
+        title={t("chats.timeOverride.title")}
+      >
+        <CompanionTimeOverrideCard
+          session={sessionForHeader ?? session ?? null}
+          onApply={handleApplyCompanionTimeOverride}
+        />
       </BottomMenu>
 
       <BottomMenu
