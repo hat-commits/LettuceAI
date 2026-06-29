@@ -3846,8 +3846,7 @@ async fn run_group_memory_tool_update(
                         };
 
                         let (embedding_source_version, embedding_dimensions) =
-                            embedding::resolve_active_embedding_signature(app)
-                                .unwrap_or_else(|_| ("v3".to_string(), 512));
+                            embedding::embedding_signature_for_result(app, embedding.as_ref());
                         let _now = now_millis().unwrap_or_default();
                         session.memory_embeddings.push(MemoryEmbedding {
                             id: mem_id.clone(),
@@ -4299,8 +4298,7 @@ async fn run_group_memory_tool_update(
                     let token_count =
                         crate::embedding::tokenizer::count_tokens(app, &text).unwrap_or(0);
                     let (embedding_source_version, embedding_dimensions) =
-                        embedding::resolve_active_embedding_signature(app)
-                            .unwrap_or_else(|_| ("v3".to_string(), 512));
+                        embedding::embedding_signature_for_result(app, embedding.as_ref());
                     let now = now_millis().unwrap_or_default();
                     session.memory_embeddings.push(MemoryEmbedding {
                         id: mem_id.clone(),

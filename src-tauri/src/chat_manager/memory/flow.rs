@@ -3690,8 +3690,7 @@ async fn run_memory_tool_update(
                                 (None, None, None)
                             };
                         let (embedding_source_version, embedding_dimensions) =
-                            embedding::resolve_active_embedding_signature(app)
-                                .unwrap_or_else(|_| ("v3".to_string(), 512));
+                            embedding::embedding_signature_for_result(app, embedding.as_ref());
                         let supersede_ids: Vec<String> = if memory_supersede_enabled {
                             call.arguments
                                 .get("supersedes")
@@ -4191,8 +4190,7 @@ async fn run_memory_tool_update(
                             (None, None, None)
                         };
                     let (embedding_source_version, embedding_dimensions) =
-                        embedding::resolve_active_embedding_signature(app)
-                            .unwrap_or_else(|_| ("v3".to_string(), 512));
+                        embedding::embedding_signature_for_result(app, embedding.as_ref());
                     session.memory_embeddings.push(MemoryEmbedding {
                         id: mem_id.clone(),
                         text: text.clone(),

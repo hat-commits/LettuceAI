@@ -237,6 +237,25 @@ pub(crate) fn resolve_active_embedding_signature(
     ))
 }
 
+pub(crate) fn embedding_signature_for_result(
+    app: &AppHandle,
+    embedding: Option<&Vec<f32>>,
+) -> (String, usize) {
+    match embedding {
+        Some(vector) => {
+            let version = if vector.len() == EMBEDDING_DIM_V4 {
+                "v4".to_string()
+            } else {
+                resolve_active_embedding_signature(app)
+                    .map(|(version, _)| version)
+                    .unwrap_or_else(|_| "v3".to_string())
+            };
+            (version, vector.len())
+        }
+        None => resolve_active_embedding_signature(app).unwrap_or_else(|_| ("v3".to_string(), 512)),
+    }
+}
+
 #[tauri::command]
 pub fn check_embedding_model(app: AppHandle) -> Result<bool, String> {
     let model_dir = embedding_model_dir(&app)?;
