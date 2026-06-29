@@ -425,6 +425,8 @@ pub async fn kokoro_preview(
         espeak_data_path: espeak.data_path,
     };
 
+    crate::embedding::ensure_onnxruntime_loaded(&app).await?;
+
     let audio_bytes =
         tokio::task::spawn_blocking(move || kokoro::engine::synthesize_to_wav(request))
             .await
@@ -899,6 +901,8 @@ pub async fn tts_preview(
                     espeak_bin_path: espeak.bin_path,
                     espeak_data_path: espeak.data_path,
                 };
+
+                crate::embedding::ensure_onnxruntime_loaded(&app).await?;
 
                 let audio =
                     tokio::task::spawn_blocking(move || kokoro::engine::synthesize_to_wav(request))

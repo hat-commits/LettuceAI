@@ -20,6 +20,10 @@ mod util;
 
 use specs::*;
 
+pub(crate) async fn ensure_onnxruntime_loaded(app: &AppHandle) -> Result<(), String> {
+    ort_runtime::ensure_ort_init(app).await
+}
+
 const MAX_SEQ_LENGTH_V1: usize = 512;
 const MAX_SEQ_LENGTH_MODERN: usize = 4096;
 #[cfg(not(any(target_os = "android", target_os = "ios")))]

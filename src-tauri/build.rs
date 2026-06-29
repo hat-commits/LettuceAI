@@ -84,6 +84,12 @@ fn main() {
             );
             setup_linux_libs().expect("Failed to setup Linux ONNX Runtime library");
         }
+        "windows" => {
+            println!(
+                "cargo:warning=Detected Windows desktop build, preparing ONNX Runtime library..."
+            );
+            setup_windows_libs().expect("Failed to setup Windows ONNX Runtime library");
+        }
         _ => {
             println!(
                 "cargo:warning=Detected desktop build for target OS '{}'; ensuring ONNX Runtime resource directory exists.",
@@ -513,6 +519,93 @@ fn copy_linux_so_from_dir(src_dir: &Path, dest_path: &Path) -> anyhow::Result<()
     )
 }
 
+fn setup_windows_libs() -> anyhow::Result<()> {
+    let resource_dir = ensure_resource_dir()?;
+
+    let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap_or_default();
+    let archive_arch = match target_arch.as_str() {
+        "x86_64" => "x64",
+        "aarch64" => "arm64",
+        _ => {
+            println!(
+                "cargo:warning=Unsupported Windows architecture '{}' for bundled ONNX Runtime; runtime fetch fallback will be used.",
+                target_arch
+            );
+            return Ok(());
+        }
+    };
+
+    let target_path = resource_dir.join("onnxruntime.dll");
+
+    if let Ok(path) = env::var("ORT_LIB_LOCATION") {
+        let trimmed = path.trim();
+        if !trimmed.is_empty() {
+            copy_windows_dll_from_dir(Path::new(trimmed), &target_path)?;
+            println!(
+                "cargo:warning=ORT_LIB_LOCATION is set for Windows build ({}); copied ONNX Runtime library into {:?}.",
+                trimmed, target_path
+            );
+            return Ok(());
+        }
+    }
+
+    if target_path.exists() {
+        println!(
+            "cargo:warning=Windows ONNX Runtime already present at {:?}",
+            target_path
+        );
+        return Ok(());
+    }
+
+    let archive_url = format!(
+        "https://github.com/microsoft/onnxruntime/releases/download/v{0}/onnxruntime-win-{1}-{0}.zip",
+        ORT_VERSION, archive_arch
+    );
+    let dll_path_in_archive = format!(
+        "onnxruntime-win-{}-{}/lib/onnxruntime.dll",
+        archive_arch, ORT_VERSION
+    );
+
+    println!(
+        "cargo:warning=Downloading ONNX Runtime Windows v{}...",
+        ORT_VERSION
+    );
+    let response = reqwest::blocking::get(&archive_url)?
+        .error_for_status()?
+        .bytes()?;
+    extract_zip_single_file(&response, &dll_path_in_archive, &target_path)?;
+
+    if !target_path.exists() {
+        anyhow::bail!(
+            "ONNX Runtime library not found after Windows download: {}",
+            target_path.display()
+        );
+    }
+
+    println!("cargo:warning=Extracted: {:?}", target_path);
+    Ok(())
+}
+
+fn copy_windows_dll_from_dir(src_dir: &Path, dest_path: &Path) -> anyhow::Result<()> {
+    if !src_dir.exists() {
+        anyhow::bail!("ORT_LIB_LOCATION does not exist: {}", src_dir.display());
+    }
+    if !src_dir.is_dir() {
+        anyhow::bail!("ORT_LIB_LOCATION is not a directory: {}", src_dir.display());
+    }
+
+    let exact = src_dir.join("onnxruntime.dll");
+    if exact.exists() {
+        fs::copy(&exact, dest_path)?;
+        return Ok(());
+    }
+
+    anyhow::bail!(
+        "ORT_LIB_LOCATION is missing onnxruntime.dll: {}",
+        src_dir.display()
+    )
+}
+
 fn setup_macos_libs() -> anyhow::Result<()> {
     let resource_dir = ensure_resource_dir()?;
 
@@ -814,6 +907,27 @@ fn extract_tgz_single_file(bytes: &[u8], entry_path: &str, dest_path: &Path) -> 
         let mut entry = entry?;
         let path = entry.path()?.to_string_lossy().replace('\\', "/");
         if path != entry_path {
+            continue;
+        }
+        if let Some(parent) = dest_path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        let mut outfile = fs::File::create(dest_path)?;
+        io::copy(&mut entry, &mut outfile)?;
+        return Ok(());
+    }
+
+    anyhow::bail!("Could not find '{}' in ONNX Runtime archive", entry_path)
+}
+
+fn extract_zip_single_file(bytes: &[u8], entry_path: &str, dest_path: &Path) -> anyhow::Result<()> {
+    let reader = Cursor::new(bytes);
+    let mut archive = zip::ZipArchive::new(reader)?;
+
+    for index in 0..archive.len() {
+        let mut entry = archive.by_index(index)?;
+        let name = entry.name().replace('\\', "/");
+        if name != entry_path {
             continue;
         }
         if let Some(parent) = dest_path.parent() {
