@@ -1148,6 +1148,8 @@ export const koMessages: DeepPartialMessageTree<LocaleMessages> = {
       total: "합계",
       timeToFirstToken: "첫 토큰까지 시간",
       completionTokenSpeed: "완료 토큰 속도",
+      mtpEfficiency: "MTP 추측 디코딩 효율성(라운드당 토큰, 드래프트 수락)",
+      mtpBreakdown: "MTP: {{rounds}}라운드, {{drafted}}개 드래프트, {{accepted}}개 수락",
       edit: "편집",
       copy: "복사",
       pin: "고정",
@@ -5165,6 +5167,8 @@ export const koMessages: DeepPartialMessageTree<LocaleMessages> = {
       showTtftDesc: "첫 토큰이 도착할 때까지 걸린 시간을 표시합니다(로컬 모델).",
       showTokensPerSecond: "초당 토큰 수 표시",
       showTokensPerSecondDesc: "초당 생성 속도를 토큰 수로 표시합니다(로컬 모델).",
+      showMtp: "MTP 통계 표시",
+      showMtpDesc: "MTP를 지원하는 로컬 모델의 추측 디코딩 효율성(라운드당 토큰 및 드래프트 수락)을 표시합니다.",
       infoPlacement: {
         label: "정보 위치",
         belowHeader: "헤더 아래 (내부)",

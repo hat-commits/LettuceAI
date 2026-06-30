@@ -1148,6 +1148,8 @@ export const jaMessages: DeepPartialMessageTree<LocaleMessages> = {
       total: "合計",
       timeToFirstToken: "最初のトークンまでの時間",
       completionTokenSpeed: "完了トークン速度",
+      mtpEfficiency: "MTP投機的デコードの効率（ラウンドあたりのトークン数、ドラフト採用率）",
+      mtpBreakdown: "MTP: {{rounds}}ラウンド、{{drafted}}件ドラフト、{{accepted}}件採用",
       edit: "編集",
       copy: "コピー",
       pin: "ピン留め",
@@ -4554,6 +4556,8 @@ export const jaMessages: DeepPartialMessageTree<LocaleMessages> = {
       showTtftDesc: "最初のトークンが届くまでの時間を表示します（ローカルモデル）。",
       showTokensPerSecond: "秒間トークン数を表示",
       showTokensPerSecondDesc: "秒間あたりの生成速度をトークン数で表示します（ローカルモデル）。",
+      showMtp: "MTP統計を表示",
+      showMtpDesc: "MTPに対応するローカルモデルの投機的デコード効率（ラウンドあたりのトークン数とドラフト採用率）を表示します。",
       infoPlacement: {
         label: "情報配置",
         belowHeader: "ヘッダーの下（内側）",

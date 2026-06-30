@@ -694,13 +694,18 @@ function ChatMessageInner({
     infoEligible &&
     !!chatAppearance?.showMessageTokensPerSecond &&
     typeof messageUsage?.tokensPerSecond === "number";
+  const showInfoMtp =
+    infoEligible &&
+    !!chatAppearance?.showMessageMtp &&
+    typeof messageUsage?.mtpStats?.tokensPerRound === "number";
   const hasMessageInfo =
     showInfoModel ||
     showInfoInput ||
     showInfoOutput ||
     showInfoTotal ||
     showInfoTtft ||
-    showInfoTps;
+    showInfoTps ||
+    showInfoMtp;
   const messageInfoSize = chatAppearance?.messageInfoSize ?? "small";
   const messageInfoNode = hasMessageInfo ? (
     <div
@@ -724,6 +729,14 @@ function ChatMessageInner({
       {showInfoTps && (
         <span className="whitespace-nowrap" title={t("chats.actions.completionTokenSpeed")}>
           {messageUsage?.tokensPerSecond?.toFixed(1)} tok/s
+        </span>
+      )}
+      {showInfoMtp && (
+        <span className="whitespace-nowrap" title={t("chats.actions.mtpEfficiency")}>
+          MTP {messageUsage?.mtpStats?.tokensPerRound?.toFixed(2)}&#215;
+          {typeof messageUsage?.mtpStats?.draftAcceptance === "number"
+            ? ` · ${Math.round(messageUsage.mtpStats.draftAcceptance * 100)}%`
+            : ""}
         </span>
       )}
       {showInfoTotal && (

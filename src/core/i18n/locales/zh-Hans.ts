@@ -1148,6 +1148,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       total: "总计",
       timeToFirstToken: "首个 token 耗时",
       completionTokenSpeed: "完成 token 速度",
+      mtpEfficiency: "MTP 推测解码效率（每轮 token 数、草稿接受率）",
+      mtpBreakdown: "MTP：{{rounds}} 轮，{{drafted}} 个草稿，{{accepted}} 个接受",
       edit: "编辑",
       copy: "复制",
       pin: "置顶",
@@ -5165,6 +5167,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       showTtftDesc: "显示首个 Token 到达的时间（本地模型）。",
       showTokensPerSecond: "显示 Token/秒",
       showTokensPerSecondDesc: "显示生成速度，单位为 Token/秒（本地模型）。",
+      showMtp: "显示 MTP 统计",
+      showMtpDesc: "为支持 MTP 的本地模型显示推测解码效率（每轮 token 数和草稿接受率）。",
       infoPlacement: {
         label: "信息位置",
         belowHeader: "页眉下方（内部）",

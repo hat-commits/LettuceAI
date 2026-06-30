@@ -7,7 +7,7 @@ use crate::storage_manager::settings::{read_settings_typed, write_settings_typed
 use crate::utils::log_info;
 
 /// Current migration version
-pub const CURRENT_MIGRATION_VERSION: u32 = 75;
+pub const CURRENT_MIGRATION_VERSION: u32 = 76;
 
 pub fn run_migrations(app: &AppHandle) -> Result<(), String> {
     log_info(app, "migrations", "Starting migration check");
@@ -787,6 +787,16 @@ pub fn run_migrations(app: &AppHandle) -> Result<(), String> {
         );
         migrate_v74_to_v75(app)?;
         version = 75;
+    }
+
+    if version < 76 {
+        log_info(
+            app,
+            "migrations",
+            "Running migration v75 -> v76: Add MTP stats to messages and variants",
+        );
+        migrate_v75_to_v76(app)?;
+        version = 76;
     }
 
     // Update the stored version
@@ -4052,6 +4062,23 @@ fn migrate_v74_to_v75(app: &AppHandle) -> Result<(), String> {
     let _ = conn.execute("ALTER TABLE characters ADD COLUMN lora_strength REAL", []);
     let _ = conn.execute("ALTER TABLE personas ADD COLUMN lora_name TEXT", []);
     let _ = conn.execute("ALTER TABLE personas ADD COLUMN lora_strength REAL", []);
+    Ok(())
+}
+
+fn migrate_v75_to_v76(app: &AppHandle) -> Result<(), String> {
+    let conn = crate::storage_manager::db::open_db(app)?;
+
+    let _ = conn.execute("ALTER TABLE messages ADD COLUMN mtp_stats TEXT", []);
+    let _ = conn.execute(
+        "ALTER TABLE message_variants ADD COLUMN mtp_stats TEXT",
+        [],
+    );
+    let _ = conn.execute("ALTER TABLE group_messages ADD COLUMN mtp_stats TEXT", []);
+    let _ = conn.execute(
+        "ALTER TABLE group_message_variants ADD COLUMN mtp_stats TEXT",
+        [],
+    );
+
     Ok(())
 }
 

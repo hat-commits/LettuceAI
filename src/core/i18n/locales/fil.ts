@@ -1148,6 +1148,8 @@ export const filMessages: DeepPartialMessageTree<LocaleMessages> = {
       total: "kabuuan",
       timeToFirstToken: "Oras hanggang sa unang token",
       completionTokenSpeed: "Bilis ng completion token",
+      mtpEfficiency: "Kahusayan ng speculative decoding ng MTP (tokens bawat round, pagtanggap ng draft)",
+      mtpBreakdown: "MTP: {{rounds}} round, {{drafted}} ginawang draft, {{accepted}} tinanggap",
       edit: "I-edit",
       copy: "Kopyahin",
       pin: "I-pin",
@@ -5165,6 +5167,8 @@ export const filMessages: DeepPartialMessageTree<LocaleMessages> = {
       showTtftDesc: "Ipakita kung gaano katagal bago dumating ang unang token (lokal na mga model).",
       showTokensPerSecond: "Ipakita ang Tokens / Segundo",
       showTokensPerSecondDesc: "Ipakita ang bilis ng generation sa tokens bawat segundo (lokal na mga model).",
+      showMtp: "Ipakita ang MTP Stats",
+      showMtpDesc: "Ipakita ang kahusayan ng speculative decoding (tokens bawat round at pagtanggap ng draft) para sa mga lokal na model na sumusuporta sa MTP.",
       infoPlacement: {
         label: "Paglalagay ng Info",
         belowHeader: "Sa Ibaba ng Header (Loob)",

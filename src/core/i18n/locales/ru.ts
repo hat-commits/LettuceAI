@@ -1148,6 +1148,8 @@ export const ruMessages: DeepPartialMessageTree<LocaleMessages> = {
       total: "всего",
       timeToFirstToken: "Время до первого токена",
       completionTokenSpeed: "Скорость генерации токенов",
+      mtpEfficiency: "Эффективность спекулятивного декодирования MTP (токены за раунд, принятие черновика)",
+      mtpBreakdown: "MTP: {{rounds}} раундов, {{drafted}} черновиков, {{accepted}} принято",
       edit: "Редактировать",
       copy: "Копировать",
       pin: "Закрепить",
@@ -5165,6 +5167,8 @@ export const ruMessages: DeepPartialMessageTree<LocaleMessages> = {
       showTtftDesc: "Отображать, сколько времени прошло до появления первого токена (локальные модели).",
       showTokensPerSecond: "Показывать токенов/сек",
       showTokensPerSecondDesc: "Отображать скорость генерации в токенах в секунду (локальные модели).",
+      showMtp: "Показывать статистику MTP",
+      showMtpDesc: "Отображать эффективность спекулятивного декодирования (токены за раунд и принятие черновика) для локальных моделей с поддержкой MTP.",
       infoPlacement: {
         label: "Расположение инфо-текста",
         belowHeader: "Под заголовком (внутри)",

@@ -171,7 +171,8 @@ export function GroupChatMessageActionsBottomSheet({
                   </div>
                 </div>
                 {(typeof messageAction.message.usage.firstTokenMs === "number" ||
-                  typeof messageAction.message.usage.tokensPerSecond === "number") && (
+                  typeof messageAction.message.usage.tokensPerSecond === "number" ||
+                  typeof messageAction.message.usage.mtpStats?.tokensPerRound === "number") && (
                   <div className="flex items-center gap-3 text-[11px] text-fg/45 tabular-nums">
                     {typeof messageAction.message.usage.firstTokenMs === "number" && (
                       <span title={t("groupChats.messageActionsExtra.ttftTitle")}>
@@ -181,6 +182,14 @@ export function GroupChatMessageActionsBottomSheet({
                     {typeof messageAction.message.usage.tokensPerSecond === "number" && (
                       <span title={t("groupChats.messageActionsExtra.tokenSpeedTitle")}>
                         {messageAction.message.usage.tokensPerSecond.toFixed(1)} tok/s
+                      </span>
+                    )}
+                    {typeof messageAction.message.usage.mtpStats?.tokensPerRound === "number" && (
+                      <span title={t("chats.actions.mtpEfficiency")}>
+                        MTP {messageAction.message.usage.mtpStats.tokensPerRound.toFixed(2)}&#215;
+                        {typeof messageAction.message.usage.mtpStats.draftAcceptance === "number"
+                          ? ` · ${Math.round(messageAction.message.usage.mtpStats.draftAcceptance * 100)}%`
+                          : ""}
                       </span>
                     )}
                   </div>

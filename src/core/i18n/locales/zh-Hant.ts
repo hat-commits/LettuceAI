@@ -1148,6 +1148,8 @@ export const zhHantMessages: DeepPartialMessageTree<LocaleMessages> = {
       total: "總計",
       timeToFirstToken: "首個 token 耗時",
       completionTokenSpeed: "完成 token 速度",
+      mtpEfficiency: "MTP 推測解碼效率（每輪 token 數、草稿接受率）",
+      mtpBreakdown: "MTP：{{rounds}} 輪，{{drafted}} 個草稿，{{accepted}} 個接受",
       edit: "編輯",
       copy: "複製",
       pin: "釘選",
@@ -5165,6 +5167,8 @@ export const zhHantMessages: DeepPartialMessageTree<LocaleMessages> = {
       showTtftDesc: "顯示首個 Token 到達所需的時間（本地模型）。",
       showTokensPerSecond: "顯示 Token / 秒",
       showTokensPerSecondDesc: "顯示生成速度，以 Token 每秒計算（本地模型）。",
+      showMtp: "顯示 MTP 統計",
+      showMtpDesc: "為支援 MTP 的本機模型顯示推測解碼效率（每輪 token 數和草稿接受率）。",
       infoPlacement: {
         label: "資訊位置",
         belowHeader: "標題下方 (內)",

@@ -21,7 +21,7 @@ use crate::chat_manager::tooling::{
     parse_tool_calls, parse_tool_calls_from_text, strip_tool_call_blocks, ToolCall,
 };
 #[cfg(not(mobile))]
-use crate::chat_manager::types::{ErrorEnvelope, NormalizedEvent, UsageSummary};
+use crate::chat_manager::types::{ErrorEnvelope, MtpStats, NormalizedEvent, UsageSummary};
 #[cfg(not(mobile))]
 use crate::transport;
 #[cfg(not(mobile))]
@@ -1047,6 +1047,7 @@ mod desktop {
         let mut stream_emitted_len = 0usize;
         let mut final_message = json!({ "role": "assistant", "content": "" });
         let mut failure_stage = "load_engine";
+        let mut mtp_stats: Option<MtpStats> = None;
         let mut runtime_report = json!({
             "updatedAt": runtime_report_timestamp_ms(),
             "modelPath": model_path,
@@ -2811,18 +2812,18 @@ mod desktop {
                         draft_acceptance
                     ),
                 );
-                update_runtime_report_field(
-                    &mut runtime_report,
-                    "mtpStats",
-                    json!({
-                        "draftTokens": llama_mtp_draft_tokens,
-                        "rounds": runtime.rounds,
-                        "drafted": runtime.drafted,
-                        "accepted": runtime.accepted,
-                        "tokensPerRound": tokens_per_round,
-                        "draftAcceptance": draft_acceptance,
-                    }),
-                );
+                let stats = MtpStats {
+                    draft_tokens: llama_mtp_draft_tokens,
+                    rounds: runtime.rounds,
+                    drafted: runtime.drafted,
+                    accepted: runtime.accepted,
+                    tokens_per_round,
+                    draft_acceptance,
+                };
+                if let Ok(value) = serde_json::to_value(&stats) {
+                    update_runtime_report_field(&mut runtime_report, "mtpStats", value);
+                }
+                mtp_stats = Some(stats);
             }
 
             if let Some(parser) = structured_parser.as_mut() {
@@ -3214,6 +3215,7 @@ mod desktop {
                     first_token_ms,
                     tokens_per_second,
                     finish_reason: Some(finish_reason.into()),
+                    mtp_stats: mtp_stats.clone(),
                 };
                 transport::emit_normalized(&app, id, NormalizedEvent::Usage { usage });
                 transport::emit_normalized(&app, id, NormalizedEvent::Done);
@@ -3226,6 +3228,7 @@ mod desktop {
             "total_tokens": prompt_tokens + completion_tokens,
             "first_token_ms": first_token_ms,
             "tokens_per_second": tokens_per_second,
+            "mtpStats": mtp_stats,
         });
 
         let data = json!({

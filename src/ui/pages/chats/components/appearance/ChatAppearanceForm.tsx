@@ -474,6 +474,7 @@ export function ChatAppearanceForm({
             "showMessageTotalTokens",
             "showMessageTtft",
             "showMessageTokensPerSecond",
+            "showMessageMtp",
             "messageInfoPlacement",
             "messageInfoSize",
           )}
@@ -526,12 +527,21 @@ export function ChatAppearanceForm({
           overridden={isOverridden("showMessageTokensPerSecond")}
           onReset={resetFor("showMessageTokensPerSecond")}
         />
+        <ToggleControl
+          label={t("chatAppearance.messageBubbles.showMtp")}
+          description={t("chatAppearance.messageBubbles.showMtpDesc")}
+          checked={settings.showMessageMtp}
+          onChange={(v) => onUpdate("showMessageMtp", v)}
+          overridden={isOverridden("showMessageMtp")}
+          onReset={resetFor("showMessageMtp")}
+        />
         {(settings.showMessageModel ||
           settings.showMessageInputTokens ||
           settings.showMessageOutputTokens ||
           settings.showMessageTotalTokens ||
           settings.showMessageTtft ||
-          settings.showMessageTokensPerSecond) && (
+          settings.showMessageTokensPerSecond ||
+          settings.showMessageMtp) && (
           <OptionGrid
             label={t("chatAppearance.messageBubbles.infoPlacement.label")}
             value={settings.messageInfoPlacement}
@@ -563,7 +573,8 @@ export function ChatAppearanceForm({
           settings.showMessageOutputTokens ||
           settings.showMessageTotalTokens ||
           settings.showMessageTtft ||
-          settings.showMessageTokensPerSecond) && (
+          settings.showMessageTokensPerSecond ||
+          settings.showMessageMtp) && (
           <OptionGrid
             label={t("chatAppearance.messageBubbles.infoSize.label")}
             value={settings.messageInfoSize}

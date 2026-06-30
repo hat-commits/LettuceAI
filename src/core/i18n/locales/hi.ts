@@ -1148,6 +1148,8 @@ export const hiMessages: DeepPartialMessageTree<LocaleMessages> = {
       total: "कुल",
       timeToFirstToken: "पहले टोकन का समय",
       completionTokenSpeed: "कंप्लीशन टोकन गति",
+      mtpEfficiency: "MTP स्पेकुलेटिव डिकोडिंग दक्षता (प्रति राउंड टोकन, ड्राफ्ट स्वीकृति)",
+      mtpBreakdown: "MTP: {{rounds}} राउंड, {{drafted}} ड्राफ्ट किए, {{accepted}} स्वीकृत",
       edit: "संपादित करें",
       copy: "कॉपी करें",
       pin: "पिन करें",
@@ -4554,6 +4556,8 @@ export const hiMessages: DeepPartialMessageTree<LocaleMessages> = {
       showTtftDesc: "दिखाएं कि पहले टोकन के आने तक कितना समय लगा (स्थानीय मॉडल)।",
       showTokensPerSecond: "टोकन / सेकंड दिखाएं",
       showTokensPerSecondDesc: "जेनरेशन की गति टोकन प्रति सेकंड में दिखाएं (स्थानीय मॉडल)।",
+      showMtp: "MTP आँकड़े दिखाएं",
+      showMtpDesc: "MTP का समर्थन करने वाले स्थानीय मॉडल के लिए स्पेकुलेटिव डिकोडिंग दक्षता (प्रति राउंड टोकन और ड्राफ्ट स्वीकृति) दिखाएं।",
       infoPlacement: {
         label: "इन्फो प्लेसमेंट",
         belowHeader: "हेडर के नीचे (अंदर)",

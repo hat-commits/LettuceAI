@@ -6,7 +6,7 @@ use crate::chat_manager::thinking::{
 use crate::chat_manager::tooling::ToolCall;
 
 use super::tooling::parse_tool_calls;
-use super::types::{NormalizedEvent, UsageSummary};
+use super::types::{MtpStats, NormalizedEvent, UsageSummary};
 
 pub fn accumulate_text_from_sse(raw: &str, provider_id: Option<&str>) -> Option<String> {
     let split = accumulate_thinking_split_from_sse(raw, provider_id);
@@ -803,6 +803,10 @@ pub fn usage_from_value(v: &Value) -> Option<UsageSummary> {
             "tps",
         ],
     );
+    let mtp_stats = v
+        .get("mtpStats")
+        .or_else(|| v.get("mtp_stats"))
+        .and_then(|value| serde_json::from_value::<MtpStats>(value.clone()).ok());
 
     crate::utils::log_debug_global(
         "sse_usage",
@@ -834,6 +838,7 @@ pub fn usage_from_value(v: &Value) -> Option<UsageSummary> {
             first_token_ms,
             tokens_per_second,
             finish_reason,
+            mtp_stats,
         })
     }
 }

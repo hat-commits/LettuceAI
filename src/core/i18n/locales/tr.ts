@@ -1148,6 +1148,8 @@ export const trMessages: DeepPartialMessageTree<LocaleMessages> = {
       total: "toplam",
       timeToFirstToken: "İlk token süresi",
       completionTokenSpeed: "Tamamlama token hızı",
+      mtpEfficiency: "MTP spekülatif kod çözme verimliliği (tur başına token, taslak kabulü)",
+      mtpBreakdown: "MTP: {{rounds}} tur, {{drafted}} taslak, {{accepted}} kabul edildi",
       edit: "Düzenle",
       copy: "Kopyala",
       pin: "Sabitle",
@@ -5165,6 +5167,8 @@ export const trMessages: DeepPartialMessageTree<LocaleMessages> = {
       showTtftDesc: "İlk token gelene kadar geçen süreyi görüntüle (yerel modeller).",
       showTokensPerSecond: "Token / Saniye Göster",
       showTokensPerSecondDesc: "Oluşturma hızını saniye başına token olarak görüntüle (yerel modeller).",
+      showMtp: "MTP İstatistiklerini Göster",
+      showMtpDesc: "MTP destekleyen yerel modeller için spekülatif kod çözme verimliliğini (tur başına token ve taslak kabulü) göster.",
       infoPlacement: {
         label: "Bilgi Yerleşimi",
         belowHeader: "Başlığın Altında (İçeride)",

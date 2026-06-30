@@ -1148,6 +1148,8 @@ export const elMessages: DeepPartialMessageTree<LocaleMessages> = {
       total: "σύνολο",
       timeToFirstToken: "Χρόνος μέχρι πρώτο token",
       completionTokenSpeed: "Ταχύτητα tokens ολοκλήρωσης",
+      mtpEfficiency: "Αποδοτικότητα εικαστικής αποκωδικοποίησης MTP (tokens ανά γύρο, αποδοχή προσχεδίου)",
+      mtpBreakdown: "MTP: {{rounds}} γύροι, {{drafted}} προσχεδιασμένα, {{accepted}} αποδεκτά",
       edit: "Επεξεργασία",
       copy: "Αντιγραφή",
       pin: "Καρφίτσωμα",
@@ -5165,6 +5167,8 @@ export const elMessages: DeepPartialMessageTree<LocaleMessages> = {
       showTtftDesc: "Εμφάνιση του χρόνου μέχρι την άφιξη του πρώτου token (τοπικά μοντέλα).",
       showTokensPerSecond: "Εμφάνιση Tokens / Δευτερόλεπτο",
       showTokensPerSecondDesc: "Εμφάνιση της ταχύτητας παραγωγής σε tokens ανά δευτερόλεπτο (τοπικά μοντέλα).",
+      showMtp: "Εμφάνιση στατιστικών MTP",
+      showMtpDesc: "Εμφάνιση της αποδοτικότητας εικαστικής αποκωδικοποίησης (tokens ανά γύρο και αποδοχή προσχεδίου) για τοπικά μοντέλα που υποστηρίζουν MTP.",
       infoPlacement: {
         label: "Τοποθέτηση Πληροφοριών",
         belowHeader: "Κάτω από την Κεφαλίδα (Μέσα)",

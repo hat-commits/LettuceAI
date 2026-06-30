@@ -1148,6 +1148,8 @@ export const nlMessages: DeepPartialMessageTree<LocaleMessages> = {
       total: "totaal",
       timeToFirstToken: "Tijd tot eerste token",
       completionTokenSpeed: "Voltooiingstoken-snelheid",
+      mtpEfficiency: "MTP speculatieve decodeerefficiëntie (tokens per ronde, conceptacceptatie)",
+      mtpBreakdown: "MTP: {{rounds}} rondes, {{drafted}} concepten, {{accepted}} geaccepteerd",
       edit: "Bewerken",
       copy: "Kopiëren",
       pin: "Vastpinnen",
@@ -5165,6 +5167,8 @@ export const nlMessages: DeepPartialMessageTree<LocaleMessages> = {
       showTtftDesc: "Toon hoe lang het duurde voordat het eerste token arriveerde (lokale modellen).",
       showTokensPerSecond: "Tokens / Seconde tonen",
       showTokensPerSecondDesc: "Toon de generatiesnelheid in tokens per seconde (lokale modellen).",
+      showMtp: "MTP-statistieken tonen",
+      showMtpDesc: "Toon de speculatieve decodeerefficiëntie (tokens per ronde en conceptacceptatie) voor lokale modellen die MTP ondersteunen.",
       infoPlacement: {
         label: "Positie van info",
         belowHeader: "Onder koptekst (Binnen)",

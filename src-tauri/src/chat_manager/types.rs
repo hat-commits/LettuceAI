@@ -1142,6 +1142,17 @@ pub struct Persona {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
+pub struct MtpStats {
+    pub draft_tokens: u32,
+    pub rounds: u64,
+    pub drafted: u64,
+    pub accepted: u64,
+    pub tokens_per_round: f64,
+    pub draft_acceptance: f64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct UsageSummary {
     pub prompt_tokens: Option<u64>,
     pub completion_tokens: Option<u64>,
@@ -1168,6 +1179,8 @@ pub struct UsageSummary {
     pub tokens_per_second: Option<f64>,
     #[serde(default)]
     pub finish_reason: Option<String>,
+    #[serde(default)]
+    pub mtp_stats: Option<MtpStats>,
 }
 
 #[derive(Serialize)]

@@ -4,7 +4,9 @@ use uuid::Uuid;
 use crate::chat_manager::sse;
 use crate::chat_manager::thinking::normalize_thinking_content;
 use crate::chat_manager::types::ProviderId;
-use crate::chat_manager::types::{MessageVariant, ProviderCredential, StoredMessage, UsageSummary};
+use crate::chat_manager::types::{
+    MessageVariant, MtpStats, ProviderCredential, StoredMessage, UsageSummary,
+};
 use crate::providers;
 
 pub fn provider_base_url(cred: &ProviderCredential) -> String {
@@ -492,6 +494,10 @@ fn usage_from_map(map: &Map<String, Value>) -> Option<UsageSummary> {
             "tps",
         ],
     );
+    let mtp_stats = map
+        .get("mtpStats")
+        .or_else(|| map.get("mtp_stats"))
+        .and_then(|v| serde_json::from_value::<MtpStats>(v.clone()).ok());
 
     let finish_reason = map
         .get("finish_reason")
@@ -525,6 +531,7 @@ fn usage_from_map(map: &Map<String, Value>) -> Option<UsageSummary> {
             first_token_ms,
             tokens_per_second,
             finish_reason,
+            mtp_stats,
         })
     }
 }

@@ -1148,6 +1148,8 @@ export const idMessages: DeepPartialMessageTree<LocaleMessages> = {
       total: "total",
       timeToFirstToken: "Waktu ke token pertama",
       completionTokenSpeed: "Kecepatan token penyelesaian",
+      mtpEfficiency: "Efisiensi speculative decoding MTP (token per ronde, penerimaan draf)",
+      mtpBreakdown: "MTP: {{rounds}} ronde, {{drafted}} draf, {{accepted}} diterima",
       edit: "Edit",
       copy: "Salin",
       pin: "Sematkan",
@@ -4554,6 +4556,8 @@ export const idMessages: DeepPartialMessageTree<LocaleMessages> = {
       showTtftDesc: "Tampilkan berapa lama hingga token pertama tiba (model lokal).",
       showTokensPerSecond: "Tampilkan Token / Detik",
       showTokensPerSecondDesc: "Tampilkan kecepatan generasi dalam token per detik (model lokal).",
+      showMtp: "Tampilkan Statistik MTP",
+      showMtpDesc: "Tampilkan efisiensi speculative decoding (token per ronde dan penerimaan draf) untuk model lokal yang mendukung MTP.",
       infoPlacement: {
         label: "Penempatan Info",
         belowHeader: "Di Bawah Header (Di Dalam)",

@@ -279,6 +279,16 @@ export const PromptParameterEngineSchema = z.object({
 });
 export type PromptParameterEngine = z.infer<typeof PromptParameterEngineSchema>;
 
+export const MtpStatsSchema = z.object({
+  draftTokens: z.number().int().nonnegative().nullable().optional(),
+  rounds: z.number().int().nonnegative().nullable().optional(),
+  drafted: z.number().int().nonnegative().nullable().optional(),
+  accepted: z.number().int().nonnegative().nullable().optional(),
+  tokensPerRound: z.number().nonnegative().nullable().optional(),
+  draftAcceptance: z.number().nonnegative().nullable().optional(),
+});
+export type MtpStats = z.infer<typeof MtpStatsSchema>;
+
 export const UsageSummarySchema = z.object({
   promptTokens: OptionalTokenCount,
   completionTokens: OptionalTokenCount,
@@ -288,6 +298,7 @@ export const UsageSummarySchema = z.object({
   audioTokens: OptionalTokenCount,
   firstTokenMs: OptionalMsCount,
   tokensPerSecond: OptionalPositiveNumber,
+  mtpStats: MtpStatsSchema.nullable().optional(),
 });
 export type UsageSummary = z.infer<typeof UsageSummarySchema>;
 
@@ -378,7 +389,7 @@ export const LlmMetricSummarySchema = z.object({
   decodeTokensPerSecond: z.number().nonnegative().nullable().optional(),
   generationElapsedMs: z.number().nonnegative().nullable().optional(),
   finishReason: z.string().nullable().optional(),
-  mtpStats: z.unknown().nullable().optional(),
+  mtpStats: MtpStatsSchema.nullable().optional(),
 });
 export type LlmMetricSummary = z.infer<typeof LlmMetricSummarySchema>;
 
@@ -2837,6 +2848,7 @@ export const ChatAppearanceSettingsSchema = z.object({
   showMessageTotalTokens: z.boolean().default(false),
   showMessageTtft: z.boolean().default(false),
   showMessageTokensPerSecond: z.boolean().default(false),
+  showMessageMtp: z.boolean().default(false),
   messageInfoPlacement: z
     .enum(["belowHeader", "belowHeaderOutside", "insideBubble", "belowBubble"])
     .default("belowBubble"),
@@ -2933,6 +2945,7 @@ export function createDefaultChatAppearanceSettings(): ChatAppearanceSettings {
     showMessageTotalTokens: false,
     showMessageTtft: false,
     showMessageTokensPerSecond: false,
+    showMessageMtp: false,
     messageInfoPlacement: "belowBubble",
     messageInfoSize: "small",
     messageGap: "relaxed",

@@ -1148,6 +1148,8 @@ export const noMessages: DeepPartialMessageTree<LocaleMessages> = {
       total: "totalt",
       timeToFirstToken: "Tid til første token",
       completionTokenSpeed: "Fullførings-token-hastighet",
+      mtpEfficiency: "MTP spekulativ dekodingseffektivitet (tokens per runde, utkastgodkjenning)",
+      mtpBreakdown: "MTP: {{rounds}} runder, {{drafted}} utkast, {{accepted}} godkjent",
       edit: "Rediger",
       copy: "Kopier",
       pin: "Fest",
@@ -5165,6 +5167,8 @@ export const noMessages: DeepPartialMessageTree<LocaleMessages> = {
       showTtftDesc: "Vis hvor lang tid det tok før første token ankom (lokale modeller).",
       showTokensPerSecond: "Vis tokens per sekund",
       showTokensPerSecondDesc: "Vis genereringshastigheten i tokens per sekund (lokale modeller).",
+      showMtp: "Vis MTP-statistikk",
+      showMtpDesc: "Vis spekulativ dekodingseffektivitet (tokens per runde og utkastgodkjenning) for lokale modeller som støtter MTP.",
       infoPlacement: {
         label: "Plassering av info",
         belowHeader: "Under overskrift (Inni)",

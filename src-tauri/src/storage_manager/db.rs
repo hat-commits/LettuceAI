@@ -673,6 +673,7 @@ pub fn init_db(_app: &tauri::AppHandle, conn: &Connection) -> Result<(), String>
           total_tokens INTEGER,
           first_token_ms INTEGER,
           tokens_per_second REAL,
+          mtp_stats TEXT,
           model_id TEXT,
           selected_variant_id TEXT,
           is_pinned INTEGER NOT NULL DEFAULT 0,
@@ -751,6 +752,7 @@ pub fn init_db(_app: &tauri::AppHandle, conn: &Connection) -> Result<(), String>
           total_tokens INTEGER,
           first_token_ms INTEGER,
           tokens_per_second REAL,
+          mtp_stats TEXT,
           reasoning TEXT,
           FOREIGN KEY(message_id) REFERENCES messages(id) ON DELETE CASCADE
         );
@@ -940,6 +942,7 @@ pub fn init_db(_app: &tauri::AppHandle, conn: &Connection) -> Result<(), String>
           total_tokens INTEGER,
           first_token_ms INTEGER,
           tokens_per_second REAL,
+          mtp_stats TEXT,
           selected_variant_id TEXT,
           is_pinned INTEGER NOT NULL DEFAULT 0,
           attachments TEXT NOT NULL DEFAULT '[]',
@@ -963,6 +966,7 @@ pub fn init_db(_app: &tauri::AppHandle, conn: &Connection) -> Result<(), String>
           total_tokens INTEGER,
           first_token_ms INTEGER,
           tokens_per_second REAL,
+          mtp_stats TEXT,
           reasoning TEXT,
           selection_reasoning TEXT,
           model_id TEXT,

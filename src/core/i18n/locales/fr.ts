@@ -1148,6 +1148,8 @@ export const frMessages: DeepPartialMessageTree<LocaleMessages> = {
       total: "total",
       timeToFirstToken: "Temps jusqu'au premier token",
       completionTokenSpeed: "Vitesse des tokens de complétion",
+      mtpEfficiency: "Efficacité du décodage spéculatif MTP (tokens par tour, acceptation des brouillons)",
+      mtpBreakdown: "MTP : {{rounds}} tours, {{drafted}} brouillons, {{accepted}} acceptés",
       edit: "Modifier",
       copy: "Copier",
       pin: "Épingler",
@@ -5165,6 +5167,8 @@ export const frMessages: DeepPartialMessageTree<LocaleMessages> = {
       showTtftDesc: "Affiche le délai avant l'arrivée du premier token (modèles locaux).",
       showTokensPerSecond: "Afficher les tokens / seconde",
       showTokensPerSecondDesc: "Affiche la vitesse de génération en tokens par seconde (modèles locaux).",
+      showMtp: "Afficher les statistiques MTP",
+      showMtpDesc: "Affiche l'efficacité du décodage spéculatif (tokens par tour et acceptation des brouillons) pour les modèles locaux qui prennent en charge MTP.",
       infoPlacement: {
         label: "Placement des infos",
         belowHeader: "Sous l'en-tête (à l'intérieur)",

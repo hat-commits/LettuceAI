@@ -1148,6 +1148,8 @@ export const viMessages: DeepPartialMessageTree<LocaleMessages> = {
       total: "tổng",
       timeToFirstToken: "Thời gian đến token đầu tiên",
       completionTokenSpeed: "Tốc độ token phản hồi",
+      mtpEfficiency: "Hiệu suất giải mã suy đoán MTP (token mỗi vòng, tỷ lệ chấp nhận bản nháp)",
+      mtpBreakdown: "MTP: {{rounds}} vòng, {{drafted}} bản nháp, {{accepted}} được chấp nhận",
       edit: "Sửa",
       copy: "Sao chép",
       pin: "Ghim",
@@ -4554,6 +4556,8 @@ export const viMessages: DeepPartialMessageTree<LocaleMessages> = {
       showTtftDesc: "Hiển thị thời gian chờ cho đến khi token đầu tiên xuất hiện (mô hình cục bộ).",
       showTokensPerSecond: "Hiện Token / Giây",
       showTokensPerSecondDesc: "Hiển thị tốc độ tạo văn bản theo token mỗi giây (mô hình cục bộ).",
+      showMtp: "Hiển thị thống kê MTP",
+      showMtpDesc: "Hiển thị hiệu suất giải mã suy đoán (token mỗi vòng và tỷ lệ chấp nhận bản nháp) cho các mô hình cục bộ hỗ trợ MTP.",
       infoPlacement: {
         label: "Vị trí thông tin",
         belowHeader: "Dưới tiêu đề (Trong)",

@@ -1192,6 +1192,8 @@ export const enMessages = {
       total: "total",
       timeToFirstToken: "Time to first token",
       completionTokenSpeed: "Completion token speed",
+      mtpEfficiency: "MTP speculative decoding efficiency (tokens per round, draft acceptance)",
+      mtpBreakdown: "MTP: {{rounds}} rounds, {{drafted}} drafted, {{accepted}} accepted",
       performance: "Performance",
       edit: "Edit",
       copy: "Copy",
@@ -5374,6 +5376,8 @@ export const enMessages = {
       showTtftDesc: "Display how long until the first token arrived (local models).",
       showTokensPerSecond: "Show Tokens / Second",
       showTokensPerSecondDesc: "Display the generation speed in tokens per second (local models).",
+      showMtp: "Show MTP Stats",
+      showMtpDesc: "Show speculative decoding efficiency (tokens per round and draft acceptance) for local models that support MTP.",
       infoPlacement: {
         label: "Info Placement",
         belowHeader: "Below Header (Inside)",

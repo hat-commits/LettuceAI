@@ -183,6 +183,7 @@ pub async fn usage_recalculate_costs(app: AppHandle, api_key: String) -> Result<
                 .finish_reason
                 .as_ref()
                 .map(|r| r.as_str().to_string()),
+            mtp_stats: None,
         };
 
         apply_openrouter_cost_to_usage(
