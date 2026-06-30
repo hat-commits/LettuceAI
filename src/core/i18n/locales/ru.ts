@@ -9328,6 +9328,13 @@ export const ruMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaKvPin: "Закрепить за одним GPU",
     llamaPinnedGpu: "Закреплённый GPU",
     llamaManualPerModelNote: "Ручное количество слоёв для каждого GPU задаётся отдельно для каждой модели в редакторе моделей.",
+    llamaDistBalancedDesc: "Равное распределение между выбранными GPU. Лучше всего, когда карты одинаковые.",
+    llamaDistProportionalDesc: "Доля каждого GPU зависит от объёма свободной VRAM. Подходит для разных карт.",
+    llamaDistPriorityDesc: "Заполняет первый GPU до лимита VRAM, затем переходит к следующему.",
+    llamaKvAutoDesc: "Решает среда выполнения. KV остаётся на GPU, если помещается, иначе в системную RAM.",
+    llamaKvSplitDesc: "KV-кэш хранится на GPU и распределяется так же, как слои. Быстрее всего, использует VRAM.",
+    llamaKvSystemRamDesc: "Держит KV-кэш в системной RAM, чтобы освободить VRAM для большего числа слоёв. Медленнее.",
+    llamaKvPinDesc: "Размещает весь KV-кэш на одном выбранном GPU.",
   },
   loraSelector: {
     title: "Дизайн LoRA",

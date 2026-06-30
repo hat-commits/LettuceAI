@@ -9529,6 +9529,13 @@ export const filMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaKvPin: "I-pin sa isang GPU",
     llamaPinnedGpu: "Naka-pin na GPU",
     llamaManualPerModelNote: "Ang manual na bilang ng layer kada GPU ay itinatakda kada modelo sa model editor.",
+    llamaDistBalancedDesc: "Pantay na hatian sa mga napiling GPU. Pinakamainam kapag magkapareho ang mga card.",
+    llamaDistProportionalDesc: "Ang bahagi ng bawat GPU ay batay sa libreng VRAM nito. Pinakamainam para sa magkakaibang card.",
+    llamaDistPriorityDesc: "Punuin ang unang GPU hanggang sa limitasyon ng VRAM, pagkatapos ay umapaw sa susunod.",
+    llamaKvAutoDesc: "Hayaan ang runtime ang magpasya. Mananatili ang KV sa GPU kung kasya, kung hindi ay sa system RAM.",
+    llamaKvSplitDesc: "Nasa mga GPU ang KV cache, hinati gaya ng mga layer. Pinakamabilis, gumagamit ng VRAM.",
+    llamaKvSystemRamDesc: "Itago ang KV cache sa system RAM upang magbakante ng VRAM para sa mas maraming layer. Mas mabagal ang attention.",
+    llamaKvPinDesc: "Ilagay ang buong KV cache sa isang piniling GPU.",
   },
   loraSelector: {
     title: "Design LoRA",

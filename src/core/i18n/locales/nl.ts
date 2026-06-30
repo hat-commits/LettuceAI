@@ -9328,6 +9328,13 @@ export const nlMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaKvPin: "Aan één GPU vastzetten",
     llamaPinnedGpu: "Vastgezette GPU",
     llamaManualPerModelNote: "Handmatige laagaantallen per GPU worden per model ingesteld in de modeleditor.",
+    llamaDistBalancedDesc: "Gelijke verdeling over de geselecteerde GPU's. Het beste als de kaarten identiek zijn.",
+    llamaDistProportionalDesc: "Het aandeel van elke GPU wordt gewogen naar het vrije VRAM. Het beste voor ongelijke kaarten.",
+    llamaDistPriorityDesc: "Vul eerst de eerste GPU tot een VRAM-limiet en laat de rest overlopen naar de volgende.",
+    llamaKvAutoDesc: "Laat de runtime beslissen. De KV blijft op de GPU als hij past, anders in het systeem-RAM.",
+    llamaKvSplitDesc: "De KV-cache staat op de GPU's, op dezelfde manier verdeeld als de lagen. Het snelst, gebruikt VRAM.",
+    llamaKvSystemRamDesc: "Houd de KV-cache in het systeem-RAM om VRAM vrij te maken voor meer lagen. Tragere attention.",
+    llamaKvPinDesc: "Plaats de volledige KV-cache op één gekozen GPU.",
   },
   loraSelector: {
     title: "Design LoRA own",

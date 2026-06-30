@@ -9328,6 +9328,13 @@ export const plMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaKvPin: "Przypnij do jednego GPU",
     llamaPinnedGpu: "Przypięte GPU",
     llamaManualPerModelNote: "Ręczną liczbę warstw na każde GPU ustawia się osobno dla każdego modelu w edytorze modeli.",
+    llamaDistBalancedDesc: "Równy podział między wybrane GPU. Najlepsze, gdy karty są identyczne.",
+    llamaDistProportionalDesc: "Udział każdego GPU zależy od ilości wolnej VRAM. Najlepsze dla różnych kart.",
+    llamaDistPriorityDesc: "Zapełnia pierwsze GPU do limitu VRAM, a następnie przechodzi do kolejnego.",
+    llamaKvAutoDesc: "Decyduje środowisko uruchomieniowe. KV pozostaje na GPU, gdy się mieści, w przeciwnym razie w RAM systemowej.",
+    llamaKvSplitDesc: "KV cache znajduje się na GPU, podzielony tak samo jak warstwy. Najszybsze, używa VRAM.",
+    llamaKvSystemRamDesc: "Trzyma KV cache w RAM systemowej, aby zwolnić VRAM na więcej warstw. Wolniejsza uwaga.",
+    llamaKvPinDesc: "Umieszcza cały KV cache na jednym wybranym GPU.",
   },
   loraSelector: {
     title: "Design LoRA",

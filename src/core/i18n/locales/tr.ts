@@ -9614,6 +9614,13 @@ export const trMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaKvPin: "Tek bir GPU'ya sabitle",
     llamaPinnedGpu: "Sabitlenmiş GPU",
     llamaManualPerModelNote: "GPU başına manuel katman sayıları, model düzenleyicide her model için ayrı ayarlanır.",
+    llamaDistBalancedDesc: "Seçili GPU'lar arasında eşit bölüşüm. Kartlar aynıysa en iyisidir.",
+    llamaDistProportionalDesc: "Her GPU'nun payı boş VRAM'ine göre ağırlıklandırılır. Farklı kartlar için en iyisidir.",
+    llamaDistPriorityDesc: "İlk GPU'yu bir VRAM sınırına kadar doldur, ardından sonrakine taşır.",
+    llamaKvAutoDesc: "Kararı çalışma zamanına bırak. KV sığdığında GPU'da kalır, aksi halde sistem RAM'inde.",
+    llamaKvSplitDesc: "KV önbelleği GPU'larda bulunur, katmanlarla aynı şekilde bölünür. En hızlısı, VRAM kullanır.",
+    llamaKvSystemRamDesc: "Daha fazla katman için VRAM'i boşaltmak üzere KV önbelleğini sistem RAM'inde tut. Dikkat işlemi daha yavaş.",
+    llamaKvPinDesc: "Tüm KV önbelleğini seçilen tek bir GPU'ya yerleştir.",
   },
   loraSelector: {
     title: "Tasarım LoRA'sı",

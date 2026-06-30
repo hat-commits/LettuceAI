@@ -9614,6 +9614,13 @@ export const elMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaKvPin: "Καρφίτσωμα σε μία GPU",
     llamaPinnedGpu: "Καρφιτσωμένη GPU",
     llamaManualPerModelNote: "Ο χειροκίνητος αριθμός επιπέδων ανά GPU ορίζεται ξεχωριστά για κάθε μοντέλο στον επεξεργαστή μοντέλων.",
+    llamaDistBalancedDesc: "Ισόποσος διαμοιρασμός στις επιλεγμένες GPU. Ιδανικό όταν οι κάρτες είναι ίδιες.",
+    llamaDistProportionalDesc: "Το μερίδιο κάθε GPU σταθμίζεται με βάση την ελεύθερη VRAM της. Ιδανικό για ανόμοιες κάρτες.",
+    llamaDistPriorityDesc: "Γεμίζει την πρώτη GPU μέχρι ένα όριο VRAM και μετά μεταβαίνει στην επόμενη.",
+    llamaKvAutoDesc: "Αφήνει το περιβάλλον εκτέλεσης να αποφασίσει. Το KV μένει στη GPU όταν χωράει, αλλιώς στη RAM συστήματος.",
+    llamaKvSplitDesc: "Η KV cache βρίσκεται στις GPU, χωρισμένη όπως και τα επίπεδα. Ταχύτερη, χρησιμοποιεί VRAM.",
+    llamaKvSystemRamDesc: "Κρατά την KV cache στη RAM συστήματος για να ελευθερώσει VRAM για περισσότερα επίπεδα. Πιο αργή προσοχή.",
+    llamaKvPinDesc: "Τοποθετεί ολόκληρη την KV cache σε μία επιλεγμένη GPU.",
   },
   loraSelector: {
     title: "LoRA σχεδίασης",

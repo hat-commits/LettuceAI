@@ -9328,6 +9328,13 @@ export const zhHantMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaKvPin: "固定到單一 GPU",
     llamaPinnedGpu: "固定的 GPU",
     llamaManualPerModelNote: "每個 GPU 的手動層數在模型編輯器中依模型設定。",
+    llamaDistBalancedDesc: "在所選 GPU 之間平均分配。顯示卡型號相同時效果最佳。",
+    llamaDistProportionalDesc: "依各 GPU 的可用 VRAM 加權分配。適合型號不一致的顯示卡。",
+    llamaDistPriorityDesc: "先將第一張 GPU 填到 VRAM 上限，再把多餘部分溢出到下一張。",
+    llamaKvAutoDesc: "交由執行階段決定。KV 放得下時保留在 GPU，否則放入系統 RAM。",
+    llamaKvSplitDesc: "KV 快取放在 GPU 上，依與層相同的方式分割。最快，但會占用 VRAM。",
+    llamaKvSystemRamDesc: "將 KV 快取保留在系統 RAM 中以騰出 VRAM 載入更多層。注意力計算較慢。",
+    llamaKvPinDesc: "將整個 KV 快取放在所選的單張 GPU 上。",
   },
   loraSelector: {
     title: "設計 LoRA",

@@ -9529,6 +9529,13 @@ export const idMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaKvPin: "Sematkan ke satu GPU",
     llamaPinnedGpu: "GPU yang disematkan",
     llamaManualPerModelNote: "Jumlah lapisan manual per GPU diatur per model di editor model.",
+    llamaDistBalancedDesc: "Pembagian merata di seluruh GPU yang dipilih. Terbaik bila kartunya identik.",
+    llamaDistProportionalDesc: "Porsi tiap GPU ditimbang berdasarkan VRAM yang tersedia. Terbaik untuk kartu yang berbeda.",
+    llamaDistPriorityDesc: "Isi GPU pertama hingga batas VRAM, lalu luapkan ke GPU berikutnya.",
+    llamaKvAutoDesc: "Biarkan runtime yang menentukan. KV tetap di GPU bila muat, jika tidak ke RAM sistem.",
+    llamaKvSplitDesc: "Cache KV berada di GPU, dibagi sama seperti lapisan. Tercepat, menggunakan VRAM.",
+    llamaKvSystemRamDesc: "Simpan cache KV di RAM sistem untuk membebaskan VRAM bagi lebih banyak lapisan. Attention lebih lambat.",
+    llamaKvPinDesc: "Letakkan seluruh cache KV pada satu GPU yang dipilih.",
   },
   loraSelector: {
     title: "Desain LoRA",

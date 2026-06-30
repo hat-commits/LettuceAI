@@ -9328,6 +9328,13 @@ export const jaMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaKvPin: "1 つの GPU に固定",
     llamaPinnedGpu: "固定する GPU",
     llamaManualPerModelNote: "GPU ごとの手動レイヤー数は、モデルエディターでモデルごとに設定します。",
+    llamaDistBalancedDesc: "選択した GPU に均等に分割します。同一の GPU を使う場合に最適です。",
+    llamaDistProportionalDesc: "各 GPU の割り当てを空き VRAM に応じて重み付けします。性能が異なる GPU に最適です。",
+    llamaDistPriorityDesc: "最初の GPU を VRAM 上限まで使い、あふれた分を次の GPU に割り当てます。",
+    llamaKvAutoDesc: "ランタイムに任せます。KV は収まる場合は GPU に置かれ、収まらない場合はシステム RAM に置かれます。",
+    llamaKvSplitDesc: "KV キャッシュを GPU 上に置き、レイヤーと同じ方法で分割します。最速ですが VRAM を消費します。",
+    llamaKvSystemRamDesc: "KV キャッシュをシステム RAM に保持して VRAM を空け、より多くのレイヤーを載せます。アテンションは遅くなります。",
+    llamaKvPinDesc: "KV キャッシュ全体を選択した 1 つの GPU に配置します。",
   },
   loraSelector: {
     title: "デザイン LoRA",

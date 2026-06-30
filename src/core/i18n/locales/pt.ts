@@ -9529,6 +9529,13 @@ export const ptMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaKvPin: "Fixar em uma GPU",
     llamaPinnedGpu: "GPU fixada",
     llamaManualPerModelNote: "As contagens manuais de camadas por GPU são definidas por modelo no editor de modelos.",
+    llamaDistBalancedDesc: "Divisão uniforme entre as GPUs selecionadas. Ideal quando as placas são idênticas.",
+    llamaDistProportionalDesc: "A parte de cada GPU é ponderada pela sua VRAM livre. Ideal para placas diferentes.",
+    llamaDistPriorityDesc: "Preenche a primeira GPU até um limite de VRAM e depois transborda para a próxima.",
+    llamaKvAutoDesc: "Deixe o runtime decidir. A KV fica na GPU quando cabe; caso contrário, na RAM do sistema.",
+    llamaKvSplitDesc: "O cache KV fica nas GPUs, dividido da mesma forma que as camadas. O mais rápido, usa VRAM.",
+    llamaKvSystemRamDesc: "Mantenha o cache KV na RAM do sistema para liberar VRAM para mais camadas. Atenção mais lenta.",
+    llamaKvPinDesc: "Coloca todo o cache KV em uma única GPU escolhida.",
   },
   loraSelector: {
     title: "LoRA de Design",

@@ -9328,6 +9328,13 @@ export const koMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaKvPin: "하나의 GPU에 고정",
     llamaPinnedGpu: "고정된 GPU",
     llamaManualPerModelNote: "GPU별 수동 레이어 수는 모델 편집기에서 모델마다 설정합니다.",
+    llamaDistBalancedDesc: "선택한 GPU에 균등하게 분할합니다. 동일한 GPU를 사용할 때 가장 좋습니다.",
+    llamaDistProportionalDesc: "각 GPU의 할당량을 사용 가능한 VRAM에 따라 가중치를 둡니다. 사양이 다른 GPU에 가장 좋습니다.",
+    llamaDistPriorityDesc: "첫 번째 GPU를 VRAM 한도까지 채운 뒤 넘치는 분량을 다음 GPU로 분산합니다.",
+    llamaKvAutoDesc: "런타임에 맡깁니다. KV는 들어맞으면 GPU에, 그렇지 않으면 시스템 RAM에 유지됩니다.",
+    llamaKvSplitDesc: "KV 캐시를 GPU에 두고 레이어와 동일한 방식으로 분할합니다. 가장 빠르지만 VRAM을 사용합니다.",
+    llamaKvSystemRamDesc: "KV 캐시를 시스템 RAM에 유지해 VRAM을 확보하고 더 많은 레이어를 올립니다. 어텐션은 느려집니다.",
+    llamaKvPinDesc: "전체 KV 캐시를 선택한 하나의 GPU에 배치합니다.",
   },
   loraSelector: {
     title: "디자인 LoRA (Design LoRA)",

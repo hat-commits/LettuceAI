@@ -9328,6 +9328,13 @@ export const hiMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaKvPin: "एक GPU पर पिन करें",
     llamaPinnedGpu: "पिन किया गया GPU",
     llamaManualPerModelNote: "प्रति-GPU लेयर संख्याएँ मॉडल एडिटर में प्रत्येक मॉडल के लिए मैन्युअल रूप से सेट की जाती हैं।",
+    llamaDistBalancedDesc: "चयनित GPU में समान रूप से विभाजन। कार्ड एक जैसे होने पर सबसे अच्छा।",
+    llamaDistProportionalDesc: "हर GPU का हिस्सा उसके खाली VRAM के अनुसार तय होता है। असमान कार्ड के लिए सबसे अच्छा।",
+    llamaDistPriorityDesc: "पहले GPU को एक VRAM सीमा तक भरें, फिर अगले पर ओवरफ्लो करें।",
+    llamaKvAutoDesc: "रनटाइम को तय करने दें। फिट होने पर KV GPU पर रहता है, अन्यथा सिस्टम RAM में।",
+    llamaKvSplitDesc: "KV कैश GPU पर रहता है, लेयर की तरह ही विभाजित। सबसे तेज़, VRAM का उपयोग करता है।",
+    llamaKvSystemRamDesc: "अधिक लेयर के लिए VRAM खाली करने हेतु KV कैश को सिस्टम RAM में रखें। अटेंशन धीमा।",
+    llamaKvPinDesc: "पूरे KV कैश को एक चुने हुए GPU पर रखें।",
   },
   loraSelector: {
     title: "डिज़ाइन LoRA",

@@ -9328,6 +9328,13 @@ export const noMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaKvPin: "Fest til én GPU",
     llamaPinnedGpu: "Festet GPU",
     llamaManualPerModelNote: "Manuelle lagantall per GPU angis per modell i modellredigereren.",
+    llamaDistBalancedDesc: "Jevn fordeling over de valgte GPU-ene. Best når kortene er identiske.",
+    llamaDistProportionalDesc: "Hver GPU sin andel vektes etter ledig VRAM. Best for ulike kort.",
+    llamaDistPriorityDesc: "Fyll den første GPU-en opp til en VRAM-grense, og la resten flyte over til neste.",
+    llamaKvAutoDesc: "La kjøretiden bestemme. KV blir på GPU-en når den får plass, ellers i system-RAM.",
+    llamaKvSplitDesc: "KV-bufferen ligger på GPU-ene, fordelt på samme måte som lagene. Raskest, bruker VRAM.",
+    llamaKvSystemRamDesc: "Hold KV-bufferen i system-RAM for å frigjøre VRAM til flere lag. Tregere attention.",
+    llamaKvPinDesc: "Legg hele KV-bufferen på én valgt GPU.",
   },
   loraSelector: {
     title: "Design LoRA",

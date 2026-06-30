@@ -9328,6 +9328,13 @@ export const viMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaKvPin: "Ghim vào một GPU",
     llamaPinnedGpu: "GPU đã ghim",
     llamaManualPerModelNote: "Số lớp thủ công cho mỗi GPU được đặt theo từng mô hình trong trình chỉnh sửa mô hình.",
+    llamaDistBalancedDesc: "Chia đều trên các GPU đã chọn. Tốt nhất khi các card giống hệt nhau.",
+    llamaDistProportionalDesc: "Phần của mỗi GPU được tính theo VRAM còn trống. Tốt nhất cho các card không đồng nhất.",
+    llamaDistPriorityDesc: "Lấp đầy GPU đầu tiên đến giới hạn VRAM, sau đó tràn sang GPU tiếp theo.",
+    llamaKvAutoDesc: "Để runtime tự quyết định. KV ở trên GPU khi vừa, nếu không thì dùng RAM hệ thống.",
+    llamaKvSplitDesc: "KV cache nằm trên các GPU, chia giống như các lớp. Nhanh nhất, dùng VRAM.",
+    llamaKvSystemRamDesc: "Giữ KV cache trong RAM hệ thống để giải phóng VRAM cho nhiều lớp hơn. Attention chậm hơn.",
+    llamaKvPinDesc: "Đặt toàn bộ KV cache lên một GPU được chọn.",
   },
   loraSelector: {
     title: "Thiết kế LoRA",
