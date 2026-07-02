@@ -105,7 +105,7 @@ export const changelog: ChangelogEntry[] = [
       {
         type: "bugfix",
         description:
-          "A large multi-GPU planning fix pass (found while testing a 31B model across an RTX 3080 Ti and RTX 5060 Ti): Blackwell/CUDA 13 GPUs reporting zero total VRAM are now visible to planning, KV cost is priced per GPU-resident layer, flash-attention AUTO is treated as enabled, and stale caches are rejected, lifting the test system from 27 to 59 of 60 GPU layers.",
+          "Added a smart multi-GPU offloader that spreads large models across all your hardware, sizing each device's share automatically and keeping far more of the model on the GPU instead of falling back to the CPU.",
       },
       {
         type: "bugfix",
