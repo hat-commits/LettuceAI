@@ -1040,9 +1040,8 @@ function AppContent() {
                 : isCharacterEditRoute
                   ? () => navigate("/", { replace: true })
                   : isSettingRoute &&
-                      isLgViewport &&
                       (location.pathname === "/settings" ||
-                        location.pathname === "/settings/about")
+                        (isLgViewport && location.pathname === "/settings/about"))
                     ? () => {
                         const target = preSettingsPathRef.current || "/";
                         navigate(target.startsWith("/settings") ? "/" : target);

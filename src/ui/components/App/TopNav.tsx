@@ -568,7 +568,7 @@ export function TopNav({ currentPath, onBackOverride, titleOverride, rightAction
     if (basePath.startsWith("/settings/")) {
       const segments = basePath.split("/").filter(Boolean);
       if (segments.length <= 2) {
-        navigate("/");
+        navigate("/settings");
         return;
       }
       const templateEditorMatch = basePath.match(
