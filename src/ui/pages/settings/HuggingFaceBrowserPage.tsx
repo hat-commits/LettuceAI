@@ -1329,9 +1329,25 @@ export function HuggingFaceBrowserPage() {
     [setSearchParams, preserveParams],
   );
 
-  const [ollamaProviders, setOllamaProviders] = useState<ProviderCredential[]>([]);
-  const [selectedOllamaProviderId, setSelectedOllamaProviderId] = useState<string | null>(null);
+  const HF_DESTINATION_STORAGE_KEY = "hfBrowser:destinationProviderId";
+  const [ollamaProviders, setOllamaProviders] = useState<ProviderCredential[]>(() => {
+    const cached = readSettingsCached();
+    return cached ? cached.providerCredentials.filter((p) => p.providerId === "ollama") : [];
+  });
+  const [selectedOllamaProviderId, setSelectedOllamaProviderId] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return window.sessionStorage.getItem(HF_DESTINATION_STORAGE_KEY);
+  });
   const [showOllamaProviderMenu, setShowOllamaProviderMenu] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (selectedOllamaProviderId) {
+      window.sessionStorage.setItem(HF_DESTINATION_STORAGE_KEY, selectedOllamaProviderId);
+    } else {
+      window.sessionStorage.removeItem(HF_DESTINATION_STORAGE_KEY);
+    }
+  }, [selectedOllamaProviderId]);
 
   // Filter state
   const [showFilterMenu, setShowFilterMenu] = useState(false);
@@ -4179,130 +4195,99 @@ export function HuggingFaceBrowserPage() {
             {t("hfBrowser.destinationPickerSubtitle")}
           </p>
 
-          {/* Local section */}
-          <div className="mb-2 flex items-center gap-2 px-1">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-fg/35">
-              {t("hfBrowser.destinationLocalSection")}
-            </span>
-            <div className="h-px flex-1 bg-fg/8" />
-          </div>
-          <button
-            onClick={() => {
-              setSelectedOllamaProviderId(null);
-              setShowOllamaProviderMenu(false);
-            }}
-            className={cn(
-              "group relative w-full overflow-hidden rounded-xl border px-3.5 py-3 text-left transition",
-              !isOllamaMode
-                ? "border-accent/35 bg-accent/8"
-                : "border-fg/10 bg-fg/3 hover:border-fg/20 hover:bg-fg/5",
-            )}
-          >
-            <div className="flex items-center gap-3">
-              <span
-                className={cn(
-                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-                  !isOllamaMode ? "bg-accent/15 text-accent" : "bg-fg/8 text-fg/55",
-                )}
-              >
-                <HardDrive size={15} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-[13px] font-medium text-fg">
-                  {t("hfBrowser.destinationLocal")}
-                </div>
-                <div className="truncate text-[11.5px] text-fg/45">
-                  {t("hfBrowser.destinationLocalHint")}
-                </div>
-              </div>
-              <span
-                className={cn(
-                  "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition",
-                  !isOllamaMode
-                    ? "border-accent/50 bg-accent/15 text-accent"
-                    : "border-fg/15 text-transparent",
-                )}
-              >
-                <Check size={11} strokeWidth={3} />
-              </span>
-            </div>
-          </button>
-
-          {/* Ollama section */}
-          <div className="mb-2 mt-5 flex items-center gap-2 px-1">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-fg/35">
-              {t("hfBrowser.destinationOllamaSection")}
-            </span>
-            <div className="h-px flex-1 bg-fg/8" />
-            {ollamaProviders.length > 0 && (
-              <span className="text-[10px] font-medium tabular-nums text-fg/40">
-                {ollamaProviders.length}
-              </span>
-            )}
-          </div>
-
-          {ollamaProviders.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-fg/10 bg-fg/2 px-4 py-5 text-center">
-              <Server size={18} className="mx-auto mb-2 text-fg/30" />
-              <p className="text-[12px] leading-snug text-fg/55">
-                {t("hfBrowser.destinationNoOllama")}
+          <div className="space-y-5">
+            <div>
+              <p className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-fg/35">
+                {t("hfBrowser.destinationLocalSection")}
               </p>
-            </div>
-          ) : (
-            <div className="space-y-1.5">
-              {ollamaProviders.map((provider) => {
-                const isSelected = provider.id === selectedOllamaProviderId;
-                return (
-                  <button
-                    key={provider.id}
-                    onClick={() => {
-                      setSelectedOllamaProviderId(provider.id);
-                      setShowOllamaProviderMenu(false);
-                    }}
-                    className={cn(
-                      "group relative w-full overflow-hidden rounded-xl border px-3.5 py-3 text-left transition",
-                      isSelected
-                        ? "border-emerald-400/35 bg-emerald-500/8"
-                        : "border-fg/10 bg-fg/3 hover:border-fg/20 hover:bg-fg/5",
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={cn(
-                          "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-                          isSelected
-                            ? "bg-emerald-500/15 text-emerald-300"
-                            : "bg-fg/8 text-fg/55",
-                        )}
-                      >
-                        <Server size={15} />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-[13px] font-medium text-fg">
-                          {provider.label}
-                        </div>
-                        {provider.baseUrl && (
-                          <div className="truncate font-mono text-[11px] text-fg/45">
-                            {provider.baseUrl}
-                          </div>
-                        )}
-                      </div>
-                      <span
-                        className={cn(
-                          "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition",
-                          isSelected
-                            ? "border-emerald-400/50 bg-emerald-500/15 text-emerald-300"
-                            : "border-fg/15 text-transparent",
-                        )}
-                      >
-                        <Check size={11} strokeWidth={3} />
-                      </span>
+              <div className="overflow-hidden rounded-xl border border-fg/10 bg-fg/3">
+                <button
+                  onClick={() => {
+                    setSelectedOllamaProviderId(null);
+                    setShowOllamaProviderMenu(false);
+                  }}
+                  className={cn(
+                    "flex w-full items-center gap-3 px-4 py-3 text-left transition",
+                    !isOllamaMode ? "bg-accent/8" : "hover:bg-fg/5 active:bg-fg/8",
+                  )}
+                >
+                  <HardDrive
+                    size={16}
+                    className={cn("shrink-0", !isOllamaMode ? "text-accent" : "text-fg/45")}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[13px] font-medium text-fg">
+                      {t("hfBrowser.destinationLocal")}
                     </div>
-                  </button>
-                );
-              })}
+                    <div className="truncate text-[11.5px] text-fg/45">
+                      {t("hfBrowser.destinationLocalHint")}
+                    </div>
+                  </div>
+                  {!isOllamaMode && (
+                    <Check size={15} strokeWidth={2.5} className="shrink-0 text-accent" />
+                  )}
+                </button>
+              </div>
             </div>
-          )}
+
+            <div>
+              <div className="mb-2 flex items-center justify-between px-1">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-fg/35">
+                  {t("hfBrowser.destinationOllamaSection")}
+                </p>
+                {ollamaProviders.length > 0 && (
+                  <span className="text-[10px] font-medium tabular-nums text-fg/40">
+                    {ollamaProviders.length}
+                  </span>
+                )}
+              </div>
+              {ollamaProviders.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-fg/10 bg-fg/2 px-4 py-5 text-center">
+                  <Server size={18} className="mx-auto mb-2 text-fg/30" />
+                  <p className="text-[12px] leading-snug text-fg/55">
+                    {t("hfBrowser.destinationNoOllama")}
+                  </p>
+                </div>
+              ) : (
+                <div className="divide-y divide-fg/8 overflow-hidden rounded-xl border border-fg/10 bg-fg/3">
+                  {ollamaProviders.map((provider) => {
+                    const isSelected = provider.id === selectedOllamaProviderId;
+                    return (
+                      <button
+                        key={provider.id}
+                        onClick={() => {
+                          setSelectedOllamaProviderId(provider.id);
+                          setShowOllamaProviderMenu(false);
+                        }}
+                        className={cn(
+                          "flex w-full items-center gap-3 px-4 py-3 text-left transition",
+                          isSelected ? "bg-accent/8" : "hover:bg-fg/5 active:bg-fg/8",
+                        )}
+                      >
+                        <Server
+                          size={16}
+                          className={cn("shrink-0", isSelected ? "text-accent" : "text-fg/45")}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-[13px] font-medium text-fg">
+                            {provider.label}
+                          </div>
+                          {provider.baseUrl && (
+                            <div className="truncate font-mono text-[11px] text-fg/45">
+                              {provider.baseUrl}
+                            </div>
+                          )}
+                        </div>
+                        {isSelected && (
+                          <Check size={15} strokeWidth={2.5} className="shrink-0 text-accent" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
       </BottomMenu>
 
       {returnTo && (
