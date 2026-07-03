@@ -2089,6 +2089,12 @@ export function HuggingFaceBrowserPage() {
         (modelItem.llamaModelOffloadMode as ModelOffload | null | undefined) ??
         gpuLayersToModelOffload(modelItem.llamaGpuLayers ?? null, null);
       const modelOffloadCopy = getModelOffloadCopy(t, modelOffloadValue);
+      const persistedGpuLayers =
+        modelOffloadValue === "cpu"
+          ? 0
+          : modelOffloadValue === "gpu"
+            ? (modelItem.llamaGpuLayers ?? null)
+            : null;
       const placementValue: KvPlacement =
         modelItem.llamaOffloadKqv === true
           ? "vram"
@@ -2110,7 +2116,7 @@ export function HuggingFaceBrowserPage() {
             ...defaultAdvanced,
             contextLength,
             llamaKvType: kvType as NonNullable<typeof defaultAdvanced.llamaKvType>,
-            llamaGpuLayers: modelItem.llamaGpuLayers == null ? null : modelItem.llamaGpuLayers,
+            llamaGpuLayers: persistedGpuLayers,
             llamaOffloadKqv: modelItem.llamaOffloadKqv == null ? null : modelItem.llamaOffloadKqv,
             llamaMmprojPath: mmprojPath,
             llamaMtpEnabled: hasMtpSupport ? true : null,
