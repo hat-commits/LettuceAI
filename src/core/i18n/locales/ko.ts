@@ -4427,6 +4427,9 @@ export const koMessages: DeepPartialMessageTree<LocaleMessages> = {
       gpuLayers: "GPU 레이어",
       gpuLayersCpuOnly: "CPU 전용 백엔드에서 비활성화됨",
       gpuLayersDescription: "레이어를 GPU에 오프로드 (0 = CPU 전용)",
+      multiGpuFixedLayers:
+        "이 모델에는 고정 GPU 레이어 수 ({{layers}})가 저장되어 있어 스마트 플래닝보다 우선 적용되므로, 추가한 VRAM이 사용되지 않습니다. 현재 하드웨어에 맞춰 분할하려면 초기화하세요.",
+      multiGpuFixedLayersReset: "자동으로 초기화",
       threads: "스레드",
       threadsDescription: "추론",
       batchThreads: "배치 스레드",
@@ -9348,6 +9351,16 @@ export const koMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaMultiGpuDescription: "기본적으로 비활성화되어 있습니다. llama.cpp가 선택한 GPU에 모델을 분산하도록 하려는 경우에만 활성화하세요.",
     llamaMultiGpuEnabled: "활성화됨",
     llamaMultiGpuDisabled: "비활성화됨",
+    reconfigureTitle: "모든 모델을 재구성하시겠습니까?",
+    reconfigureBodyMulti:
+      "Multi-GPU가 켜졌습니다. 스마트 플래닝이 선택한 GPU 전체에 각 모델을 분산할 수 있도록 모든 로컬 모델의 저장된 GPU 레이어 수와 단일 GPU 재정의를 초기화합니다.",
+    reconfigureBodySingle:
+      "Multi-GPU가 꺼졌습니다. 모든 로컬 모델을 {{gpu}}로 지정하고 저장된 레이어 수를 초기화하여 해당 카드에 맞춰 플래닝하도록 합니다.",
+    reconfigureConfirm: "{{count}}개의 모델 재구성",
+    reconfigureRunning: "모델 재구성 중...",
+    reconfigureSkip: "현재 모델 설정 유지",
+    reconfigureDone: "모델이 재구성되었습니다",
+    reconfigureDoneBody: "이제 {{count}}개의 로컬 모델이 새로운 GPU 설정을 따릅니다.",
     llamaGpuDevicesTitle: "GPU 장치",
     llamaGpuDevicesDescription: "둘 이상의 개별 GPU 장치를 선택하세요. 통합 GPU 및 CPU 장치는 여기에 표시되지 않습니다.",
     llamaGpuNone: "llama.cpp에서 보고된 개별 GPU 장치가 없습니다.",

@@ -9085,6 +9085,9 @@ export const jaMessages: DeepPartialMessageTree<LocaleMessages> = {
       gpuLayers: "GPUレイヤー",
       gpuLayersCpuOnly: "CPU専用バックエンドでは無効",
       gpuLayersDescription: "レイヤーをGPUにオフロード（0 = CPUのみ）",
+      multiGpuFixedLayers:
+        "このモデルには固定 GPU レイヤー数 ({{layers}}) が保存されており、スマートプランニングより優先されるため、追加した VRAM は使用されません。現在のハードウェアに合わせて分割するにはリセットしてください。",
+      multiGpuFixedLayersReset: "自動にリセット",
       threads: "スレッド",
       threadsDescription: "推論",
       batchThreads: "バッチスレッド",
@@ -9348,6 +9351,16 @@ export const jaMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaMultiGpuDescription: "デフォルトでは無効です。llama.cpp で選択した GPU にモデルを分割したい場合のみ有効にしてください。",
     llamaMultiGpuEnabled: "有効",
     llamaMultiGpuDisabled: "無効",
+    reconfigureTitle: "すべてのモデルを再構成しますか？",
+    reconfigureBodyMulti:
+      "Multi-GPU が有効になりました。スマートプランニングが選択した GPU 全体にモデルを分散できるよう、すべてのローカルモデルの保存済み GPU レイヤー数とシングル GPU の上書き設定をリセットします。",
+    reconfigureBodySingle:
+      "Multi-GPU が無効になりました。すべてのローカルモデルを {{gpu}} に割り当て、保存済みのレイヤー数をリセットして、そのカードに合わせてプランニングできるようにします。",
+    reconfigureConfirm: "{{count}} 個のモデルを再構成",
+    reconfigureRunning: "モデルを再構成中...",
+    reconfigureSkip: "現在のモデル設定を維持",
+    reconfigureDone: "モデルを再構成しました",
+    reconfigureDoneBody: "{{count}} 個のローカルモデルが新しい GPU 設定に従うようになりました。",
     llamaGpuDevicesTitle: "GPU デバイス",
     llamaGpuDevicesDescription: "2 つ以上の専用 GPU デバイスを選択してください。統合 GPU や CPU デバイスはここには表示されません。",
     llamaGpuNone: "llama.cpp から報告された専用 GPU デバイスはありません。",

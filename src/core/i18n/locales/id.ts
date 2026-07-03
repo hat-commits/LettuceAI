@@ -9085,6 +9085,9 @@ export const idMessages: DeepPartialMessageTree<LocaleMessages> = {
       gpuLayers: "GPU Layers",
       gpuLayersCpuOnly: "Dinonaktifkan pada backend khusus CPU",
       gpuLayersDescription: "Offload layer ke GPU (0 = hanya CPU)",
+      multiGpuFixedLayers:
+        "Jumlah layer GPU tetap ({{layers}}) tersimpan pada model ini dan mengesampingkan perencanaan pintar, sehingga VRAM yang ditambahkan tidak akan digunakan. Atur ulang untuk menyesuaikan pembagian dengan perangkat keras saat ini.",
+      multiGpuFixedLayersReset: "Atur Ulang ke Otomatis",
       threads: "Threads",
       threadsDescription: "Inferensi",
       batchThreads: "Batch Threads",
@@ -9549,6 +9552,16 @@ export const idMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaMultiGpuDescription: "Nonaktif secara default. Aktifkan hanya jika Anda ingin llama.cpp membagi model ke beberapa GPU yang dipilih.",
     llamaMultiGpuEnabled: "Aktif",
     llamaMultiGpuDisabled: "Nonaktif",
+    reconfigureTitle: "Konfigurasi ulang semua model?",
+    reconfigureBodyMulti:
+      "Multi-GPU kini aktif. Atur ulang jumlah layer GPU tersimpan dan override GPU tunggal setiap model lokal agar perencanaan pintar dapat menyebarkan setiap model ke GPU yang dipilih.",
+    reconfigureBodySingle:
+      "Multi-GPU kini nonaktif. Arahkan setiap model lokal ke {{gpu}} dan atur ulang jumlah layer tersimpan agar perencanaan menyesuaikan setiap model untuk kartu tersebut.",
+    reconfigureConfirm: "Konfigurasi ulang {{count}} model",
+    reconfigureRunning: "Mengonfigurasi ulang model...",
+    reconfigureSkip: "Pertahankan pengaturan model saat ini",
+    reconfigureDone: "Model dikonfigurasi ulang",
+    reconfigureDoneBody: "{{count}} model lokal kini mengikuti pengaturan GPU baru.",
     llamaGpuDevicesTitle: "Perangkat GPU",
     llamaGpuDevicesDescription: "Pilih dua atau lebih perangkat GPU diskret. Perangkat terintegrasi dan CPU tidak pernah ditampilkan di sini.",
     llamaGpuNone: "Tidak ada perangkat GPU diskret yang dilaporkan oleh llama.cpp.",

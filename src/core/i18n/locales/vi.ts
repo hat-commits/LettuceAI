@@ -7850,6 +7850,9 @@ export const viMessages: DeepPartialMessageTree<LocaleMessages> = {
       gpuLayers: "Lớp GPU",
       gpuLayersCpuOnly: "Bị tắt trên backend chỉ CPU",
       gpuLayersDescription: "Chuyển tải các lớp lên GPU (0 = chỉ CPU)",
+      multiGpuFixedLayers:
+        "Số lớp GPU cố định ({{layers}}) đã được lưu cho mô hình này và ghi đè lên việc lập kế hoạch thông minh, do đó VRAM được thêm vào sẽ không được sử dụng. Đặt lại để định cỡ việc phân chia theo phần cứng hiện tại.",
+      multiGpuFixedLayersReset: "Đặt lại về Tự động",
       threads: "Luồng",
       threadsDescription: "Suy luận",
       batchThreads: "Luồng Batch",
@@ -9348,6 +9351,16 @@ export const viMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaMultiGpuDescription: "Tắt theo mặc định. Chỉ bật khi bạn muốn llama.cpp chia một mô hình trên các GPU đã chọn.",
     llamaMultiGpuEnabled: "Đã bật",
     llamaMultiGpuDisabled: "Đã tắt",
+    reconfigureTitle: "Cấu hình lại tất cả mô hình?",
+    reconfigureBodyMulti:
+      "Multi-GPU hiện đã bật. Đặt lại số lớp GPU đã lưu và ghi đè GPU đơn của mỗi mô hình cục bộ để việc lập kế hoạch thông minh có thể phân bổ từng mô hình trên các GPU đã chọn.",
+    reconfigureBodySingle:
+      "Multi-GPU hiện đã tắt. Trỏ mọi mô hình cục bộ đến {{gpu}} và đặt lại số lớp đã lưu để việc lập kế hoạch định cỡ từng mô hình cho card đó.",
+    reconfigureConfirm: "Cấu hình lại {{count}} mô hình",
+    reconfigureRunning: "Đang cấu hình lại các mô hình...",
+    reconfigureSkip: "Giữ nguyên cài đặt mô hình hiện tại",
+    reconfigureDone: "Đã cấu hình lại các mô hình",
+    reconfigureDoneBody: "{{count}} mô hình cục bộ hiện đã theo cấu hình GPU mới.",
     llamaGpuDevicesTitle: "Thiết bị GPU",
     llamaGpuDevicesDescription: "Chọn hai hoặc nhiều thiết bị GPU rời. Thiết bị tích hợp và CPU không bao giờ hiển thị ở đây.",
     llamaGpuNone: "llama.cpp không báo cáo thiết bị GPU rời nào.",

@@ -9085,6 +9085,9 @@ export const hiMessages: DeepPartialMessageTree<LocaleMessages> = {
       gpuLayers: "GPU लेयर्स (GPU Layers)",
       gpuLayersCpuOnly: "CPU-ओनली बैकएंड्स पर अक्षम (Disabled)",
       gpuLayersDescription: "लेयर्स को GPU पर ऑफलोड करें (0 = केवल CPU)",
+      multiGpuFixedLayers:
+        "इस मॉडल पर एक फिक्स्ड GPU लेयर काउंट ({{layers}}) सेव है, जो स्मार्ट प्लानिंग को ओवरराइड कर देता है, जिससे जोड़ा गया VRAM उपयोग में नहीं आएगा। मौजूदा हार्डवेयर के अनुसार स्प्लिट को साइज़ करने के लिए इसे रीसेट करें।",
+      multiGpuFixedLayersReset: "ऑटो पर रीसेट करें",
       threads: "थ्रेड्स (Threads)",
       threadsDescription: "इन्फरेंस (Inference)",
       batchThreads: "बैच थ्रेड्स (Batch Threads)",
@@ -9348,6 +9351,16 @@ export const hiMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaMultiGpuDescription: "डिफ़ॉल्ट रूप से बंद। केवल तभी चालू करें जब आप चाहते हैं कि llama.cpp किसी मॉडल को चुने गए GPU में बाँटे।",
     llamaMultiGpuEnabled: "चालू",
     llamaMultiGpuDisabled: "बंद",
+    reconfigureTitle: "सभी models को फिर से configure करें?",
+    reconfigureBodyMulti:
+      "Multi-GPU अब चालू है। हर local model का सेव्ड GPU लेयर काउंट और single-GPU override रीसेट करें ताकि स्मार्ट प्लानिंग हर model को चुने गए GPUs में फैला सके।",
+    reconfigureBodySingle:
+      "Multi-GPU अब बंद है। हर local model को {{gpu}} पर पॉइंट करें और सेव्ड लेयर काउंट रीसेट करें ताकि planning हर model को उस कार्ड के लिए साइज़ कर सके।",
+    reconfigureConfirm: "{{count}} models को फिर से configure करें",
+    reconfigureRunning: "Models को फिर से configure किया जा रहा है...",
+    reconfigureSkip: "मौजूदा model सेटिंग्स रखें",
+    reconfigureDone: "Models फिर से configure हो गए",
+    reconfigureDoneBody: "{{count}} local models अब नए GPU सेटअप का पालन करते हैं।",
     llamaGpuDevicesTitle: "GPU डिवाइस",
     llamaGpuDevicesDescription: "दो या अधिक अलग GPU डिवाइस चुनें। एकीकृत और CPU डिवाइस यहाँ कभी नहीं दिखाए जाते।",
     llamaGpuNone: "llama.cpp द्वारा कोई अलग GPU डिवाइस रिपोर्ट नहीं किया गया।",

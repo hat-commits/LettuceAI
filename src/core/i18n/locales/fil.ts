@@ -4427,6 +4427,9 @@ export const filMessages: DeepPartialMessageTree<LocaleMessages> = {
       gpuLayers: "GPU Layers",
       gpuLayersCpuOnly: "Naka-disable sa CPU-only na mga backend",
       gpuLayersDescription: "I-offload ang mga layer sa GPU (0 = CPU lang)",
+      multiGpuFixedLayers:
+        "May naka-save na fixed GPU layer count ({{layers}}) sa model na ito at ino-override nito ang smart planning, kaya hindi magagamit ang idinagdag na VRAM. I-reset ito para i-size ang split base sa kasalukuyang hardware.",
+      multiGpuFixedLayersReset: "I-reset sa Auto",
       threads: "Threads",
       threadsDescription: "Inference",
       batchThreads: "Batch Threads",
@@ -9549,6 +9552,16 @@ export const filMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaMultiGpuDescription: "Naka-disable bilang default. I-enable lamang kapag gusto mong hatiin ng llama.cpp ang isang modelo sa mga napiling GPU.",
     llamaMultiGpuEnabled: "Naka-enable",
     llamaMultiGpuDisabled: "Naka-disable",
+    reconfigureTitle: "I-reconfigure ang lahat ng model?",
+    reconfigureBodyMulti:
+      "Naka-on na ngayon ang Multi-GPU. I-reset ang naka-save na GPU layer count at single-GPU override ng bawat local model para maikalat ng smart planning ang bawat model sa mga napiling GPU.",
+    reconfigureBodySingle:
+      "Naka-off na ngayon ang Multi-GPU. I-point ang bawat local model sa {{gpu}} at i-reset ang mga naka-save na layer count para i-size ng planning ang bawat model para sa card na iyon.",
+    reconfigureConfirm: "I-reconfigure ang {{count}} na model",
+    reconfigureRunning: "Ni-re-reconfigure ang mga model...",
+    reconfigureSkip: "Panatilihin ang kasalukuyang mga setting ng model",
+    reconfigureDone: "Na-reconfigure ang mga model",
+    reconfigureDoneBody: "Sinusunod na ngayon ng {{count}} na local model ang bagong GPU setup.",
     llamaGpuDevicesTitle: "Mga GPU Device",
     llamaGpuDevicesDescription: "Pumili ng dalawa o higit pang discrete na GPU device. Hindi kailanman ipinapakita rito ang integrated at CPU device.",
     llamaGpuNone: "Walang discrete na GPU device na iniulat ng llama.cpp.",

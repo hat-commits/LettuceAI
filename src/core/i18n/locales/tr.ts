@@ -4427,6 +4427,9 @@ export const trMessages: DeepPartialMessageTree<LocaleMessages> = {
       gpuLayers: "GPU Katmanları",
       gpuLayersCpuOnly: "Sadece CPU destekleyen arka uçlarda devre dışı",
       gpuLayersDescription: "Katmanları GPU'ya aktarın (0 = sadece CPU)",
+      multiGpuFixedLayers:
+        "Bu modelde sabit bir GPU katman sayısı ({{layers}}) kayıtlı ve bu, akıllı planlamayı geçersiz kılıyor; böylece eklenen VRAM kullanılmayacak. Bölünmeyi mevcut donanıma göre boyutlandırmak için sıfırlayın.",
+      multiGpuFixedLayersReset: "Otomatiğe Sıfırla",
       threads: "İş Parçacıkları (Threads)",
       threadsDescription: "Çıkarım (Inference)",
       batchThreads: "Batch İş Parçacıkları",
@@ -9634,6 +9637,16 @@ export const trMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaMultiGpuDescription: "Varsayılan olarak devre dışıdır. Yalnızca llama.cpp'nin bir modeli seçili GPU'lar arasında bölmesini istediğinizde etkinleştirin.",
     llamaMultiGpuEnabled: "Etkin",
     llamaMultiGpuDisabled: "Devre dışı",
+    reconfigureTitle: "Tüm modeller yeniden yapılandırılsın mı?",
+    reconfigureBodyMulti:
+      "Multi-GPU artık açık. Akıllı planlamanın her modeli seçili GPU'lara yayabilmesi için her yerel modelin kayıtlı GPU katman sayısını ve tekli GPU geçersiz kılmasını sıfırlayın.",
+    reconfigureBodySingle:
+      "Multi-GPU artık kapalı. Planlamanın her modeli o karta göre boyutlandırabilmesi için tüm yerel modelleri {{gpu}} üzerine yönlendirin ve kayıtlı katman sayılarını sıfırlayın.",
+    reconfigureConfirm: "{{count}} modeli yeniden yapılandır",
+    reconfigureRunning: "Modeller yeniden yapılandırılıyor...",
+    reconfigureSkip: "Mevcut model ayarlarını koru",
+    reconfigureDone: "Modeller yeniden yapılandırıldı",
+    reconfigureDoneBody: "{{count}} yerel model artık yeni GPU kurulumunu izliyor.",
     llamaGpuDevicesTitle: "GPU Aygıtları",
     llamaGpuDevicesDescription: "İki veya daha fazla ayrık GPU aygıtı seçin. Tümleşik ve CPU aygıtları burada asla gösterilmez.",
     llamaGpuNone: "llama.cpp tarafından bildirilen ayrık GPU aygıtı yok.",

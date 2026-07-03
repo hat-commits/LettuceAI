@@ -4427,6 +4427,9 @@ export const zhHantMessages: DeepPartialMessageTree<LocaleMessages> = {
       gpuLayers: "GPU 層數",
       gpuLayersCpuOnly: "在僅限 CPU 的後端禁用",
       gpuLayersDescription: "將層卸載到 GPU (0 = 僅限 CPU)",
+      multiGpuFixedLayers:
+        "此模型已儲存固定的 GPU 層數 ({{layers}})，會覆蓋智慧規劃，導致新增的 VRAM 無法被使用。請重設以便根據目前硬體重新計算分配方案。",
+      multiGpuFixedLayersReset: "重設為自動",
       threads: "執行緒 (Threads)",
       threadsDescription: "推理執行緒",
       batchThreads: "批次執行緒 (Batch Threads)",
@@ -9348,6 +9351,16 @@ export const zhHantMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaMultiGpuDescription: "預設停用。僅當你希望 llama.cpp 將模型拆分到所選 GPU 上時才啟用。",
     llamaMultiGpuEnabled: "已啟用",
     llamaMultiGpuDisabled: "已停用",
+    reconfigureTitle: "要重新設定所有模型嗎？",
+    reconfigureBodyMulti:
+      "Multi-GPU 現已開啟。將重設每個本地模型已儲存的 GPU 層數與單一 GPU 覆蓋設定，讓智慧規劃能將每個模型分散到所選的多個 GPU 上。",
+    reconfigureBodySingle:
+      "Multi-GPU 現已關閉。將把每個本地模型指向 {{gpu}}，並重設已儲存的層數，讓規劃依該顯示卡調整每個模型的大小。",
+    reconfigureConfirm: "重新設定 {{count}} 個模型",
+    reconfigureRunning: "正在重新設定模型...",
+    reconfigureSkip: "保留目前的模型設定",
+    reconfigureDone: "模型已重新設定",
+    reconfigureDoneBody: "{{count}} 個本地模型現在採用新的 GPU 設定。",
     llamaGpuDevicesTitle: "GPU 裝置",
     llamaGpuDevicesDescription: "選擇兩個或更多獨立 GPU 裝置。整合顯示卡和 CPU 裝置不會在此顯示。",
     llamaGpuNone: "llama.cpp 未回報任何獨立 GPU 裝置。",

@@ -7850,6 +7850,9 @@ export const ptMessages: DeepPartialMessageTree<LocaleMessages> = {
       gpuLayers: "Camadas de GPU",
       gpuLayersCpuOnly: "Desativado em backends somente CPU",
       gpuLayersDescription: "Offload de camadas para a GPU (0 = somente CPU)",
+      multiGpuFixedLayers:
+        "Uma contagem fixa de camadas de GPU ({{layers}}) está salva neste modelo e substitui o planejamento inteligente, então a VRAM adicionada não será usada. Redefina para dimensionar a divisão a partir do hardware atual.",
+      multiGpuFixedLayersReset: "Redefinir para Automático",
       threads: "Threads",
       threadsDescription: "Inferência",
       batchThreads: "Threads de Lote",
@@ -9549,6 +9552,16 @@ export const ptMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaMultiGpuDescription: "Desativado por padrão. Ative apenas quando quiser que o llama.cpp distribua um modelo entre as GPU selecionadas.",
     llamaMultiGpuEnabled: "Ativado",
     llamaMultiGpuDisabled: "Desativado",
+    reconfigureTitle: "Reconfigurar todos os modelos?",
+    reconfigureBodyMulti:
+      "Multi-GPU agora está ativado. Redefina a contagem de camadas de GPU salva e a substituição de GPU única de cada modelo local para que o planejamento inteligente possa distribuir cada modelo entre as GPU selecionadas.",
+    reconfigureBodySingle:
+      "Multi-GPU agora está desativado. Direcione todos os modelos locais para {{gpu}} e redefina as contagens de camadas salvas para que o planejamento dimensione cada modelo para essa placa.",
+    reconfigureConfirm: "Reconfigurar {{count}} modelos",
+    reconfigureRunning: "Reconfigurando modelos...",
+    reconfigureSkip: "Manter configurações atuais do modelo",
+    reconfigureDone: "Modelos reconfigurados",
+    reconfigureDoneBody: "{{count}} modelos locais agora seguem a nova configuração de GPU.",
     llamaGpuDevicesTitle: "Dispositivos GPU",
     llamaGpuDevicesDescription: "Selecione dois ou mais dispositivos GPU dedicados. Dispositivos integrados e de CPU nunca são exibidos aqui.",
     llamaGpuNone: "Nenhuma GPU dedicada detectada pelo llama.cpp.",

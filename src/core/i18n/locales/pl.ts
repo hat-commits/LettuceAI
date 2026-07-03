@@ -7850,6 +7850,9 @@ export const plMessages: DeepPartialMessageTree<LocaleMessages> = {
       gpuLayers: "Warstwy GPU",
       gpuLayersCpuOnly: "Wyłączone na backendach tylko CPU",
       gpuLayersDescription: "Odciąż warstwy na GPU (0 = tylko CPU)",
+      multiGpuFixedLayers:
+        "W tym modelu zapisano stałą liczbę warstw GPU ({{layers}}), która nadpisuje inteligentne planowanie, więc dodana VRAM nie zostanie wykorzystana. Zresetuj ją, aby dopasować podział do aktualnego sprzętu.",
+      multiGpuFixedLayersReset: "Resetuj do Auto",
       threads: "Wątki",
       threadsDescription: "Wnioskowanie",
       batchThreads: "Wątki partii",
@@ -9348,6 +9351,16 @@ export const plMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaMultiGpuDescription: "Domyślnie wyłączone. Włącz tylko wtedy, gdy chcesz, aby llama.cpp rozdzieliła model między wybrane GPU.",
     llamaMultiGpuEnabled: "Włączone",
     llamaMultiGpuDisabled: "Wyłączone",
+    reconfigureTitle: "Ponownie skonfigurować wszystkie modele?",
+    reconfigureBodyMulti:
+      "Multi-GPU jest teraz włączone. Zresetuj zapisaną liczbę warstw GPU i nadpisanie pojedynczego GPU dla każdego lokalnego modelu, aby inteligentne planowanie mogło rozdzielić każdy model między wybrane GPU.",
+    reconfigureBodySingle:
+      "Multi-GPU jest teraz wyłączone. Skieruj każdy lokalny model na {{gpu}} i zresetuj zapisane liczby warstw, aby planowanie dopasowało każdy model do tej karty.",
+    reconfigureConfirm: "Skonfiguruj ponownie {{count}} modeli",
+    reconfigureRunning: "Ponowna konfiguracja modeli...",
+    reconfigureSkip: "Zachowaj bieżące ustawienia modelu",
+    reconfigureDone: "Modele skonfigurowane ponownie",
+    reconfigureDoneBody: "{{count}} lokalnych modeli korzysta teraz z nowej konfiguracji GPU.",
     llamaGpuDevicesTitle: "Urządzenia GPU",
     llamaGpuDevicesDescription: "Wybierz co najmniej dwa dyskretne urządzenia GPU. Zintegrowane urządzenia i procesor nigdy nie są tutaj pokazywane.",
     llamaGpuNone: "llama.cpp nie zgłosiła żadnych dyskretnych urządzeń GPU.",

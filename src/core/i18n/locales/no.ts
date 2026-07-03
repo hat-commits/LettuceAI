@@ -4427,6 +4427,9 @@ export const noMessages: DeepPartialMessageTree<LocaleMessages> = {
       gpuLayers: "GPU-lag",
       gpuLayersCpuOnly: "Deaktivert på kun-CPU-backender",
       gpuLayersDescription: "Avlast lag til GPU (0 = kun CPU)",
+      multiGpuFixedLayers:
+        "Et fast antall GPU-lag ({{layers}}) er lagret på denne modellen og overstyrer smart planlegging, så tilført VRAM vil ikke bli brukt. Tilbakestill det for å dimensjonere fordelingen ut fra gjeldende maskinvare.",
+      multiGpuFixedLayersReset: "Tilbakestill til Auto",
       threads: "Tråder",
       threadsDescription: "Inferens",
       batchThreads: "Batchtråder",
@@ -9348,6 +9351,16 @@ export const noMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaMultiGpuDescription: "Deaktivert som standard. Aktiver bare når du vil at llama.cpp skal fordele en modell over valgte GPU-er.",
     llamaMultiGpuEnabled: "Aktivert",
     llamaMultiGpuDisabled: "Deaktivert",
+    reconfigureTitle: "Rekonfigurere alle modeller?",
+    reconfigureBodyMulti:
+      "Multi-GPU er nå på. Tilbakestill hver lokale modells lagrede GPU-lagantall og enkelt-GPU-overstyring, slik at smart planlegging kan fordele hver modell over de valgte GPU-ene.",
+    reconfigureBodySingle:
+      "Multi-GPU er nå av. Pek hver lokale modell mot {{gpu}} og tilbakestill lagrede lagantall, slik at planleggingen dimensjonerer hver modell for det kortet.",
+    reconfigureConfirm: "Rekonfigurer {{count}} modeller",
+    reconfigureRunning: "Rekonfigurerer modeller...",
+    reconfigureSkip: "Behold gjeldende modellinnstillinger",
+    reconfigureDone: "Modeller rekonfigurert",
+    reconfigureDoneBody: "{{count}} lokale modeller følger nå det nye GPU-oppsettet.",
     llamaGpuDevicesTitle: "GPU-enheter",
     llamaGpuDevicesDescription: "Velg to eller flere dedikerte GPU-enheter. Integrerte enheter og CPU-enheter vises aldri her.",
     llamaGpuNone: "Ingen dedikerte GPU-enheter rapportert av llama.cpp.",

@@ -4427,6 +4427,9 @@ export const ruMessages: DeepPartialMessageTree<LocaleMessages> = {
       gpuLayers: "Слои GPU",
       gpuLayersCpuOnly: "Отключено на бэкендах только с CPU",
       gpuLayersDescription: "Выгрузка слоёв на GPU (0 = только CPU)",
+      multiGpuFixedLayers:
+        "Для этой модели сохранено фиксированное количество слоёв GPU ({{layers}}), которое переопределяет умное планирование, поэтому добавленная VRAM не будет использована. Сбросьте его, чтобы рассчитать разделение исходя из текущего оборудования.",
+      multiGpuFixedLayersReset: "Сбросить на Авто",
       threads: "Потоки",
       threadsDescription: "Инференс",
       batchThreads: "Потоки батча",
@@ -9348,6 +9351,16 @@ export const ruMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaMultiGpuDescription: "По умолчанию отключено. Включайте только если хотите, чтобы llama.cpp распределяла модель между выбранными GPU.",
     llamaMultiGpuEnabled: "Включено",
     llamaMultiGpuDisabled: "Отключено",
+    reconfigureTitle: "Перенастроить все модели?",
+    reconfigureBodyMulti:
+      "Несколько GPU теперь включено. Сбросьте сохранённое количество слоёв GPU и переопределение одиночного GPU для каждой локальной модели, чтобы умное планирование могло распределить каждую модель между выбранными GPU.",
+    reconfigureBodySingle:
+      "Несколько GPU теперь отключено. Направьте все локальные модели на {{gpu}} и сбросьте сохранённое количество слоёв, чтобы планирование рассчитало каждую модель под эту карту.",
+    reconfigureConfirm: "Перенастроить {{count}} моделей",
+    reconfigureRunning: "Перенастройка моделей...",
+    reconfigureSkip: "Оставить текущие настройки модели",
+    reconfigureDone: "Модели перенастроены",
+    reconfigureDoneBody: "{{count}} локальных моделей теперь используют новую конфигурацию GPU.",
     llamaGpuDevicesTitle: "Устройства GPU",
     llamaGpuDevicesDescription: "Выберите два или более дискретных устройства GPU. Встроенные и процессорные устройства здесь не отображаются.",
     llamaGpuNone: "llama.cpp не обнаружила дискретных устройств GPU.",

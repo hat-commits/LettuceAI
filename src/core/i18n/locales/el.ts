@@ -4427,6 +4427,9 @@ export const elMessages: DeepPartialMessageTree<LocaleMessages> = {
       gpuLayers: "GPU Layers",
       gpuLayersCpuOnly: "Απενεργοποιημένο σε backends μόνο για CPU",
       gpuLayersDescription: "Αποφόρτιση επιπέδων στην GPU (0 = μόνο CPU)",
+      multiGpuFixedLayers:
+        "Ένας σταθερός αριθμός επιπέδων GPU ({{layers}}) είναι αποθηκευμένος σε αυτό το μοντέλο και παρακάμπτει τον έξυπνο σχεδιασμό, επομένως η προστιθέμενη VRAM δεν θα χρησιμοποιηθεί. Επαναφέρετέ τον για να προσαρμοστεί ο διαμοιρασμός στο τρέχον υλικό.",
+      multiGpuFixedLayersReset: "Επαναφορά σε Αυτόματο",
       threads: "Threads",
       threadsDescription: "Εξαγωγή (Inference)",
       batchThreads: "Batch Threads",
@@ -9634,6 +9637,16 @@ export const elMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaMultiGpuDescription: "Απενεργοποιημένο από προεπιλογή. Ενεργοποιήστε το μόνο όταν θέλετε το llama.cpp να κατανείμει ένα μοντέλο στις επιλεγμένες GPU.",
     llamaMultiGpuEnabled: "Ενεργοποιημένο",
     llamaMultiGpuDisabled: "Απενεργοποιημένο",
+    reconfigureTitle: "Επαναδιαμόρφωση όλων των μοντέλων;",
+    reconfigureBodyMulti:
+      "Το Multi-GPU είναι πλέον ενεργό. Επαναφέρετε τον αποθηκευμένο αριθμό επιπέδων GPU και την παράκαμψη μονής GPU κάθε τοπικού μοντέλου, ώστε ο έξυπνος σχεδιασμός να μπορεί να κατανείμει κάθε μοντέλο στις επιλεγμένες GPU.",
+    reconfigureBodySingle:
+      "Το Multi-GPU είναι πλέον ανενεργό. Κατευθύνετε κάθε τοπικό μοντέλο στην {{gpu}} και επαναφέρετε τους αποθηκευμένους αριθμούς επιπέδων, ώστε ο σχεδιασμός να προσαρμόσει κάθε μοντέλο σε αυτήν την κάρτα.",
+    reconfigureConfirm: "Επαναδιαμόρφωση {{count}} μοντέλων",
+    reconfigureRunning: "Επαναδιαμόρφωση μοντέλων...",
+    reconfigureSkip: "Διατήρηση τρεχουσών ρυθμίσεων μοντέλου",
+    reconfigureDone: "Τα μοντέλα επαναδιαμορφώθηκαν",
+    reconfigureDoneBody: "{{count}} τοπικά μοντέλα ακολουθούν πλέον τη νέα διαμόρφωση GPU.",
     llamaGpuDevicesTitle: "Συσκευές GPU",
     llamaGpuDevicesDescription: "Επιλέξτε δύο ή περισσότερες διακριτές συσκευές GPU. Οι ενσωματωμένες συσκευές και η CPU δεν εμφανίζονται ποτέ εδώ.",
     llamaGpuNone: "Το llama.cpp δεν ανέφερε διακριτές συσκευές GPU.",
