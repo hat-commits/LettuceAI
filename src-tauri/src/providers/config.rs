@@ -126,7 +126,7 @@ fn get_all_provider_configs_internal() -> Vec<ProviderConfig> {
             "Gemini Agent Platform (Express)",
             "https://aiplatform.googleapis.com",
         ),
-        ("zai", "zAI (GLM)", "https://api.z.ai/api/coding/paas/v4"),
+        ("zai", "zAI (GLM)", "https://api.z.ai/api/paas/v4"),
         (
             "moonshot",
             "Moonshot AI (Kimi)",

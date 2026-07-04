@@ -18,25 +18,25 @@ struct ZAIChatRequest<'a> {
     top_p: Option<f64>,
     #[serde(rename = "max_tokens")]
     max_tokens: u32,
-    // ZAI supports streaming via SSE, so we expose this directly.
     stream: bool,
-    // You can add more ZAI-specific fields here later (e.g. do_sample, tools, etc.)
     #[serde(skip_serializing_if = "Option::is_none")]
     tools: Option<Vec<Value>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     tool_choice: Option<Value>,
+    thinking: Value,
     #[serde(skip_serializing_if = "Option::is_none")]
     reasoning_effort: Option<String>,
 }
 
 impl ProviderAdapter for ZAIAdapter {
     fn endpoint(&self, base_url: &str) -> String {
-        // ZAI uses: POST https://api.z-ai.com/v1/llm
+        // Z.AI is OpenAI-compatible: POST {base}/chat/completions, where base is
+        // https://api.z.ai/api/paas/v4 (or /api/coding/paas/v4 for coding-plan keys).
         let trimmed = base_url.trim_end_matches('/');
-        if trimmed.ends_with("/v1") {
-            format!("{}/llm", trimmed)
+        if trimmed.ends_with("/chat/completions") {
+            trimmed.to_string()
         } else {
-            format!("{}/v1/llm", trimmed)
+            format!("{}/chat/completions", trimmed)
         }
     }
 
@@ -105,6 +105,9 @@ impl ProviderAdapter for ZAIAdapter {
 
         let total_tokens = max_tokens + reasoning_budget.unwrap_or(0);
 
+        let thinking = json!({
+            "type": if reasoning_enabled { "enabled" } else { "disabled" }
+        });
         let explicit_reasoning_effort = if reasoning_enabled {
             reasoning_effort
         } else {
@@ -120,6 +123,7 @@ impl ProviderAdapter for ZAIAdapter {
             stream: should_stream,
             tools,
             tool_choice,
+            thinking,
             reasoning_effort: explicit_reasoning_effort,
         };
 

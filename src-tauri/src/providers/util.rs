@@ -122,10 +122,10 @@ pub fn build_verify_url(provider_id: &ProviderId, base_url: &str) -> String {
             format!("{}/models", trimmed)
         }
         "zai" => {
-            if trimmed.ends_with("/v1") {
-                format!("{}/llm", trimmed)
+            if trimmed.ends_with("/chat/completions") {
+                trimmed.to_string()
             } else {
-                format!("{}/v1/llm", trimmed)
+                format!("{}/chat/completions", trimmed)
             }
         }
         _ => {

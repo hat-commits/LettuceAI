@@ -91,7 +91,13 @@ pub async fn verify_provider_api_key(
     let headers = build_headers(&pid, &resolved_key)?;
     let url = verify_url;
 
-    let response = match client.get(&url).headers(headers).send().await {
+    let probe_with_post = pid.0 == "zai";
+    let request = if probe_with_post {
+        client.post(&url).headers(headers).json(&Value::Null)
+    } else {
+        client.get(&url).headers(headers)
+    };
+    let response = match request.send().await {
         Ok(resp) => resp,
         Err(err) => {
             return Ok(VerifyProviderApiKeyResult {
@@ -107,14 +113,18 @@ pub async fn verify_provider_api_key(
     let status = response.status().as_u16();
     let json = response.json::<Value>().await.unwrap_or(Value::Null);
 
-    let valid = match status {
-        200 => true,
-        401 | 403 => false,
-        _ => json
-            .get("data")
-            .and_then(|d| d.as_array())
-            .map(|arr| !arr.is_empty())
-            .unwrap_or(status == 200),
+    let valid = if probe_with_post {
+        !matches!(status, 401 | 403)
+    } else {
+        match status {
+            200 => true,
+            401 | 403 => false,
+            _ => json
+                .get("data")
+                .and_then(|d| d.as_array())
+                .map(|arr| !arr.is_empty())
+                .unwrap_or(status == 200),
+        }
     };
 
     let error = if valid {
