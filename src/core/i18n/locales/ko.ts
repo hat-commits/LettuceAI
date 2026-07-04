@@ -3812,6 +3812,11 @@ export const koMessages: DeepPartialMessageTree<LocaleMessages> = {
       sproutApiKeyPlaceholder: "Sprout 콘솔의 Bearer 토큰",
       sproutGet: "GitHub에서 Sprout 받기",
       chatEndpoint: "채팅 엔드포인트",
+      resolvedChatUrl: "요청이 전송되는 주소",
+      resolvedChatUrlDuplicate:
+        "\"{{segment}}\"이(가) Base URL 끝과 Chat Endpoint 시작에 모두 있어 두 번 전송됩니다. 둘 중 하나에서 제거하세요.",
+      resolvedModelsUrlDuplicate:
+        "\"{{segment}}\"이(가) Base URL 끝과 Models Endpoint 시작에 모두 있어 두 번 전송됩니다. 둘 중 하나에서 제거하세요.",
       fetchModels: "모델 가져오기",
       fetchModelsDesc: "이 사용자 지정 엔드포인트에 대한 모델 검색을 활성화합니다",
       authMode: "인증 모드",

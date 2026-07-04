@@ -3812,6 +3812,11 @@ export const plMessages: DeepPartialMessageTree<LocaleMessages> = {
       sproutApiKeyPlaceholder: "Token Bearer z konsoli Sprout",
       sproutGet: "Pobierz Sprout na GitHub",
       chatEndpoint: "Punkt końcowy czatu",
+      resolvedChatUrl: "Żądania trafią do",
+      resolvedChatUrlDuplicate:
+        "\"{{segment}}\" znajduje się na końcu Base URL i na początku Chat Endpoint, więc zostanie wysłane dwukrotnie. Usuń je z jednego z nich.",
+      resolvedModelsUrlDuplicate:
+        "\"{{segment}}\" znajduje się na końcu Base URL i na początku Models Endpoint, więc zostanie wysłane dwukrotnie. Usuń je z jednego z nich.",
       fetchModels: "Pobierz modele",
       fetchModelsDesc: "Włącz wykrywanie modeli dla tego niestandardowego punktu końcowego",
       authMode: "Tryb uwierzytelniania",

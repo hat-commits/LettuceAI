@@ -3812,6 +3812,11 @@ export const hiMessages: DeepPartialMessageTree<LocaleMessages> = {
       sproutApiKeyPlaceholder: "Sprout कंसोल से Bearer टोकन",
       sproutGet: "GitHub पर Sprout प्राप्त करें",
       chatEndpoint: "चैट एंडपॉइंट",
+      resolvedChatUrl: "अनुरोध यहाँ जाएंगे",
+      resolvedChatUrlDuplicate:
+        "\"{{segment}}\" Base URL के अंत में और Chat Endpoint की शुरुआत में है, इसलिए यह दो बार भेजा जाएगा। इसे किसी एक से हटा दें।",
+      resolvedModelsUrlDuplicate:
+        "\"{{segment}}\" Base URL के अंत में और Models Endpoint की शुरुआत में है, इसलिए यह दो बार भेजा जाएगा। इसे किसी एक से हटा दें।",
       fetchModels: "मॉडल प्राप्त करें (Fetch Models)",
       fetchModelsDesc: "इस कस्टम एंडपॉइंट के लिए मॉडल डिस्कवरी सक्षम करें",
       authMode: "प्रमाणीकरण मोड (Auth Mode)",

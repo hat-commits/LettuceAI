@@ -3812,6 +3812,11 @@ export const viMessages: DeepPartialMessageTree<LocaleMessages> = {
       sproutApiKeyPlaceholder: "Bearer token từ bảng điều khiển Sprout",
       sproutGet: "Tải Sprout trên GitHub",
       chatEndpoint: "Điểm cuối trò chuyện",
+      resolvedChatUrl: "Yêu cầu sẽ được gửi đến",
+      resolvedChatUrlDuplicate:
+        "\"{{segment}}\" nằm ở cuối Base URL và ở đầu Chat Endpoint nên sẽ bị gửi hai lần. Hãy xóa nó khỏi một trong hai.",
+      resolvedModelsUrlDuplicate:
+        "\"{{segment}}\" nằm ở cuối Base URL và ở đầu Models Endpoint nên sẽ bị gửi hai lần. Hãy xóa nó khỏi một trong hai.",
       fetchModels: "Lấy mô hình",
       fetchModelsDesc: "Bật khám phá mô hình cho điểm cuối tùy chỉnh này",
       authMode: "Chế độ xác thực",

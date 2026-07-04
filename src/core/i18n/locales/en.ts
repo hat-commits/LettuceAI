@@ -3940,6 +3940,11 @@ export const enMessages = {
       sproutApiKeyPlaceholder: "Bearer token from the Sprout console",
       sproutGet: "Get Sprout on GitHub",
       chatEndpoint: "Chat Endpoint",
+      resolvedChatUrl: "Requests will go to",
+      resolvedChatUrlDuplicate:
+        "\"{{segment}}\" is at the end of the Base URL and the start of the Chat Endpoint, so it will be sent twice. Remove it from one of them.",
+      resolvedModelsUrlDuplicate:
+        "\"{{segment}}\" is at the end of the Base URL and the start of the Models Endpoint, so it will be sent twice. Remove it from one of them.",
       fetchModels: "Fetch Models",
       fetchModelsDesc: "Enable model discovery for this custom endpoint",
       authMode: "Auth Mode",

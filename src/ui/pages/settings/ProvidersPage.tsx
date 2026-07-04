@@ -69,6 +69,41 @@ const AUDIO_PROVIDER_TYPE_TRANSLATION_KEY: Record<
 
 type ProviderTab = "llm" | "audio";
 
+function ResolvedEndpointPreview({
+  baseUrl,
+  endpoint,
+  duplicateWarning,
+}: {
+  baseUrl: string;
+  endpoint: string;
+  duplicateWarning: (segment: string) => string;
+}) {
+  const { t } = useI18n();
+  const base = baseUrl.trim().replace(/\/+$/, "");
+  const rawEndpoint = endpoint.trim();
+  const isAbsolute = /^https?:\/\//.test(rawEndpoint);
+  if (!rawEndpoint || (!base && !isAbsolute)) return null;
+  const resolved = isAbsolute
+    ? rawEndpoint
+    : `${base}${rawEndpoint.startsWith("/") ? "" : "/"}${rawEndpoint}`;
+  const baseTail = base.split("/").filter(Boolean).pop();
+  const endpointHead = rawEndpoint
+    .replace(/^https?:\/\/[^/]+/, "")
+    .split("/")
+    .filter(Boolean)[0];
+  const duplicated = !!baseTail && !!endpointHead && baseTail === endpointHead && !isAbsolute;
+  return (
+    <div className="-mt-2 space-y-1 px-1">
+      <p className="break-all font-mono text-[11px] text-fg/40">
+        {t("providers.editor.resolvedChatUrl")}: {resolved}
+      </p>
+      {duplicated && baseTail && (
+        <p className="text-[11px] text-amber-400/90">{duplicateWarning(baseTail)}</p>
+      )}
+    </div>
+  );
+}
+
 export function ProvidersPage() {
   const { t } = useI18n();
   const isMobile = getPlatform().type === "mobile";
@@ -808,6 +843,15 @@ export function ProvidersPage() {
                       }
                       placeholder="/v1/chat/completions"
                     />
+                    <ResolvedEndpointPreview
+                      baseUrl={editorProvider.baseUrl || ""}
+                      endpoint={
+                        (customConfig.chatEndpoint as string | undefined) ?? "/v1/chat/completions"
+                      }
+                      duplicateWarning={(segment) =>
+                        t("providers.editor.resolvedChatUrlDuplicate", { segment })
+                      }
+                    />
                     <ToggleRow
                       id="fetchModelsEnabled"
                       title={t("providers.editor.fetchModels")}
@@ -905,6 +949,13 @@ export function ProvidersPage() {
                             })
                           }
                           placeholder="/v1/models"
+                        />
+                        <ResolvedEndpointPreview
+                          baseUrl={editorProvider.baseUrl || ""}
+                          endpoint={(customConfig.modelsEndpoint as string | undefined) ?? ""}
+                          duplicateWarning={(segment) =>
+                            t("providers.editor.resolvedModelsUrlDuplicate", { segment })
+                          }
                         />
                         <div className="grid grid-cols-2 gap-3">
                           <TextField

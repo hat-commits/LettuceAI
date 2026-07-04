@@ -3812,6 +3812,11 @@ export const ruMessages: DeepPartialMessageTree<LocaleMessages> = {
       sproutApiKeyPlaceholder: "Bearer-токен из консоли Sprout",
       sproutGet: "Получить Sprout на GitHub",
       chatEndpoint: "Конечная точка чата",
+      resolvedChatUrl: "Запросы будут отправляться на",
+      resolvedChatUrlDuplicate:
+        "\"{{segment}}\" находится в конце Base URL и в начале Chat Endpoint, поэтому будет отправлен дважды. Уберите его из одного из полей.",
+      resolvedModelsUrlDuplicate:
+        "\"{{segment}}\" находится в конце Base URL и в начале Models Endpoint, поэтому будет отправлен дважды. Уберите его из одного из полей.",
       fetchModels: "Получать модели",
       fetchModelsDesc: "Включить обнаружение моделей для этой пользовательской конечной точки",
       authMode: "Режим авторизации",

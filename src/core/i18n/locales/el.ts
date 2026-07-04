@@ -3812,6 +3812,11 @@ export const elMessages: DeepPartialMessageTree<LocaleMessages> = {
       sproutApiKeyPlaceholder: "Bearer token από την κονσόλα Sprout",
       sproutGet: "Αποκτήστε το Sprout στο GitHub",
       chatEndpoint: "Chat Endpoint",
+      resolvedChatUrl: "Τα αιτήματα θα σταλούν στο",
+      resolvedChatUrlDuplicate:
+        "Το \"{{segment}}\" βρίσκεται στο τέλος του Base URL και στην αρχή του Chat Endpoint, οπότε θα σταλεί δύο φορές. Αφαίρεσέ το από το ένα από τα δύο.",
+      resolvedModelsUrlDuplicate:
+        "Το \"{{segment}}\" βρίσκεται στο τέλος του Base URL και στην αρχή του Models Endpoint, οπότε θα σταλεί δύο φορές. Αφαίρεσέ το από το ένα από τα δύο.",
       fetchModels: "Ανάκτηση Μοντέλων",
       fetchModelsDesc: "Ενεργοποίηση ανακάλυψης μοντέλων για αυτό το προσαρμοσμένο endpoint",
       authMode: "Τρόπος Ταυτοποίησης",

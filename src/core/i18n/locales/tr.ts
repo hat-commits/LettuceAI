@@ -3812,6 +3812,11 @@ export const trMessages: DeepPartialMessageTree<LocaleMessages> = {
       sproutApiKeyPlaceholder: "Sprout konsolundan Bearer token",
       sproutGet: "GitHub'da Sprout'u edinin",
       chatEndpoint: "Sohbet Uç Noktası",
+      resolvedChatUrl: "İstekler şuraya gidecek",
+      resolvedChatUrlDuplicate:
+        "\"{{segment}}\" hem Base URL'nin sonunda hem de Chat Endpoint'in başında, bu yüzden iki kez gönderilecek. Birinden kaldır.",
+      resolvedModelsUrlDuplicate:
+        "\"{{segment}}\" hem Base URL'nin sonunda hem de Models Endpoint'in başında, bu yüzden iki kez gönderilecek. Birinden kaldır.",
       fetchModels: "Modelleri Getir",
       fetchModelsDesc: "Bu özel uç nokta için model keşfini etkinleştirin",
       authMode: "Kimlik Doğrulama Modu",

@@ -3812,6 +3812,11 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       sproutApiKeyPlaceholder: "来自 Sprout 控制台的 Bearer 令牌",
       sproutGet: "在 GitHub 上获取 Sprout",
       chatEndpoint: "聊天端点",
+      resolvedChatUrl: "请求将发送至",
+      resolvedChatUrlDuplicate:
+        "\"{{segment}}\" 同时出现在 Base URL 末尾和 Chat Endpoint 开头，会被发送两次。请从其中一处删除。",
+      resolvedModelsUrlDuplicate:
+        "\"{{segment}}\" 同时出现在 Base URL 末尾和 Models Endpoint 开头，会被发送两次。请从其中一处删除。",
       fetchModels: "获取模型",
       fetchModelsDesc: "为此自定义端点启用模型发现",
       authMode: "认证模式",

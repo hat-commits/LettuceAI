@@ -3812,6 +3812,11 @@ export const filMessages: DeepPartialMessageTree<LocaleMessages> = {
       sproutApiKeyPlaceholder: "Bearer token mula sa Sprout console",
       sproutGet: "Kunin ang Sprout sa GitHub",
       chatEndpoint: "Chat Endpoint",
+      resolvedChatUrl: "Pupunta ang mga request sa",
+      resolvedChatUrlDuplicate:
+        "Ang \"{{segment}}\" ay nasa dulo ng Base URL at nasa simula ng Chat Endpoint, kaya ipapadala ito nang dalawang beses. Alisin ito sa isa sa dalawa.",
+      resolvedModelsUrlDuplicate:
+        "Ang \"{{segment}}\" ay nasa dulo ng Base URL at nasa simula ng Models Endpoint, kaya ipapadala ito nang dalawang beses. Alisin ito sa isa sa dalawa.",
       fetchModels: "Fetch Models",
       fetchModelsDesc: "I-enable ang model discovery para sa custom endpoint na ito",
       authMode: "Auth Mode",

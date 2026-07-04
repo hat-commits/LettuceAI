@@ -3812,6 +3812,11 @@ export const jaMessages: DeepPartialMessageTree<LocaleMessages> = {
       sproutApiKeyPlaceholder: "Sprout コンソールの Bearer トークン",
       sproutGet: "GitHub で Sprout を入手",
       chatEndpoint: "チャットエンドポイント",
+      resolvedChatUrl: "リクエストの送信先",
+      resolvedChatUrlDuplicate:
+        "\"{{segment}}\" がBase URLの末尾とChat Endpointの先頭の両方にあるため、二重に送信されます。どちらか一方から削除してください。",
+      resolvedModelsUrlDuplicate:
+        "\"{{segment}}\" がBase URLの末尾とModels Endpointの先頭の両方にあるため、二重に送信されます。どちらか一方から削除してください。",
       fetchModels: "モデルを取得",
       fetchModelsDesc: "このカスタムエンドポイントのモデル検出を有効にします",
       authMode: "認証モード",
