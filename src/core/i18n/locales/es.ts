@@ -4429,6 +4429,11 @@ export const esMessages: DeepPartialMessageTree<LocaleMessages> = {
       gpuLayersDescription: "Descargar capas a la GPU (0 = solo CPU)",
       multiGpuFixedLayers: "Este modelo tiene guardado un número fijo de capas de GPU ({{layers}}) que anula la planificación inteligente, por lo que la VRAM añadida no se usará. Restablécelo para calcular el reparto según el hardware actual.",
       multiGpuFixedLayersReset: "Restablecer a Auto",
+      multiGpuGlobalDefaultOn:
+        "La multi-GPU está activada desde los ajustes globales. Este modelo se reparte entre las GPU seleccionadas.",
+      multiGpuPinnedNotice:
+        "Este modelo está fijado a {{device}} y se ejecuta solo en esa GPU, por lo que se omite el reparto multi-GPU.",
+      multiGpuPinnedRemove: "Quitar fijación",
       threads: "Hilos",
       threadsDescription: "Inferencia",
       batchThreads: "Hilos de lote",

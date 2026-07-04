@@ -4429,6 +4429,11 @@ export const frMessages: DeepPartialMessageTree<LocaleMessages> = {
       gpuLayersDescription: "Décharger les couches vers le GPU (0 = CPU uniquement)",
       multiGpuFixedLayers: "Un nombre fixe de couches GPU ({{layers}}) est enregistré sur ce modèle et remplace la planification intelligente, donc la VRAM ajoutée ne sera pas utilisée. Réinitialisez-le pour calculer la répartition à partir du matériel actuel.",
       multiGpuFixedLayersReset: "Réinitialiser sur Auto",
+      multiGpuGlobalDefaultOn:
+        "Le multi-GPU est activé via les réglages globaux. Ce modèle est réparti entre les GPU sélectionnés.",
+      multiGpuPinnedNotice:
+        "Ce modèle est épinglé sur {{device}} et s'exécute uniquement sur ce GPU, la répartition multi-GPU est donc ignorée.",
+      multiGpuPinnedRemove: "Retirer l'épinglage",
       threads: "Threads",
       threadsDescription: "Inférence",
       batchThreads: "Threads de lot",

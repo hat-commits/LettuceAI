@@ -4430,6 +4430,11 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       multiGpuFixedLayers:
         "此模型已保存固定的 GPU 层数 ({{layers}})，会覆盖智能规划，导致新增的 VRAM 无法被使用。请重置以便根据当前硬件重新计算分配方案。",
       multiGpuFixedLayersReset: "重置为自动",
+      multiGpuGlobalDefaultOn:
+        "多 GPU 已通过全局默认设置启用。此模型将拆分到所选 GPU 上运行。",
+      multiGpuPinnedNotice:
+        "此模型已固定到 {{device}}，仅在该 GPU 上运行，因此会跳过多 GPU 拆分。",
+      multiGpuPinnedRemove: "取消固定",
       threads: "线程数",
       threadsDescription: "推理线程",
       batchThreads: "批处理线程数",

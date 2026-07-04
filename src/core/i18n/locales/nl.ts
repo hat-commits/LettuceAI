@@ -4713,6 +4713,11 @@ export const nlMessages: DeepPartialMessageTree<LocaleMessages> = {
       gpuLayersDescription: "Lagen naar GPU offloaden (0 = alleen CPU)",
       multiGpuFixedLayers: "Voor dit model is een vast aantal GPU-lagen ({{layers}}) opgeslagen dat slimme planning overschrijft, waardoor toegevoegde VRAM niet wordt gebruikt. Zet het terug om de verdeling op basis van de huidige hardware te bepalen.",
       multiGpuFixedLayersReset: "Terugzetten naar Automatisch",
+      multiGpuGlobalDefaultOn:
+        "Multi-GPU staat aan via de globale standaardinstellingen. Dit model wordt verdeeld over de geselecteerde GPU's.",
+      multiGpuPinnedNotice:
+        "Dit model is vastgezet op {{device}} en draait alleen op die GPU, dus multi-GPU-verdeling wordt overgeslagen.",
+      multiGpuPinnedRemove: "Vastzetten opheffen",
       threads: "Threads",
       threadsDescription: "Inferentie",
       batchThreads: "Batch-threads",

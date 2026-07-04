@@ -4429,6 +4429,11 @@ export const deMessages: DeepPartialMessageTree<LocaleMessages> = {
       gpuLayersDescription: "Layer auf die GPU auslagern (0 = nur CPU)",
       multiGpuFixedLayers: "Für dieses Modell ist eine feste GPU-Layer-Anzahl ({{layers}}) gespeichert, die die intelligente Planung überschreibt, sodass zusätzlicher VRAM nicht genutzt wird. Setze sie zurück, damit die Aufteilung anhand der aktuellen Hardware berechnet wird.",
       multiGpuFixedLayersReset: "Auf Automatisch zurücksetzen",
+      multiGpuGlobalDefaultOn:
+        "Multi-GPU ist über die globalen Standardwerte aktiviert. Dieses Modell wird auf die ausgewählten GPUs aufgeteilt.",
+      multiGpuPinnedNotice:
+        "Dieses Modell ist an {{device}} gebunden und läuft nur auf dieser GPU, daher wird die Multi-GPU-Aufteilung übersprungen.",
+      multiGpuPinnedRemove: "Bindung entfernen",
       threads: "Threads",
       threadsDescription: "Inferenz",
       batchThreads: "Batch-Threads",

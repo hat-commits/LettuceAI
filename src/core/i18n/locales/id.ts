@@ -9088,6 +9088,11 @@ export const idMessages: DeepPartialMessageTree<LocaleMessages> = {
       multiGpuFixedLayers:
         "Jumlah layer GPU tetap ({{layers}}) tersimpan pada model ini dan mengesampingkan perencanaan pintar, sehingga VRAM yang ditambahkan tidak akan digunakan. Atur ulang untuk menyesuaikan pembagian dengan perangkat keras saat ini.",
       multiGpuFixedLayersReset: "Atur Ulang ke Otomatis",
+      multiGpuGlobalDefaultOn:
+        "Multi-GPU aktif dari pengaturan default global. Model ini dibagi ke GPU yang dipilih.",
+      multiGpuPinnedNotice:
+        "Model ini disematkan ke {{device}} dan hanya berjalan di GPU tersebut, jadi pembagian multi-GPU dilewati.",
+      multiGpuPinnedRemove: "Hapus sematan",
       threads: "Threads",
       threadsDescription: "Inferensi",
       batchThreads: "Batch Threads",

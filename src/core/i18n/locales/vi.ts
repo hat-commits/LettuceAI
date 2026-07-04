@@ -7853,6 +7853,11 @@ export const viMessages: DeepPartialMessageTree<LocaleMessages> = {
       multiGpuFixedLayers:
         "Số lớp GPU cố định ({{layers}}) đã được lưu cho mô hình này và ghi đè lên việc lập kế hoạch thông minh, do đó VRAM được thêm vào sẽ không được sử dụng. Đặt lại để định cỡ việc phân chia theo phần cứng hiện tại.",
       multiGpuFixedLayersReset: "Đặt lại về Tự động",
+      multiGpuGlobalDefaultOn:
+        "Multi-GPU đang bật theo cài đặt mặc định chung. Mô hình này được chia trên các GPU đã chọn.",
+      multiGpuPinnedNotice:
+        "Mô hình này được ghim vào {{device}} và chỉ chạy trên GPU đó, nên việc chia multi-GPU bị bỏ qua.",
+      multiGpuPinnedRemove: "Bỏ ghim",
       threads: "Luồng",
       threadsDescription: "Suy luận",
       batchThreads: "Luồng Batch",

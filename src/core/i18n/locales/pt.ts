@@ -7853,6 +7853,11 @@ export const ptMessages: DeepPartialMessageTree<LocaleMessages> = {
       multiGpuFixedLayers:
         "Uma contagem fixa de camadas de GPU ({{layers}}) está salva neste modelo e substitui o planejamento inteligente, então a VRAM adicionada não será usada. Redefina para dimensionar a divisão a partir do hardware atual.",
       multiGpuFixedLayersReset: "Redefinir para Automático",
+      multiGpuGlobalDefaultOn:
+        "O multi-GPU está ativado pelas configurações globais. Este modelo é dividido entre as GPUs selecionadas.",
+      multiGpuPinnedNotice:
+        "Este modelo está fixado em {{device}} e roda apenas nessa GPU, então a divisão multi-GPU é ignorada.",
+      multiGpuPinnedRemove: "Remover fixação",
       threads: "Threads",
       threadsDescription: "Inferência",
       batchThreads: "Threads de Lote",

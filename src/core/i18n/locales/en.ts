@@ -4597,6 +4597,11 @@ export const enMessages = {
       multiGpuFixedLayers:
         "A fixed GPU layer count ({{layers}}) is saved on this model and overrides smart planning, so added VRAM will not be used. Reset it to size the split from current hardware.",
       multiGpuFixedLayersReset: "Reset to Auto",
+      multiGpuGlobalDefaultOn:
+        "Multi-GPU is on from global defaults. This model splits across your selected GPUs.",
+      multiGpuPinnedNotice:
+        "This model is pinned to {{device}} and runs on that single GPU, so multi-GPU splitting is skipped.",
+      multiGpuPinnedRemove: "Remove pin",
       threads: "Threads",
       threadsDescription: "Inference",
       batchThreads: "Batch Threads",

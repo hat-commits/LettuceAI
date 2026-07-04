@@ -456,22 +456,60 @@ pub(super) fn resolve_llama_main_gpu(
         .or(settings.advanced_model_settings.llama_main_gpu)
 }
 
-pub(super) fn resolve_llama_single_gpu_device_id(
+pub(super) fn resolve_llama_multi_gpu_enabled_leveled(
     session: &Session,
     model: &Model,
     settings: &Settings,
-) -> Option<usize> {
+) -> Option<(bool, u8)> {
+    session
+        .advanced_model_settings
+        .as_ref()
+        .and_then(|cfg| cfg.llama_multi_gpu_enabled)
+        .map(|value| (value, 2))
+        .or_else(|| {
+            model
+                .advanced_model_settings
+                .as_ref()
+                .and_then(|cfg| cfg.llama_multi_gpu_enabled)
+                .map(|value| (value, 1))
+        })
+        .or(settings
+            .advanced_model_settings
+            .llama_multi_gpu_enabled
+            .map(|value| (value, 0)))
+}
+
+pub(super) fn resolve_llama_single_gpu_device_id_leveled(
+    session: &Session,
+    model: &Model,
+    settings: &Settings,
+) -> Option<(usize, u8)> {
     session
         .advanced_model_settings
         .as_ref()
         .and_then(|cfg| cfg.llama_single_gpu_device_id)
+        .map(|value| (value, 2))
         .or_else(|| {
             model
                 .advanced_model_settings
                 .as_ref()
                 .and_then(|cfg| cfg.llama_single_gpu_device_id)
+                .map(|value| (value, 1))
         })
-        .or(settings.advanced_model_settings.llama_single_gpu_device_id)
+        .or(settings
+            .advanced_model_settings
+            .llama_single_gpu_device_id
+            .map(|value| (value, 0)))
+}
+
+pub(crate) fn llama_pin_overridden_by_multi_gpu(
+    multi_gpu: Option<(bool, u8)>,
+    pin: Option<(usize, u8)>,
+) -> bool {
+    matches!(
+        (multi_gpu, pin),
+        (Some((true, multi_level)), Some((_, pin_level))) if multi_level >= pin_level
+    )
 }
 
 pub(super) fn resolve_llama_priority_vram_limit_bytes(
@@ -1129,3 +1167,46 @@ pub(crate) use model_resolution::find_model_with_credential;
 
 mod provider_fields;
 pub(crate) use provider_fields::{build_provider_extra_fields, RequestSettings};
+
+#[cfg(test)]
+mod gpu_pin_tests {
+    use super::llama_pin_overridden_by_multi_gpu;
+
+    #[test]
+    fn multi_gpu_at_same_or_higher_level_suppresses_pin() {
+        assert!(llama_pin_overridden_by_multi_gpu(
+            Some((true, 0)),
+            Some((1, 0))
+        ));
+        assert!(llama_pin_overridden_by_multi_gpu(
+            Some((true, 1)),
+            Some((1, 0))
+        ));
+        assert!(llama_pin_overridden_by_multi_gpu(
+            Some((true, 2)),
+            Some((1, 1))
+        ));
+    }
+
+    #[test]
+    fn more_specific_pin_beats_multi_gpu() {
+        assert!(!llama_pin_overridden_by_multi_gpu(
+            Some((true, 0)),
+            Some((1, 1))
+        ));
+        assert!(!llama_pin_overridden_by_multi_gpu(
+            Some((true, 1)),
+            Some((1, 2))
+        ));
+    }
+
+    #[test]
+    fn disabled_or_absent_multi_gpu_never_suppresses() {
+        assert!(!llama_pin_overridden_by_multi_gpu(
+            Some((false, 2)),
+            Some((1, 0))
+        ));
+        assert!(!llama_pin_overridden_by_multi_gpu(None, Some((1, 0))));
+        assert!(!llama_pin_overridden_by_multi_gpu(Some((true, 2)), None));
+    }
+}

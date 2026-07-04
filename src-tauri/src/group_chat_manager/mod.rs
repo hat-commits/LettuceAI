@@ -670,13 +670,31 @@ pub(crate) fn build_llama_extra_fields(
     {
         extra.insert("llamaMainGpu".to_string(), json!(v));
     }
-    if let Some(v) = model
+    let group_multi_gpu_leveled = model
+        .advanced_model_settings
+        .as_ref()
+        .and_then(|a| a.llama_multi_gpu_enabled)
+        .map(|value| (value, 1u8))
+        .or(settings
+            .advanced_model_settings
+            .llama_multi_gpu_enabled
+            .map(|value| (value, 0u8)));
+    let group_single_gpu_pin = model
         .advanced_model_settings
         .as_ref()
         .and_then(|a| a.llama_single_gpu_device_id)
-        .or(settings.advanced_model_settings.llama_single_gpu_device_id)
-    {
-        extra.insert("llamaSingleGpuDeviceId".to_string(), json!(v));
+        .map(|value| (value, 1u8))
+        .or(settings
+            .advanced_model_settings
+            .llama_single_gpu_device_id
+            .map(|value| (value, 0u8)));
+    if !crate::chat_manager::execution::llama_pin_overridden_by_multi_gpu(
+        group_multi_gpu_leveled,
+        group_single_gpu_pin,
+    ) {
+        if let Some((v, _)) = group_single_gpu_pin {
+            extra.insert("llamaSingleGpuDeviceId".to_string(), json!(v));
+        }
     }
     if let Some(v) = model
         .advanced_model_settings

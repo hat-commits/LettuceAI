@@ -80,7 +80,7 @@ import { toast } from "../../components/toast";
 import { useModelEditorController } from "./hooks/useModelEditorController";
 import { useNavigationManager } from "../../navigation";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { addOrUpdateModel } from "../../../core/storage/repo";
+import { addOrUpdateModel, readSettings, readSettingsCached } from "../../../core/storage/repo";
 import type { LlamaLastRuntimeReport, ReasoningSupport } from "../../../core/storage/schemas";
 import {
   getProviderReasoningSupport,
@@ -457,6 +457,23 @@ export function EditModelPage() {
   const [llamaContextError, setLlamaContextError] = useState<string | null>(null);
   const [llamaContextLoading, setLlamaContextLoading] = useState(false);
   const [llamaGpuDevices, setLlamaGpuDevices] = useState<LlamaGpuDevice[]>([]);
+  const [globalMultiGpuDefault, setGlobalMultiGpuDefault] = useState<boolean>(
+    () => readSettingsCached()?.advancedModelSettings?.llamaMultiGpuEnabled === true,
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    void readSettings()
+      .then((settings) => {
+        if (!cancelled) {
+          setGlobalMultiGpuDefault(settings.advancedModelSettings?.llamaMultiGpuEnabled === true);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const [showLocalModelPicker, setShowLocalModelPicker] = useState(false);
   const [localLibraryPickerMode, setLocalLibraryPickerMode] =
     useState<LocalLibraryPickerMode>("model");
@@ -1663,6 +1680,9 @@ export function EditModelPage() {
     (device) => device.deviceType !== "IntegratedGpu",
   );
   const multiGpuAvailable = eligibleGpuDevices.length >= 2;
+  const effectiveMultiGpuEnabled =
+    modelAdvancedDraft.llamaMultiGpuEnabled === true ||
+    (modelAdvancedDraft.llamaMultiGpuEnabled == null && globalMultiGpuDefault);
   const selectedGpuDeviceIds = modelAdvancedDraft.llamaGpuDeviceIds ?? [];
   const selectedEligibleDevices = eligibleGpuDevices.filter((device) =>
     selectedGpuDeviceIds.includes(device.index),
@@ -4185,10 +4205,7 @@ export function EditModelPage() {
                                     )}
                                   </div>
 
-                                  {!(
-                                    modelAdvancedDraft.llamaMultiGpuEnabled === true &&
-                                    multiGpuAvailable
-                                  ) && (
+                                  {!(effectiveMultiGpuEnabled && multiGpuAvailable) && (
                                   <div className="space-y-4">
                                     <div className="flex items-center justify-between">
                                       <div className="space-y-0.5">
@@ -4321,6 +4338,15 @@ export function EditModelPage() {
                                             ? t("runtimeDefaults.llamaMultiGpuSplitHint")
                                             : t("runtimeDefaults.llamaMultiGpuRequiresTwo")}
                                         </span>
+                                        {modelAdvancedDraft.llamaMultiGpuEnabled == null &&
+                                          globalMultiGpuDefault &&
+                                          multiGpuAvailable && (
+                                            <span className="block text-[12px] text-accent/75">
+                                              {t(
+                                                "editModel.layerPlacement.multiGpuGlobalDefaultOn",
+                                              )}
+                                            </span>
+                                          )}
                                       </div>
                                       <select
                                         value={
@@ -4367,7 +4393,7 @@ export function EditModelPage() {
                                       </select>
                                     </div>
 
-                                    {modelAdvancedDraft.llamaMultiGpuEnabled === true &&
+                                    {effectiveMultiGpuEnabled &&
                                       multiGpuAvailable &&
                                       modelAdvancedDraft.llamaGpuLayers != null && (
                                         <div className="rounded-lg border border-amber-400/20 bg-amber-500/5 px-3 py-2.5">
@@ -4401,7 +4427,48 @@ export function EditModelPage() {
                                         </div>
                                       )}
 
-                                    {modelAdvancedDraft.llamaMultiGpuEnabled === true &&
+                                    {modelAdvancedDraft.llamaMultiGpuEnabled == null &&
+                                      globalMultiGpuDefault &&
+                                      multiGpuAvailable &&
+                                      modelAdvancedDraft.llamaSingleGpuDeviceId != null && (
+                                        <div className="rounded-lg border border-amber-400/20 bg-amber-500/5 px-3 py-2.5">
+                                          <div className="flex items-start gap-2">
+                                            <AlertTriangle
+                                              size={13}
+                                              className="mt-0.5 shrink-0 text-amber-300"
+                                            />
+                                            <div className="min-w-0 flex-1 space-y-1.5">
+                                              <p className="text-[12px] leading-relaxed text-amber-300/90">
+                                                {t("editModel.layerPlacement.multiGpuPinnedNotice", {
+                                                  device:
+                                                    eligibleGpuDevices.find(
+                                                      (device) =>
+                                                        device.index ===
+                                                        modelAdvancedDraft.llamaSingleGpuDeviceId,
+                                                    )?.description ||
+                                                    `GPU ${modelAdvancedDraft.llamaSingleGpuDeviceId}`,
+                                                })}
+                                              </p>
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  setModelAdvancedDraft({
+                                                    ...modelAdvancedDraft,
+                                                    llamaSingleGpuDeviceId: null,
+                                                  })
+                                                }
+                                                className="rounded-md border border-amber-400/30 bg-amber-500/10 px-2.5 py-1 text-[11.5px] font-medium text-amber-200 transition hover:bg-amber-500/20"
+                                              >
+                                                {t(
+                                                  "editModel.layerPlacement.multiGpuPinnedRemove",
+                                                )}
+                                              </button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      )}
+
+                                    {effectiveMultiGpuEnabled &&
                                       multiGpuAvailable && (
                                         <div className="space-y-4">
                                           <div className="flex items-center justify-between gap-3">

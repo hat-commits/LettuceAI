@@ -9087,6 +9087,11 @@ export const itMessages: DeepPartialMessageTree<LocaleMessages> = {
       gpuLayersDescription: "Trasferisci i layer alla GPU (0 = solo CPU)",
       multiGpuFixedLayers: "Su questo modello è salvato un numero fisso di layer GPU ({{layers}}) che sovrascrive la pianificazione intelligente, quindi la VRAM aggiunta non verrà usata. Reimpostalo per calcolare la suddivisione in base all'hardware attuale.",
       multiGpuFixedLayersReset: "Reimposta su Auto",
+      multiGpuGlobalDefaultOn:
+        "Il multi-GPU è attivo dalle impostazioni globali. Questo modello viene suddiviso tra le GPU selezionate.",
+      multiGpuPinnedNotice:
+        "Questo modello è fissato su {{device}} e gira solo su quella GPU, quindi la suddivisione multi-GPU viene saltata.",
+      multiGpuPinnedRemove: "Rimuovi blocco",
       threads: "Thread",
       threadsDescription: "Inferenza",
       batchThreads: "Thread batch",

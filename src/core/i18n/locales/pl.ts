@@ -7853,6 +7853,11 @@ export const plMessages: DeepPartialMessageTree<LocaleMessages> = {
       multiGpuFixedLayers:
         "W tym modelu zapisano stałą liczbę warstw GPU ({{layers}}), która nadpisuje inteligentne planowanie, więc dodana VRAM nie zostanie wykorzystana. Zresetuj ją, aby dopasować podział do aktualnego sprzętu.",
       multiGpuFixedLayersReset: "Resetuj do Auto",
+      multiGpuGlobalDefaultOn:
+        "Multi-GPU jest włączone w ustawieniach globalnych. Ten model jest dzielony między wybrane GPU.",
+      multiGpuPinnedNotice:
+        "Ten model jest przypięty do {{device}} i działa tylko na tym GPU, więc podział multi-GPU jest pomijany.",
+      multiGpuPinnedRemove: "Usuń przypięcie",
       threads: "Wątki",
       threadsDescription: "Wnioskowanie",
       batchThreads: "Wątki partii",

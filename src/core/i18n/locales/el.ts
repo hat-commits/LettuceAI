@@ -4430,6 +4430,11 @@ export const elMessages: DeepPartialMessageTree<LocaleMessages> = {
       multiGpuFixedLayers:
         "Ένας σταθερός αριθμός επιπέδων GPU ({{layers}}) είναι αποθηκευμένος σε αυτό το μοντέλο και παρακάμπτει τον έξυπνο σχεδιασμό, επομένως η προστιθέμενη VRAM δεν θα χρησιμοποιηθεί. Επαναφέρετέ τον για να προσαρμοστεί ο διαμοιρασμός στο τρέχον υλικό.",
       multiGpuFixedLayersReset: "Επαναφορά σε Αυτόματο",
+      multiGpuGlobalDefaultOn:
+        "Το Multi-GPU είναι ενεργό από τις καθολικές προεπιλογές. Αυτό το μοντέλο κατανέμεται στις επιλεγμένες GPU.",
+      multiGpuPinnedNotice:
+        "Αυτό το μοντέλο είναι καρφιτσωμένο στη {{device}} και τρέχει μόνο σε αυτήν την GPU, οπότε η κατανομή σε πολλές GPU παραλείπεται.",
+      multiGpuPinnedRemove: "Αφαίρεση καρφιτσώματος",
       threads: "Threads",
       threadsDescription: "Εξαγωγή (Inference)",
       batchThreads: "Batch Threads",

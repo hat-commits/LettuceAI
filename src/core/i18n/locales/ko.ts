@@ -4430,6 +4430,11 @@ export const koMessages: DeepPartialMessageTree<LocaleMessages> = {
       multiGpuFixedLayers:
         "이 모델에는 고정 GPU 레이어 수 ({{layers}})가 저장되어 있어 스마트 플래닝보다 우선 적용되므로, 추가한 VRAM이 사용되지 않습니다. 현재 하드웨어에 맞춰 분할하려면 초기화하세요.",
       multiGpuFixedLayersReset: "자동으로 초기화",
+      multiGpuGlobalDefaultOn:
+        "전역 기본값에 따라 멀티 GPU가 켜져 있습니다. 이 모델은 선택한 GPU에 분산됩니다.",
+      multiGpuPinnedNotice:
+        "이 모델은 {{device}}에 고정되어 해당 GPU에서만 실행되므로 멀티 GPU 분할을 건너뜁니다.",
+      multiGpuPinnedRemove: "고정 해제",
       threads: "스레드",
       threadsDescription: "추론",
       batchThreads: "배치 스레드",

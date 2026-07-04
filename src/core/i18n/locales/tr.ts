@@ -4430,6 +4430,11 @@ export const trMessages: DeepPartialMessageTree<LocaleMessages> = {
       multiGpuFixedLayers:
         "Bu modelde sabit bir GPU katman sayısı ({{layers}}) kayıtlı ve bu, akıllı planlamayı geçersiz kılıyor; böylece eklenen VRAM kullanılmayacak. Bölünmeyi mevcut donanıma göre boyutlandırmak için sıfırlayın.",
       multiGpuFixedLayersReset: "Otomatiğe Sıfırla",
+      multiGpuGlobalDefaultOn:
+        "Çoklu GPU, genel varsayılanlardan açık. Bu model seçilen GPU'lara bölünür.",
+      multiGpuPinnedNotice:
+        "Bu model {{device}} cihazına sabitlenmiş ve yalnızca o GPU'da çalışıyor, bu yüzden çoklu GPU bölüştürmesi atlanıyor.",
+      multiGpuPinnedRemove: "Sabitlemeyi kaldır",
       threads: "İş Parçacıkları (Threads)",
       threadsDescription: "Çıkarım (Inference)",
       batchThreads: "Batch İş Parçacıkları",

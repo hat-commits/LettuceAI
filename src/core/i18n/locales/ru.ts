@@ -4430,6 +4430,11 @@ export const ruMessages: DeepPartialMessageTree<LocaleMessages> = {
       multiGpuFixedLayers:
         "Для этой модели сохранено фиксированное количество слоёв GPU ({{layers}}), которое переопределяет умное планирование, поэтому добавленная VRAM не будет использована. Сбросьте его, чтобы рассчитать разделение исходя из текущего оборудования.",
       multiGpuFixedLayersReset: "Сбросить на Авто",
+      multiGpuGlobalDefaultOn:
+        "Multi-GPU включён в глобальных настройках. Эта модель распределяется между выбранными GPU.",
+      multiGpuPinnedNotice:
+        "Эта модель закреплена за {{device}} и работает только на этом GPU, поэтому распределение по нескольким GPU пропускается.",
+      multiGpuPinnedRemove: "Убрать закрепление",
       threads: "Потоки",
       threadsDescription: "Инференс",
       batchThreads: "Потоки батча",

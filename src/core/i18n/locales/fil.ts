@@ -4430,6 +4430,11 @@ export const filMessages: DeepPartialMessageTree<LocaleMessages> = {
       multiGpuFixedLayers:
         "May naka-save na fixed GPU layer count ({{layers}}) sa model na ito at ino-override nito ang smart planning, kaya hindi magagamit ang idinagdag na VRAM. I-reset ito para i-size ang split base sa kasalukuyang hardware.",
       multiGpuFixedLayersReset: "I-reset sa Auto",
+      multiGpuGlobalDefaultOn:
+        "Naka-on ang multi-GPU mula sa global defaults. Hinahati ang model na ito sa mga napiling GPU.",
+      multiGpuPinnedNotice:
+        "Naka-pin ang model na ito sa {{device}} at tumatakbo lang sa GPU na iyon, kaya nilalaktawan ang multi-GPU split.",
+      multiGpuPinnedRemove: "Alisin ang pin",
       threads: "Threads",
       threadsDescription: "Inference",
       batchThreads: "Batch Threads",

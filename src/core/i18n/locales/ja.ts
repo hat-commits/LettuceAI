@@ -9088,6 +9088,11 @@ export const jaMessages: DeepPartialMessageTree<LocaleMessages> = {
       multiGpuFixedLayers:
         "このモデルには固定 GPU レイヤー数 ({{layers}}) が保存されており、スマートプランニングより優先されるため、追加した VRAM は使用されません。現在のハードウェアに合わせて分割するにはリセットしてください。",
       multiGpuFixedLayersReset: "自動にリセット",
+      multiGpuGlobalDefaultOn:
+        "グローバル設定によりマルチGPUが有効です。このモデルは選択したGPUに分割されます。",
+      multiGpuPinnedNotice:
+        "このモデルは{{device}}に固定されており、そのGPUのみで動作するため、マルチGPU分割は行われません。",
+      multiGpuPinnedRemove: "固定を解除",
       threads: "スレッド",
       threadsDescription: "推論",
       batchThreads: "バッチスレッド",

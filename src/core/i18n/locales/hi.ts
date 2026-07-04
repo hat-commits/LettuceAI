@@ -9088,6 +9088,11 @@ export const hiMessages: DeepPartialMessageTree<LocaleMessages> = {
       multiGpuFixedLayers:
         "इस मॉडल पर एक फिक्स्ड GPU लेयर काउंट ({{layers}}) सेव है, जो स्मार्ट प्लानिंग को ओवरराइड कर देता है, जिससे जोड़ा गया VRAM उपयोग में नहीं आएगा। मौजूदा हार्डवेयर के अनुसार स्प्लिट को साइज़ करने के लिए इसे रीसेट करें।",
       multiGpuFixedLayersReset: "ऑटो पर रीसेट करें",
+      multiGpuGlobalDefaultOn:
+        "Multi-GPU ग्लोबल डिफ़ॉल्ट से चालू है। यह मॉडल चुने गए GPU में बांटा जाता है।",
+      multiGpuPinnedNotice:
+        "यह मॉडल {{device}} पर पिन है और केवल उसी GPU पर चलता है, इसलिए multi-GPU विभाजन छोड़ दिया जाता है।",
+      multiGpuPinnedRemove: "पिन हटाएं",
       threads: "थ्रेड्स (Threads)",
       threadsDescription: "इन्फरेंस (Inference)",
       batchThreads: "बैच थ्रेड्स (Batch Threads)",

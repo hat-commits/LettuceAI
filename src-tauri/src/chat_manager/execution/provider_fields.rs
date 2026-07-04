@@ -17,7 +17,9 @@ use super::{
     resolve_llama_profile_min_p, resolve_llama_profile_typical_p,
     resolve_llama_raw_completion_fallback, resolve_llama_rope_freq_base,
     resolve_llama_rope_freq_scale, resolve_llama_sampler_order, resolve_llama_sampler_profile,
-    resolve_llama_seed, resolve_llama_single_gpu_device_id, resolve_llama_streaming_enabled,
+    llama_pin_overridden_by_multi_gpu, resolve_llama_multi_gpu_enabled_leveled,
+    resolve_llama_seed, resolve_llama_single_gpu_device_id_leveled,
+    resolve_llama_streaming_enabled,
     resolve_llama_strict_mode, resolve_llama_swa_full, resolve_llama_threads,
     resolve_llama_threads_batch, resolve_llama_xtc_probability, resolve_llama_xtc_threshold,
     resolve_max_tokens, resolve_presence_penalty, resolve_temperature, resolve_top_k,
@@ -62,8 +64,12 @@ fn build_llama_extra_fields(
     if let Some(v) = resolve_llama_main_gpu(session, model, settings) {
         extra.insert("llamaMainGpu".to_string(), json!(v));
     }
-    if let Some(v) = resolve_llama_single_gpu_device_id(session, model, settings) {
-        extra.insert("llamaSingleGpuDeviceId".to_string(), json!(v));
+    let multi_gpu_leveled = resolve_llama_multi_gpu_enabled_leveled(session, model, settings);
+    let single_gpu_pin = resolve_llama_single_gpu_device_id_leveled(session, model, settings);
+    if !llama_pin_overridden_by_multi_gpu(multi_gpu_leveled, single_gpu_pin) {
+        if let Some((v, _)) = single_gpu_pin {
+            extra.insert("llamaSingleGpuDeviceId".to_string(), json!(v));
+        }
     }
     if let Some(v) = resolve_llama_priority_vram_limit_bytes(session, model, settings) {
         extra.insert("llamaPriorityVramLimitBytes".to_string(), json!(v));

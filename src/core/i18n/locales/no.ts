@@ -4430,6 +4430,11 @@ export const noMessages: DeepPartialMessageTree<LocaleMessages> = {
       multiGpuFixedLayers:
         "Et fast antall GPU-lag ({{layers}}) er lagret på denne modellen og overstyrer smart planlegging, så tilført VRAM vil ikke bli brukt. Tilbakestill det for å dimensjonere fordelingen ut fra gjeldende maskinvare.",
       multiGpuFixedLayersReset: "Tilbakestill til Auto",
+      multiGpuGlobalDefaultOn:
+        "Multi-GPU er på via globale standardinnstillinger. Denne modellen fordeles på de valgte GPU-ene.",
+      multiGpuPinnedNotice:
+        "Denne modellen er festet til {{device}} og kjører bare på den GPU-en, så multi-GPU-fordeling hoppes over.",
+      multiGpuPinnedRemove: "Fjern festing",
       threads: "Tråder",
       threadsDescription: "Inferens",
       batchThreads: "Batchtråder",
