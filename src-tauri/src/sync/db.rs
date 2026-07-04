@@ -10,6 +10,7 @@ use crate::sync::models::{
     CompanionSharedMemory, CreationHelperSession, GroupMessage, GroupMessageVariant,
     GroupParticipation, GroupSession, Message, MessageVariant, MetaEntry, Model, Persona,
     PromptTemplate, ProviderCredential, Scene, SceneVariant, Secret, Session, Settings,
+    SyncAsrCorrection, SyncAsrIgnoredSuggestion, SyncAsrVocabularyTerm,
     SyncCompanionScheduledNote, SyncCompanionTurnEffect, SyncLorebook, SyncLorebookEntry,
     SyncMemoryEmbeddingRecord, SyncedMemoryEmbedding, UsageMetadata, UsageRecord, UserVoice,
 };
@@ -115,6 +116,9 @@ struct CoreSnapshot {
 struct TtsSnapshot {
     audio_providers: Vec<AudioProvider>,
     user_voices: Vec<UserVoice>,
+    asr_vocabulary_terms: Vec<SyncAsrVocabularyTerm>,
+    asr_corrections: Vec<SyncAsrCorrection>,
+    asr_ignored_suggestions: Vec<SyncAsrIgnoredSuggestion>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -718,6 +722,43 @@ fn collect_current_entity_records(
             SyncDomain::Tts,
             "user_voice",
             item.id.clone(),
+            item,
+        )?;
+    }
+    for item in &fetch_asr_vocabulary_terms(conn)? {
+        push_entity_record(
+            &mut records,
+            SyncDomain::Tts,
+            "asr_vocabulary_term",
+            asr_vocabulary_entity_id(item),
+            item,
+        )?;
+    }
+    for item in &fetch_asr_corrections(conn)? {
+        push_entity_record(
+            &mut records,
+            SyncDomain::Tts,
+            "asr_correction",
+            asr_correction_entity_id(
+                &item.normalized_wrong,
+                &item.normalized_correct,
+                &item.language,
+                &item.scope,
+            ),
+            item,
+        )?;
+    }
+    for item in &fetch_asr_ignored_suggestions(conn)? {
+        push_entity_record(
+            &mut records,
+            SyncDomain::Tts,
+            "asr_ignored_suggestion",
+            asr_correction_entity_id(
+                &item.normalized_wrong,
+                &item.normalized_correct,
+                &item.language,
+                &item.scope,
+            ),
             item,
         )?;
     }
@@ -1665,6 +1706,9 @@ fn materialize_domain_heads(conn: &mut DbConnection, domain: SyncDomain) -> Resu
             let mut snapshot = TtsSnapshot {
                 audio_providers: Vec::new(),
                 user_voices: Vec::new(),
+                asr_vocabulary_terms: Vec::new(),
+                asr_corrections: Vec::new(),
+                asr_ignored_suggestions: Vec::new(),
             };
             for (key, head) in domain_heads {
                 match key.entity_type.as_str() {
@@ -1672,6 +1716,15 @@ fn materialize_domain_heads(conn: &mut DbConnection, domain: SyncDomain) -> Resu
                         .audio_providers
                         .push(deserialize_head(&key, &head)?),
                     "user_voice" => snapshot.user_voices.push(deserialize_head(&key, &head)?),
+                    "asr_vocabulary_term" => snapshot
+                        .asr_vocabulary_terms
+                        .push(deserialize_head(&key, &head)?),
+                    "asr_correction" => snapshot
+                        .asr_corrections
+                        .push(deserialize_head(&key, &head)?),
+                    "asr_ignored_suggestion" => snapshot
+                        .asr_ignored_suggestions
+                        .push(deserialize_head(&key, &head)?),
                     _ => {}
                 }
             }
@@ -2426,8 +2479,180 @@ fn apply_tts_snapshot(conn: &mut DbConnection, payload: &[u8]) -> Result<(), Str
         .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
     }
 
+    apply_asr_learning_tables(
+        &tx,
+        &snapshot.asr_vocabulary_terms,
+        &snapshot.asr_corrections,
+        &snapshot.asr_ignored_suggestions,
+    )?;
+
     tx.commit()
         .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))
+}
+
+pub(crate) fn apply_asr_learning_tables(
+    tx: &rusqlite::Transaction<'_>,
+    vocabulary_terms: &[SyncAsrVocabularyTerm],
+    corrections: &[SyncAsrCorrection],
+    ignored_suggestions: &[SyncAsrIgnoredSuggestion],
+) -> Result<(), String> {
+    let example_term_links: Vec<(i64, String)> = {
+        let mut stmt = tx
+            .prepare(
+                "SELECT e.id, t.normalized_term, t.language, t.scope
+                 FROM asr_voice_examples e
+                 JOIN asr_vocabulary_terms t ON e.term_id = t.id",
+            )
+            .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+        let rows = stmt
+            .query_map([], |r| {
+                let language: Option<String> = r.get(2)?;
+                Ok((
+                    r.get::<_, i64>(0)?,
+                    format!(
+                        "{}|{}|{}",
+                        r.get::<_, String>(1)?,
+                        language.as_deref().unwrap_or("-"),
+                        r.get::<_, String>(3)?
+                    ),
+                ))
+            })
+            .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?
+    };
+    let example_correction_links: Vec<(i64, String)> = {
+        let mut stmt = tx
+            .prepare(
+                "SELECT e.id, c.normalized_wrong, c.normalized_correct, c.language, c.scope
+                 FROM asr_voice_examples e
+                 JOIN asr_corrections c ON e.correction_id = c.id",
+            )
+            .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+        let rows = stmt
+            .query_map([], |r| {
+                let language: Option<String> = r.get(3)?;
+                Ok((
+                    r.get::<_, i64>(0)?,
+                    format!(
+                        "{}|{}|{}|{}",
+                        r.get::<_, String>(1)?,
+                        r.get::<_, String>(2)?,
+                        language.as_deref().unwrap_or("-"),
+                        r.get::<_, String>(4)?
+                    ),
+                ))
+            })
+            .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?
+    };
+
+    for table in [
+        "asr_vocabulary_terms",
+        "asr_corrections",
+        "asr_ignored_suggestions",
+    ] {
+        tx.execute(&format!("DELETE FROM {}", table), [])
+            .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    }
+
+    let mut term_ids: HashMap<String, i64> = HashMap::new();
+    for term in vocabulary_terms {
+        tx.execute(
+            r#"INSERT INTO asr_vocabulary_terms (term, normalized_term, language, category, scope, priority, use_count, created_at, updated_at)
+               VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)"#,
+            params![
+                term.term,
+                term.normalized_term,
+                term.language,
+                term.category,
+                term.scope,
+                term.priority,
+                term.use_count,
+                term.created_at,
+                term.updated_at
+            ],
+        )
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+        term_ids.insert(asr_vocabulary_entity_id(term), tx.last_insert_rowid());
+    }
+
+    let mut correction_ids: HashMap<String, i64> = HashMap::new();
+    for correction in corrections {
+        tx.execute(
+            r#"INSERT INTO asr_corrections (wrong, normalized_wrong, correct, normalized_correct, language, scope, confidence, use_count, accepted_count, rejected_count, seen_count, last_seen_at, user_approved, created_at, updated_at)
+               VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)"#,
+            params![
+                correction.wrong,
+                correction.normalized_wrong,
+                correction.correct,
+                correction.normalized_correct,
+                correction.language,
+                correction.scope,
+                correction.confidence,
+                correction.use_count,
+                correction.accepted_count,
+                correction.rejected_count,
+                correction.seen_count,
+                correction.last_seen_at,
+                correction.user_approved,
+                correction.created_at,
+                correction.updated_at
+            ],
+        )
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+        correction_ids.insert(
+            asr_correction_entity_id(
+                &correction.normalized_wrong,
+                &correction.normalized_correct,
+                &correction.language,
+                &correction.scope,
+            ),
+            tx.last_insert_rowid(),
+        );
+    }
+
+    for suggestion in ignored_suggestions {
+        tx.execute(
+            r#"INSERT OR IGNORE INTO asr_ignored_suggestions (wrong, normalized_wrong, correct, normalized_correct, language, scope, ignored_count, last_ignored_at, created_at, updated_at)
+               VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)"#,
+            params![
+                suggestion.wrong,
+                suggestion.normalized_wrong,
+                suggestion.correct,
+                suggestion.normalized_correct,
+                suggestion.language,
+                suggestion.scope,
+                suggestion.ignored_count,
+                suggestion.last_ignored_at,
+                suggestion.created_at,
+                suggestion.updated_at
+            ],
+        )
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    }
+
+    for (example_id, key) in example_term_links {
+        if let Some(new_id) = term_ids.get(&key) {
+            tx.execute(
+                "UPDATE asr_voice_examples SET term_id = ?1 WHERE id = ?2",
+                params![new_id, example_id],
+            )
+            .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+        }
+    }
+    for (example_id, key) in example_correction_links {
+        if let Some(new_id) = correction_ids.get(&key) {
+            tx.execute(
+                "UPDATE asr_voice_examples SET correction_id = ?1 WHERE id = ?2",
+                params![new_id, example_id],
+            )
+            .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+        }
+    }
+
+    Ok(())
 }
 
 fn apply_lorebooks_snapshot(conn: &mut DbConnection, payload: &[u8]) -> Result<(), String> {
@@ -3988,6 +4213,121 @@ fn fetch_companion_turn_effects(
         .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))
 }
 
+fn asr_key_part(value: &Option<String>) -> String {
+    value.as_deref().unwrap_or("-").to_string()
+}
+
+pub(crate) fn asr_vocabulary_entity_id(term: &SyncAsrVocabularyTerm) -> String {
+    format!(
+        "{}|{}|{}",
+        term.normalized_term,
+        asr_key_part(&term.language),
+        term.scope
+    )
+}
+
+pub(crate) fn asr_correction_entity_id(
+    normalized_wrong: &str,
+    normalized_correct: &str,
+    language: &Option<String>,
+    scope: &str,
+) -> String {
+    format!(
+        "{}|{}|{}|{}",
+        normalized_wrong,
+        normalized_correct,
+        asr_key_part(language),
+        scope
+    )
+}
+
+pub(crate) fn fetch_asr_vocabulary_terms(conn: &DbConnection) -> Result<Vec<SyncAsrVocabularyTerm>, String> {
+    let mut stmt = conn
+        .prepare(
+            "SELECT term, normalized_term, language, category, scope, priority, use_count, created_at, updated_at
+             FROM asr_vocabulary_terms",
+        )
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    let rows = stmt
+        .query_map([], |r| {
+            Ok(SyncAsrVocabularyTerm {
+                term: r.get(0)?,
+                normalized_term: r.get(1)?,
+                language: r.get(2)?,
+                category: r.get(3)?,
+                scope: r.get(4)?,
+                priority: r.get(5)?,
+                use_count: r.get(6)?,
+                created_at: r.get(7)?,
+                updated_at: r.get(8)?,
+            })
+        })
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    rows.collect::<Result<Vec<_>, _>>()
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))
+}
+
+pub(crate) fn fetch_asr_corrections(conn: &DbConnection) -> Result<Vec<SyncAsrCorrection>, String> {
+    let mut stmt = conn
+        .prepare(
+            "SELECT wrong, normalized_wrong, correct, normalized_correct, language, scope, confidence, use_count, accepted_count, rejected_count, seen_count, last_seen_at, user_approved, created_at, updated_at
+             FROM asr_corrections",
+        )
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    let rows = stmt
+        .query_map([], |r| {
+            Ok(SyncAsrCorrection {
+                wrong: r.get(0)?,
+                normalized_wrong: r.get(1)?,
+                correct: r.get(2)?,
+                normalized_correct: r.get(3)?,
+                language: r.get(4)?,
+                scope: r.get(5)?,
+                confidence: r.get(6)?,
+                use_count: r.get(7)?,
+                accepted_count: r.get(8)?,
+                rejected_count: r.get(9)?,
+                seen_count: r.get(10)?,
+                last_seen_at: r.get(11)?,
+                user_approved: r.get(12)?,
+                created_at: r.get(13)?,
+                updated_at: r.get(14)?,
+            })
+        })
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    rows.collect::<Result<Vec<_>, _>>()
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))
+}
+
+pub(crate) fn fetch_asr_ignored_suggestions(
+    conn: &DbConnection,
+) -> Result<Vec<SyncAsrIgnoredSuggestion>, String> {
+    let mut stmt = conn
+        .prepare(
+            "SELECT wrong, normalized_wrong, correct, normalized_correct, language, scope, ignored_count, last_ignored_at, created_at, updated_at
+             FROM asr_ignored_suggestions",
+        )
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    let rows = stmt
+        .query_map([], |r| {
+            Ok(SyncAsrIgnoredSuggestion {
+                wrong: r.get(0)?,
+                normalized_wrong: r.get(1)?,
+                correct: r.get(2)?,
+                normalized_correct: r.get(3)?,
+                language: r.get(4)?,
+                scope: r.get(5)?,
+                ignored_count: r.get(6)?,
+                last_ignored_at: r.get(7)?,
+                created_at: r.get(8)?,
+                updated_at: r.get(9)?,
+            })
+        })
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    rows.collect::<Result<Vec<_>, _>>()
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))
+}
+
 fn fetch_companion_shared_memory_data(
     conn: &DbConnection,
 ) -> Result<Vec<CompanionSharedMemory>, String> {
@@ -4445,6 +4785,186 @@ mod tests {
             payload_hash: "hash".into(),
             payload: Vec::new(),
         }
+    }
+
+    fn asr_test_conn() -> rusqlite::Connection {
+        let conn = rusqlite::Connection::open_in_memory().unwrap();
+        conn.execute_batch(
+            r#"
+            PRAGMA foreign_keys=ON;
+            CREATE TABLE asr_vocabulary_terms (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              term TEXT NOT NULL,
+              normalized_term TEXT NOT NULL,
+              language TEXT,
+              category TEXT,
+              scope TEXT NOT NULL DEFAULT 'global',
+              priority INTEGER NOT NULL DEFAULT 50,
+              use_count INTEGER NOT NULL DEFAULT 0,
+              created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE TABLE asr_corrections (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              wrong TEXT NOT NULL,
+              normalized_wrong TEXT NOT NULL,
+              correct TEXT NOT NULL,
+              normalized_correct TEXT NOT NULL,
+              language TEXT,
+              scope TEXT NOT NULL DEFAULT 'global',
+              confidence REAL NOT NULL DEFAULT 0.75,
+              use_count INTEGER NOT NULL DEFAULT 1,
+              accepted_count INTEGER NOT NULL DEFAULT 0,
+              rejected_count INTEGER NOT NULL DEFAULT 0,
+              seen_count INTEGER NOT NULL DEFAULT 0,
+              last_seen_at TEXT,
+              user_approved INTEGER NOT NULL DEFAULT 0,
+              created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE TABLE asr_ignored_suggestions (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              wrong TEXT NOT NULL,
+              normalized_wrong TEXT NOT NULL,
+              correct TEXT NOT NULL,
+              normalized_correct TEXT NOT NULL,
+              language TEXT,
+              scope TEXT NOT NULL DEFAULT 'global',
+              ignored_count INTEGER NOT NULL DEFAULT 1,
+              last_ignored_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE UNIQUE INDEX idx_asr_ignored_suggestions_lookup
+              ON asr_ignored_suggestions(normalized_wrong, normalized_correct, language, scope);
+            CREATE TABLE asr_voice_examples (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              audio_path TEXT NOT NULL,
+              expected_text TEXT NOT NULL,
+              normalized_expected_text TEXT NOT NULL,
+              whisper_output TEXT,
+              normalized_whisper_output TEXT,
+              language TEXT,
+              scope TEXT NOT NULL DEFAULT 'global',
+              term_id INTEGER,
+              correction_id INTEGER,
+              created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              FOREIGN KEY(term_id) REFERENCES asr_vocabulary_terms(id) ON DELETE SET NULL,
+              FOREIGN KEY(correction_id) REFERENCES asr_corrections(id) ON DELETE SET NULL
+            );
+            "#,
+        )
+        .unwrap();
+        conn
+    }
+
+    fn sample_asr_term(priority: i64) -> SyncAsrVocabularyTerm {
+        SyncAsrVocabularyTerm {
+            term: "Lettuce".into(),
+            normalized_term: "lettuce".into(),
+            language: Some("en".into()),
+            category: None,
+            scope: "global".into(),
+            priority,
+            use_count: 3,
+            created_at: "2026-01-01 00:00:00".into(),
+            updated_at: "2026-07-04 00:00:00".into(),
+        }
+    }
+
+    #[test]
+    fn asr_apply_replaces_tables_and_relinks_local_examples() {
+        let mut conn = asr_test_conn();
+        conn.execute(
+            "INSERT INTO asr_vocabulary_terms (term, normalized_term, language, scope) VALUES ('Lettuce', 'lettuce', 'en', 'global')",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO asr_corrections (wrong, normalized_wrong, correct, normalized_correct, language, scope) VALUES ('letus', 'letus', 'lettuce', 'lettuce', 'en', 'global')",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO asr_voice_examples (audio_path, expected_text, normalized_expected_text, term_id, correction_id) VALUES ('/tmp/a.wav', 'Lettuce', 'lettuce', 1, 1)",
+            [],
+        )
+        .unwrap();
+
+        let tx = conn.transaction().unwrap();
+        apply_asr_learning_tables(
+            &tx,
+            &[sample_asr_term(90)],
+            &[SyncAsrCorrection {
+                wrong: "letus".into(),
+                normalized_wrong: "letus".into(),
+                correct: "lettuce".into(),
+                normalized_correct: "lettuce".into(),
+                language: Some("en".into()),
+                scope: "global".into(),
+                confidence: 0.9,
+                use_count: 5,
+                accepted_count: 4,
+                rejected_count: 0,
+                seen_count: 6,
+                last_seen_at: None,
+                user_approved: 1,
+                created_at: "2026-01-01 00:00:00".into(),
+                updated_at: "2026-07-04 00:00:00".into(),
+            }],
+            &[],
+        )
+        .unwrap();
+        tx.commit().unwrap();
+
+        let priority: i64 = conn
+            .query_row("SELECT priority FROM asr_vocabulary_terms LIMIT 1", [], |r| r.get(0))
+            .unwrap();
+        let term_count: i64 = conn
+            .query_row("SELECT COUNT(*) FROM asr_vocabulary_terms", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(priority, 90);
+        assert_eq!(term_count, 1);
+
+        let (term_id, correction_id): (Option<i64>, Option<i64>) = conn
+            .query_row(
+                "SELECT term_id, correction_id FROM asr_voice_examples LIMIT 1",
+                [],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            )
+            .unwrap();
+        let new_term_id: i64 = conn
+            .query_row("SELECT id FROM asr_vocabulary_terms LIMIT 1", [], |r| r.get(0))
+            .unwrap();
+        let new_correction_id: i64 = conn
+            .query_row("SELECT id FROM asr_corrections LIMIT 1", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(term_id, Some(new_term_id));
+        assert_eq!(correction_id, Some(new_correction_id));
+    }
+
+    #[test]
+    fn asr_apply_drops_links_for_terms_missing_from_snapshot() {
+        let mut conn = asr_test_conn();
+        conn.execute(
+            "INSERT INTO asr_vocabulary_terms (term, normalized_term, language, scope) VALUES ('Gone', 'gone', 'en', 'global')",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO asr_voice_examples (audio_path, expected_text, normalized_expected_text, term_id) VALUES ('/tmp/b.wav', 'Gone', 'gone', 1)",
+            [],
+        )
+        .unwrap();
+
+        let tx = conn.transaction().unwrap();
+        apply_asr_learning_tables(&tx, &[sample_asr_term(50)], &[], &[]).unwrap();
+        tx.commit().unwrap();
+
+        let term_id: Option<i64> = conn
+            .query_row("SELECT term_id FROM asr_voice_examples LIMIT 1", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(term_id, None);
     }
 
     #[test]

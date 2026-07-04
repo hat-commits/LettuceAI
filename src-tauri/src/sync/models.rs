@@ -181,6 +181,52 @@ pub struct AudioProvider {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct SyncAsrVocabularyTerm {
+    pub term: String,
+    pub normalized_term: String,
+    pub language: Option<String>,
+    pub category: Option<String>,
+    pub scope: String,
+    pub priority: i64,
+    pub use_count: i64,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SyncAsrCorrection {
+    pub wrong: String,
+    pub normalized_wrong: String,
+    pub correct: String,
+    pub normalized_correct: String,
+    pub language: Option<String>,
+    pub scope: String,
+    pub confidence: f64,
+    pub use_count: i64,
+    pub accepted_count: i64,
+    pub rejected_count: i64,
+    pub seen_count: i64,
+    pub last_seen_at: Option<String>,
+    pub user_approved: i64,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SyncAsrIgnoredSuggestion {
+    pub wrong: String,
+    pub normalized_wrong: String,
+    pub correct: String,
+    pub normalized_correct: String,
+    pub language: Option<String>,
+    pub scope: String,
+    pub ignored_count: i64,
+    pub last_ignored_at: String,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AudioVoiceCache {
     pub id: String,
     pub provider_id: String,

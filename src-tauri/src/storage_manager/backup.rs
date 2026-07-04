@@ -1626,6 +1626,10 @@ pub async fn backup_export(
         &encryption,
     )?;
 
+    log_info(&app, "backup", "Exporting ASR learning data...");
+    let asr_learning = export_asr_learning(&app)?;
+    add_json_to_zip(&mut zip, "asr_learning", &asr_learning, &encryption)?;
+
     // Add images directory
     if images_dir.exists() {
         add_directory_to_zip(
@@ -2332,6 +2336,64 @@ fn import_characters(app: &tauri::AppHandle, data: &JsonValue) -> Result<(), Str
         ),
     );
 
+    Ok(())
+}
+
+fn export_asr_learning(app: &tauri::AppHandle) -> Result<JsonValue, String> {
+    let conn = open_db(app)?;
+    let vocabulary_terms = crate::sync::db::fetch_asr_vocabulary_terms(&conn)?;
+    let corrections = crate::sync::db::fetch_asr_corrections(&conn)?;
+    let ignored_suggestions = crate::sync::db::fetch_asr_ignored_suggestions(&conn)?;
+    Ok(serde_json::json!({
+        "vocabularyTerms": vocabulary_terms,
+        "corrections": corrections,
+        "ignoredSuggestions": ignored_suggestions,
+    }))
+}
+
+fn import_asr_learning(app: &tauri::AppHandle, data: &JsonValue) -> Result<(), String> {
+    let vocabulary_terms: Vec<crate::sync::models::SyncAsrVocabularyTerm> = data
+        .get("vocabularyTerms")
+        .map(|value| serde_json::from_value(value.clone()))
+        .transpose()
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?
+        .unwrap_or_default();
+    let corrections: Vec<crate::sync::models::SyncAsrCorrection> = data
+        .get("corrections")
+        .map(|value| serde_json::from_value(value.clone()))
+        .transpose()
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?
+        .unwrap_or_default();
+    let ignored_suggestions: Vec<crate::sync::models::SyncAsrIgnoredSuggestion> = data
+        .get("ignoredSuggestions")
+        .map(|value| serde_json::from_value(value.clone()))
+        .transpose()
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?
+        .unwrap_or_default();
+
+    let mut conn = open_db(app)?;
+    let tx = conn
+        .transaction()
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    crate::sync::db::apply_asr_learning_tables(
+        &tx,
+        &vocabulary_terms,
+        &corrections,
+        &ignored_suggestions,
+    )?;
+    tx.commit()
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+
+    log_info(
+        app,
+        "backup",
+        format!(
+            "ASR learning import complete: {} terms, {} corrections, {} ignored",
+            vocabulary_terms.len(),
+            corrections.len(),
+            ignored_suggestions.len()
+        ),
+    );
     Ok(())
 }
 
@@ -3632,6 +3694,8 @@ pub async fn backup_import(
         "data/creation_helper_sessions.json",
         &encryption_params,
     )?;
+    let asr_learning_data =
+        read_backup_file(&mut archive, "data/asr_learning.json", &encryption_params)?;
     let group_characters_data = read_backup_file(
         &mut archive,
         "data/group_characters.json",
@@ -3929,6 +3993,23 @@ pub async fn backup_import(
         log_info(&app, "backup", "Creation helper sessions imported");
     } else {
         log_info(&app, "backup", "No creation_helper_sessions data found");
+    }
+
+    if let Some(data) = asr_learning_data {
+        log_info(&app, "backup", "Found asr_learning data");
+        let json_str = String::from_utf8(data)
+            .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+        let json_value: serde_json::Value = serde_json::from_str(&json_str).map_err(|e| {
+            crate::utils::err_msg(
+                module_path!(),
+                line!(),
+                format!("Failed to parse asr_learning JSON: {}", e),
+            )
+        })?;
+        import_asr_learning(&app, &json_value)?;
+        log_info(&app, "backup", "ASR learning data imported");
+    } else {
+        log_info(&app, "backup", "No asr_learning data found");
     }
 
     if let Some(data) = group_characters_data {
@@ -4728,6 +4809,8 @@ pub async fn backup_import_from_bytes(
         "data/creation_helper_sessions.json",
         &encryption_params,
     )?;
+    let asr_learning_data =
+        read_backup_file_bytes(&data, "data/asr_learning.json", &encryption_params)?;
     let group_characters_data =
         read_backup_file_bytes(&data, "data/group_characters.json", &encryption_params)?;
     let group_sessions_data =
@@ -4963,6 +5046,20 @@ pub async fn backup_import_from_bytes(
         })?;
         import_creation_helper_sessions(&app, &json_value)?;
         log_info(&app, "backup", "Creation helper sessions imported");
+    }
+
+    if let Some(file_data) = asr_learning_data {
+        let json_str = String::from_utf8(file_data)
+            .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+        let json_value: serde_json::Value = serde_json::from_str(&json_str).map_err(|e| {
+            crate::utils::err_msg(
+                module_path!(),
+                line!(),
+                format!("Failed to parse asr_learning JSON: {}", e),
+            )
+        })?;
+        import_asr_learning(&app, &json_value)?;
+        log_info(&app, "backup", "ASR learning data imported");
     }
 
     if let Some(file_data) = group_characters_data {
