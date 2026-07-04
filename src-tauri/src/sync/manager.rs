@@ -20,6 +20,8 @@ use crate::utils::{log_error, log_info, log_warn};
 const PROTOCOL_VERSION: u32 = 11;
 const MANIFEST_MIN_PROTOCOL: u32 = 10;
 const READY_MIN_PROTOCOL: u32 = 11;
+const MAX_PUSH_BATCH_BYTES: u64 = 4 * 1024 * 1024;
+const MAX_PUSH_BATCH_COUNT: usize = 2000;
 const ASSET_CHUNK_PROTOCOL: u32 = 11;
 const ASSET_CHUNK_SIZE: usize = 256 * 1024;
 
@@ -753,21 +755,17 @@ async fn handle_advertise_cursors(
             .await
             .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
 
-        let prepared_asset_contents = if domain == SyncDomain::Assets {
-            Some(prepare_asset_changes_for_transfer(app, &mut changes)?)
-        } else {
-            None
-        };
-
-        framed
-            .send(P2PMessage::PushChanges {
-                domain,
-                changes: changes.clone(),
-            })
-            .await
-            .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
-
         if domain == SyncDomain::Assets {
+            let prepared_asset_contents = prepare_asset_changes_for_transfer(app, &mut changes)?;
+
+            framed
+                .send(P2PMessage::PushChanges {
+                    domain,
+                    changes: changes.clone(),
+                })
+                .await
+                .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+
             let payload_bytes: u64 = changes.iter().map(|c| c.payload.len() as u64).sum();
             let delete_count = changes
                 .iter()
@@ -787,9 +785,7 @@ async fn handle_advertise_cursors(
                 state.inner(),
                 phase.as_str(),
                 peer_protocol_version,
-                prepared_asset_contents
-                    .as_ref()
-                    .expect("prepared asset contents"),
+                &prepared_asset_contents,
             )
             .await?;
             let last_change_id = changes.last().map(|change| change.change_id).unwrap_or(0);
@@ -798,14 +794,34 @@ async fn handle_advertise_cursors(
                 .await
                 .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
         } else {
-            let payload_bytes: u64 = changes.iter().map(|c| c.payload.len() as u64).sum();
-            tracker.record(domain, changes.len() as u64, payload_bytes);
-            state
-                .set_status(
-                    app,
-                    tracker.syncing_status(sync_status_text(domain).to_string(), Some(domain)),
-                )
-                .await;
+            let mut start = 0;
+            while start < changes.len() {
+                let mut end = start;
+                let mut batch_bytes: u64 = 0;
+                while end < changes.len() && end - start < MAX_PUSH_BATCH_COUNT {
+                    let payload_len = changes[end].payload.len() as u64;
+                    if end > start && batch_bytes + payload_len > MAX_PUSH_BATCH_BYTES {
+                        break;
+                    }
+                    batch_bytes += payload_len;
+                    end += 1;
+                }
+
+                framed
+                    .send(P2PMessage::PushChanges {
+                        domain,
+                        changes: changes[start..end].to_vec(),
+                    })
+                    .await
+                    .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+
+                tracker.record(domain, (end - start) as u64, batch_bytes);
+                state
+                    .set_status(app, tracker.syncing_status(phase.clone(), Some(domain)))
+                    .await;
+
+                start = end;
+            }
         }
     }
 
@@ -911,6 +927,22 @@ pub async fn connect_as_passenger(
         }
     });
 
+    Ok(())
+}
+
+fn finalize_pending_domain(
+    app: &AppHandle,
+    conn: &mut crate::storage_manager::db::DbConnection,
+    driver_device_id: &str,
+    pending_domain: &mut Option<(SyncDomain, i64)>,
+) -> Result<(), String> {
+    if let Some((domain, last_change_id)) = pending_domain.take() {
+        sync_db::materialize_domain(conn, domain)?;
+        if last_change_id > 0 {
+            sync_db::record_peer_cursor(conn, driver_device_id, domain, last_change_id)?;
+        }
+        log_info(app, "sync_passenger", format!("Materialized {:?}", domain));
+    }
     Ok(())
 }
 
@@ -1050,7 +1082,15 @@ async fn run_passenger_session(
         )
         .await;
 
-    sync_db::rebuild_change_log(&app, &mut conn)?;
+    if sync_db::local_device_has_onboarded(&conn) {
+        sync_db::rebuild_change_log(&app, &mut conn)?;
+    } else {
+        log_info(
+            &app,
+            "sync_passenger",
+            "Fresh install detected; skipping local change log seeding so synced data wins conflicts",
+        );
+    }
     if driver_protocol_version < PROTOCOL_VERSION {
         let warning = format!(
             "Warning: driver is outdated (v{}). Please update ASAP.",
@@ -1098,6 +1138,7 @@ async fn run_passenger_session(
     let mut pending_asset: Option<PendingIncomingAsset> = None;
     let mut tracker: Option<SyncProgressTracker> = None;
     let mut latest_phase: String = "Connecting".into();
+    let mut pending_domain: Option<(SyncDomain, i64)> = None;
 
     // Client Loop
     loop {
@@ -1120,6 +1161,13 @@ async fn run_passenger_session(
                     }
                     Some(Ok(P2PMessage::PushChanges { domain, changes })) => {
                         log_info(&app, "sync_passenger", format!("Received {} changes for {:?}", changes.len(), domain));
+                        if pending_domain.as_ref().is_some_and(|(prev, _)| *prev != domain) {
+                            if let Err(e) = finalize_pending_domain(&app, &mut conn, &driver_device_id, &mut pending_domain) {
+                                log_error(&app, "sync_passenger", format!("Failed to materialize pending domain: {}", e));
+                                framed.send(P2PMessage::Disconnect).await.ok();
+                                return Err(e);
+                            }
+                        }
                         latest_phase = sync_status_text(domain).to_string();
                         if let Some(t) = tracker.as_ref() {
                             state.set_status(&app, t.syncing_status(latest_phase.clone(), Some(domain))).await;
@@ -1174,11 +1222,20 @@ async fn run_passenger_session(
                             }
                             continue;
                         }
-                        if let Err(e) = sync_db::apply_change_batch(&mut conn, domain, &changes) {
+                        if let Err(e) = sync_db::append_change_batch(&mut conn, domain, &changes) {
                             log_error(&app, "sync_passenger", format!("Failed to apply domain {:?}: {}", domain, e));
-                        } else if last_change_id > 0 {
-                            let _ = sync_db::record_peer_cursor(&conn, &driver_device_id, domain, last_change_id);
+                            framed.send(P2PMessage::Disconnect).await.ok();
+                            return Err(crate::utils::err_msg(
+                                module_path!(),
+                                line!(),
+                                format!("Sync aborted: failed to apply {:?} changes: {}", domain, e),
+                            ));
                         }
+                        let pending_cursor = pending_domain
+                            .filter(|(prev, _)| *prev == domain)
+                            .map(|(_, cursor)| cursor)
+                            .unwrap_or(0);
+                        pending_domain = Some((domain, pending_cursor.max(last_change_id)));
                         let bytes: u64 = changes.iter().map(|c| c.payload.len() as u64).sum();
                         if let Some(t) = tracker.as_mut() {
                             t.record(domain, changes.len() as u64, bytes);
@@ -1424,6 +1481,11 @@ async fn run_passenger_session(
                                 "Sync completed while an asset batch was still pending",
                             ));
                         }
+                        if let Err(e) = finalize_pending_domain(&app, &mut conn, &driver_device_id, &mut pending_domain) {
+                            log_error(&app, "sync_passenger", format!("Failed to materialize pending domain: {}", e));
+                            framed.send(P2PMessage::Disconnect).await.ok();
+                            return Err(e);
+                        }
                         log_info(&app, "sync_passenger", "Received SyncComplete");
                         let _ = app.emit("database-reloaded", ());
                         framed
@@ -1435,6 +1497,13 @@ async fn run_passenger_session(
                     }
                     Some(Ok(P2PMessage::Disconnect)) => {
                         log_info(&app, "sync_passenger", "Received Disconnect");
+                        if tracker.is_some() {
+                            return Err(crate::utils::err_msg(
+                                module_path!(),
+                                line!(),
+                                "Driver disconnected before the sync finished",
+                            ));
+                        }
                         break;
                     }
                     Some(Ok(other)) => {
@@ -1446,6 +1515,13 @@ async fn run_passenger_session(
                     }
                     None => {
                         log_info(&app, "sync_passenger", "Stream ended/Connection closed");
+                        if tracker.is_some() {
+                            return Err(crate::utils::err_msg(
+                                module_path!(),
+                                line!(),
+                                "Connection lost before the sync finished",
+                            ));
+                        }
                         break;
                     }
                 }

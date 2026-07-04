@@ -1,4 +1,4 @@
-use crate::chat_manager::types::MemoryEmbedding;
+use crate::chat_manager::types::{MemoryEmbedding, MemoryEntityAnchor};
 use serde::{Deserialize, Serialize};
 
 fn default_speaker_selection_method() -> String {
@@ -128,6 +128,38 @@ pub struct CreationHelperSession {
     pub uploaded_images_json: String,
     pub created_at: i64,
     pub updated_at: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SyncCompanionScheduledNote {
+    pub id: String,
+    pub character_id: String,
+    pub label: String,
+    pub content: String,
+    pub available_at: i64,
+    pub expires_at: Option<i64>,
+    pub recurrence: String,
+    pub recurrence_window_ms: Option<i64>,
+    pub enabled: i64,
+    pub created_at: i64,
+    pub updated_at: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SyncCompanionTurnEffect {
+    pub id: String,
+    pub session_id: String,
+    pub user_message_id: Option<String>,
+    pub assistant_message_id: String,
+    pub created_at: i64,
+    pub updated_at: i64,
+    pub status: String,
+    pub summary: Option<String>,
+    pub relationship_delta: String,
+    pub emotion_delta: String,
+    pub signal_changes: String,
+    pub memory_changes: String,
+    pub source_window: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -411,11 +443,110 @@ pub struct CompanionSharedMemory {
     pub updated_at: i64,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SyncMemoryEmbeddingRecord {
+    pub id: String,
+    pub text: String,
+    pub embedding: Vec<f32>,
+    pub created_at: u64,
+    pub token_count: u32,
+    pub is_cold: bool,
+    pub last_accessed_at: u64,
+    pub importance_score: f32,
+    pub persistence_importance: f32,
+    pub prompt_importance: f32,
+    pub volatility: f32,
+    pub is_pinned: bool,
+    pub access_count: u32,
+    pub embedding_source_version: Option<String>,
+    pub embedding_dimensions: Option<usize>,
+    pub match_score: Option<f32>,
+    pub category: Option<String>,
+    pub observed_at: Option<u64>,
+    pub observed_time_precision: Option<String>,
+    pub canonical_entities: Vec<MemoryEntityAnchor>,
+    pub fact_signature: Option<String>,
+    pub fact_polarity: Option<i8>,
+    pub source_role: Option<String>,
+    pub source_message_id: Option<String>,
+    pub superseded_by: Option<String>,
+    pub superseded_at: Option<u64>,
+    pub supersedes: Vec<String>,
+}
+
+impl From<MemoryEmbedding> for SyncMemoryEmbeddingRecord {
+    fn from(memory: MemoryEmbedding) -> Self {
+        Self {
+            id: memory.id,
+            text: memory.text,
+            embedding: memory.embedding,
+            created_at: memory.created_at,
+            token_count: memory.token_count,
+            is_cold: memory.is_cold,
+            last_accessed_at: memory.last_accessed_at,
+            importance_score: memory.importance_score,
+            persistence_importance: memory.persistence_importance,
+            prompt_importance: memory.prompt_importance,
+            volatility: memory.volatility,
+            is_pinned: memory.is_pinned,
+            access_count: memory.access_count,
+            embedding_source_version: memory.embedding_source_version,
+            embedding_dimensions: memory.embedding_dimensions,
+            match_score: memory.match_score,
+            category: memory.category,
+            observed_at: memory.observed_at,
+            observed_time_precision: memory.observed_time_precision,
+            canonical_entities: memory.canonical_entities,
+            fact_signature: memory.fact_signature,
+            fact_polarity: memory.fact_polarity,
+            source_role: memory.source_role,
+            source_message_id: memory.source_message_id,
+            superseded_by: memory.superseded_by,
+            superseded_at: memory.superseded_at,
+            supersedes: memory.supersedes,
+        }
+    }
+}
+
+impl From<SyncMemoryEmbeddingRecord> for MemoryEmbedding {
+    fn from(record: SyncMemoryEmbeddingRecord) -> Self {
+        Self {
+            id: record.id,
+            text: record.text,
+            embedding: record.embedding,
+            created_at: record.created_at,
+            token_count: record.token_count,
+            is_cold: record.is_cold,
+            last_accessed_at: record.last_accessed_at,
+            importance_score: record.importance_score,
+            persistence_importance: record.persistence_importance,
+            prompt_importance: record.prompt_importance,
+            volatility: record.volatility,
+            is_pinned: record.is_pinned,
+            access_count: record.access_count,
+            embedding_source_version: record.embedding_source_version,
+            embedding_dimensions: record.embedding_dimensions,
+            match_score: record.match_score,
+            category: record.category,
+            observed_at: record.observed_at,
+            observed_time_precision: record.observed_time_precision,
+            canonical_entities: record.canonical_entities,
+            fact_signature: record.fact_signature,
+            fact_polarity: record.fact_polarity,
+            source_role: record.source_role,
+            source_message_id: record.source_message_id,
+            superseded_by: record.superseded_by,
+            superseded_at: record.superseded_at,
+            supersedes: record.supersedes,
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SyncedMemoryEmbedding {
     pub session_id: String,
     pub session_kind: String,
-    pub memory: MemoryEmbedding,
+    pub memory: SyncMemoryEmbeddingRecord,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

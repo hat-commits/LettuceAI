@@ -3,21 +3,21 @@ use std::collections::{HashMap, HashSet};
 use std::path::Path;
 use tauri::Manager;
 
-use crate::chat_manager::types::MemoryEmbedding;
 use crate::storage_manager::db::DbConnection;
 use crate::storage_manager::memory_embeddings::SessionKind;
 use crate::sync::models::{
     AudioProvider, Character, CharacterRule, ChatTemplate, ChatTemplateMessage,
-    CompanionSharedMemory, GroupMessage, GroupMessageVariant, GroupParticipation, GroupSession,
-    Message, MessageVariant, MetaEntry, Model, Persona, PromptTemplate, ProviderCredential, Scene,
-    SceneVariant, Secret, Session, Settings, SyncLorebook, SyncLorebookEntry,
-    SyncedMemoryEmbedding, UsageMetadata, UsageRecord, UserVoice,
+    CompanionSharedMemory, CreationHelperSession, GroupMessage, GroupMessageVariant,
+    GroupParticipation, GroupSession, Message, MessageVariant, MetaEntry, Model, Persona,
+    PromptTemplate, ProviderCredential, Scene, SceneVariant, Secret, Session, Settings,
+    SyncCompanionScheduledNote, SyncCompanionTurnEffect, SyncLorebook, SyncLorebookEntry,
+    SyncMemoryEmbeddingRecord, SyncedMemoryEmbedding, UsageMetadata, UsageRecord, UserVoice,
 };
 use crate::sync::protocol::{ChangeOp, ChangeRecord, CursorSet, DomainCursor, SyncDomain};
 use crate::utils::{log_error_global, log_info_global};
 
-pub const CHANGE_SCHEMA_VERSION: u16 = 7;
-pub const LOCAL_SYNC_STATE_VERSION: u16 = 8;
+pub const CHANGE_SCHEMA_VERSION: u16 = 8;
+pub const LOCAL_SYNC_STATE_VERSION: u16 = 9;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct EntityKey {
@@ -108,6 +108,7 @@ struct CoreSnapshot {
     secrets: Vec<Secret>,
     provider_credentials: Vec<ProviderCredential>,
     prompt_templates: Vec<PromptTemplate>,
+    creation_helper_sessions: Vec<CreationHelperSession>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -200,6 +201,7 @@ struct SessionsSnapshot {
     sessions: Vec<Session>,
     companion_shared_memory: Vec<CompanionSharedMemory>,
     memory_embeddings: Vec<SyncedMemoryEmbedding>,
+    companion_scheduled_notes: Vec<SyncCompanionScheduledNote>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -208,6 +210,7 @@ struct MessagesSnapshot {
     message_variants: Vec<MessageVariant>,
     usage_records: Vec<UsageRecord>,
     usage_metadata: Vec<UsageMetadata>,
+    companion_turn_effects: Vec<SyncCompanionTurnEffect>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -234,6 +237,28 @@ pub fn get_or_create_local_device_id(conn: &DbConnection) -> Result<String, Stri
     .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
 
     Ok(device_id)
+}
+
+pub fn local_device_has_onboarded(conn: &DbConnection) -> bool {
+    let app_state = conn
+        .query_row("SELECT app_state FROM settings LIMIT 1", [], |row| {
+            row.get::<_, String>(0)
+        })
+        .ok();
+    let Some(raw) = app_state else {
+        return false;
+    };
+    let Ok(state) = serde_json::from_str::<serde_json::Value>(&raw) else {
+        return false;
+    };
+    let onboarding = state.get("onboarding");
+    let flag = |key: &str| {
+        onboarding
+            .and_then(|value| value.get(key))
+            .and_then(|value| value.as_bool())
+            .unwrap_or(false)
+    };
+    flag("completed") || flag("skipped")
 }
 
 pub fn rebuild_change_log(app: &tauri::AppHandle, conn: &mut DbConnection) -> Result<(), String> {
@@ -354,7 +379,7 @@ fn fetch_memory_embeddings_for_owner(
         .map(|memory| SyncedMemoryEmbedding {
             session_id: session_id.to_string(),
             session_kind: kind.as_str().to_string(),
-            memory,
+            memory: memory.into(),
         })
         .collect())
 }
@@ -371,7 +396,7 @@ fn persist_memory_embedding_records(
         grouped
             .entry((record.session_id.clone(), record.session_kind.clone()))
             .or_default()
-            .push(record.memory.clone());
+            .push(record.memory.clone().into());
     }
 
     for ((session_id, session_kind), memories) in grouped {
@@ -469,7 +494,7 @@ pub fn clear_domain_heads(conn: &DbConnection, domain: SyncDomain) -> Result<(),
     Ok(())
 }
 
-pub fn apply_change_batch(
+pub fn append_change_batch(
     conn: &mut DbConnection,
     domain: SyncDomain,
     changes: &[ChangeRecord],
@@ -492,8 +517,22 @@ pub fn apply_change_batch(
     }
 
     tx.commit()
-        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))
+}
 
+pub fn materialize_domain(conn: &mut DbConnection, domain: SyncDomain) -> Result<(), String> {
+    materialize_domain_heads(conn, domain)
+}
+
+pub fn apply_change_batch(
+    conn: &mut DbConnection,
+    domain: SyncDomain,
+    changes: &[ChangeRecord],
+) -> Result<(), String> {
+    if changes.is_empty() {
+        return Ok(());
+    }
+    append_change_batch(conn, domain, changes)?;
     materialize_domain_heads(conn, domain)
 }
 
@@ -651,6 +690,15 @@ fn collect_current_entity_records(
             &mut records,
             SyncDomain::Core,
             "prompt_template",
+            item.id.clone(),
+            item,
+        )?;
+    }
+    for item in &fetch_creation_helper_sessions(conn)? {
+        push_entity_record(
+            &mut records,
+            SyncDomain::Core,
+            "creation_helper_session",
             item.id.clone(),
             item,
         )?;
@@ -905,6 +953,15 @@ fn collect_current_entity_records(
             )?;
         }
     }
+    for item in &fetch_companion_scheduled_notes(conn)? {
+        push_entity_record(
+            &mut records,
+            SyncDomain::Sessions,
+            "companion_scheduled_note",
+            item.id.clone(),
+            item,
+        )?;
+    }
     for item in &messages {
         push_entity_record(
             &mut records,
@@ -938,6 +995,15 @@ fn collect_current_entity_records(
             SyncDomain::Messages,
             "usage_metadata",
             format!("{}:{}", item.usage_id, item.key),
+            item,
+        )?;
+    }
+    for item in &fetch_companion_turn_effects(conn)? {
+        push_entity_record(
+            &mut records,
+            SyncDomain::Messages,
+            "companion_turn_effect",
+            item.id.clone(),
             item,
         )?;
     }
@@ -1262,14 +1328,35 @@ fn add_file_asset(
 }
 
 fn load_entity_heads(conn: &DbConnection) -> Result<HashMap<EntityKey, EntityHeadRecord>, String> {
+    load_entity_heads_filtered(conn, None)
+}
+
+fn load_entity_heads_for_domain(
+    conn: &DbConnection,
+    domain: SyncDomain,
+) -> Result<HashMap<EntityKey, EntityHeadRecord>, String> {
+    load_entity_heads_filtered(conn, Some(domain))
+}
+
+fn load_entity_heads_filtered(
+    conn: &DbConnection,
+    domain: Option<SyncDomain>,
+) -> Result<HashMap<EntityKey, EntityHeadRecord>, String> {
+    let base = "SELECT domain, entity_type, entity_id, payload_hash, payload_schema, payload, deleted, last_change_id, source_device_id, source_created_at, source_change_id
+             FROM sync_entity_heads";
+    let sql = match domain {
+        Some(_) => format!("{} WHERE domain = ?1", base),
+        None => base.to_string(),
+    };
     let mut stmt = conn
-        .prepare(
-            "SELECT domain, entity_type, entity_id, payload_hash, payload_schema, payload, deleted, last_change_id, source_device_id, source_created_at, source_change_id
-             FROM sync_entity_heads",
-        )
+        .prepare(&sql)
         .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    let sql_params = match domain {
+        Some(domain) => vec![sync_domain_name(domain)],
+        None => Vec::new(),
+    };
     let rows = stmt
-        .query_map([], |row| {
+        .query_map(rusqlite::params_from_iter(sql_params.iter()), |row| {
             let domain_name: String = row.get(0)?;
             Ok((
                 domain_name,
@@ -1372,7 +1459,7 @@ fn append_remote_change(
     let current_head = load_head(tx, key)?;
     if let Some(head) = &current_head {
         match compare_change_origin(head, change) {
-            std::cmp::Ordering::Greater => return Ok(None),
+            std::cmp::Ordering::Less => return Ok(None),
             std::cmp::Ordering::Equal => {
                 let same_deleted = head.deleted == (change.op == ChangeOp::Delete);
                 let same_payload = head.payload_hash == change.payload_hash;
@@ -1388,7 +1475,7 @@ fn append_remote_change(
                     ),
                 ));
             }
-            std::cmp::Ordering::Less => {}
+            std::cmp::Ordering::Greater => {}
         }
     }
 
@@ -1533,16 +1620,10 @@ fn compare_change_origin(head: &EntityHeadRecord, change: &ChangeRecord) -> std:
 }
 
 fn materialize_domain_heads(conn: &mut DbConnection, domain: SyncDomain) -> Result<(), String> {
-    let heads = load_entity_heads(conn)?;
+    let heads = load_entity_heads_for_domain(conn, domain)?;
     let domain_heads = heads
         .into_iter()
-        .filter_map(|(key, head)| {
-            if key.domain == domain && !head.deleted {
-                Some((key, head))
-            } else {
-                None
-            }
-        })
+        .filter(|(_, head)| !head.deleted)
         .collect::<Vec<_>>();
 
     match domain {
@@ -1555,6 +1636,7 @@ fn materialize_domain_heads(conn: &mut DbConnection, domain: SyncDomain) -> Resu
                 secrets: Vec::new(),
                 provider_credentials: Vec::new(),
                 prompt_templates: Vec::new(),
+                creation_helper_sessions: Vec::new(),
             };
             for (key, head) in domain_heads {
                 match key.entity_type.as_str() {
@@ -1568,6 +1650,9 @@ fn materialize_domain_heads(conn: &mut DbConnection, domain: SyncDomain) -> Resu
                         .push(deserialize_head(&key, &head)?),
                     "prompt_template" => snapshot
                         .prompt_templates
+                        .push(deserialize_head(&key, &head)?),
+                    "creation_helper_session" => snapshot
+                        .creation_helper_sessions
                         .push(deserialize_head(&key, &head)?),
                     _ => {}
                 }
@@ -1681,6 +1766,7 @@ fn materialize_domain_heads(conn: &mut DbConnection, domain: SyncDomain) -> Resu
                 sessions: Vec::new(),
                 companion_shared_memory: Vec::new(),
                 memory_embeddings: Vec::new(),
+                companion_scheduled_notes: Vec::new(),
             };
             for (key, head) in domain_heads {
                 match key.entity_type.as_str() {
@@ -1691,6 +1777,9 @@ fn materialize_domain_heads(conn: &mut DbConnection, domain: SyncDomain) -> Resu
                     "memory_embedding" => snapshot
                         .memory_embeddings
                         .push(deserialize_memory_embedding_head(&key, &head)?),
+                    "companion_scheduled_note" => snapshot
+                        .companion_scheduled_notes
+                        .push(deserialize_head(&key, &head)?),
                     _ => {}
                 }
             }
@@ -1702,6 +1791,7 @@ fn materialize_domain_heads(conn: &mut DbConnection, domain: SyncDomain) -> Resu
                 message_variants: Vec::new(),
                 usage_records: Vec::new(),
                 usage_metadata: Vec::new(),
+                companion_turn_effects: Vec::new(),
             };
             for (key, head) in domain_heads {
                 match key.entity_type.as_str() {
@@ -1713,6 +1803,9 @@ fn materialize_domain_heads(conn: &mut DbConnection, domain: SyncDomain) -> Resu
                     "usage_metadata" => {
                         snapshot.usage_metadata.push(deserialize_head(&key, &head)?)
                     }
+                    "companion_turn_effect" => snapshot
+                        .companion_turn_effects
+                        .push(deserialize_head(&key, &head)?),
                     _ => {}
                 }
             }
@@ -1745,7 +1838,7 @@ fn upgrade_legacy_memory_embedding_v0(
     SyncedMemoryEmbedding {
         session_id: value.session_id,
         session_kind: value.session_kind,
-        memory: MemoryEmbedding {
+        memory: SyncMemoryEmbeddingRecord {
             id: value.memory.id,
             text: value.memory.text,
             embedding: value.memory.embedding,
@@ -1783,7 +1876,7 @@ fn upgrade_legacy_memory_embedding_v1(
     SyncedMemoryEmbedding {
         session_id: value.session_id,
         session_kind: value.session_kind,
-        memory: MemoryEmbedding {
+        memory: SyncMemoryEmbeddingRecord {
             id: value.memory.id,
             text: value.memory.text,
             embedding: value.memory.embedding,
@@ -1815,14 +1908,20 @@ fn upgrade_legacy_memory_embedding_v1(
     }
 }
 
+fn bincode_decode_exact<T: serde::de::DeserializeOwned>(bytes: &[u8]) -> Result<T, bincode::Error> {
+    use bincode::Options;
+    bincode::options().with_fixint_encoding().deserialize(bytes)
+}
+
 fn deserialize_memory_embedding_head(
     key: &EntityKey,
     head: &EntityHeadRecord,
 ) -> Result<SyncedMemoryEmbedding, String> {
-    match bincode::deserialize(&head.payload) {
+    match bincode_decode_exact(&head.payload) {
         Ok(value) => Ok(value),
         Err(current_err) => {
-            if let Ok(value) = bincode::deserialize::<LegacySyncedMemoryEmbeddingV1>(&head.payload)
+            if let Ok(value) =
+                bincode_decode_exact::<LegacySyncedMemoryEmbeddingV1>(&head.payload)
             {
                 log_info_global(
                     "sync_payload",
@@ -1833,7 +1932,8 @@ fn deserialize_memory_embedding_head(
                 );
                 return Ok(upgrade_legacy_memory_embedding_v1(value));
             }
-            if let Ok(value) = bincode::deserialize::<LegacySyncedMemoryEmbeddingV0>(&head.payload)
+            if let Ok(value) =
+                bincode_decode_exact::<LegacySyncedMemoryEmbeddingV0>(&head.payload)
             {
                 log_info_global(
                     "sync_payload",
@@ -1897,7 +1997,7 @@ fn deserialize_head<T: serde::de::DeserializeOwned + serde::Serialize>(
         ));
     }
 
-    match bincode::deserialize(&head.payload) {
+    match bincode_decode_exact(&head.payload) {
         Ok(value) => {
             let pretty = serde_json::to_string_pretty(&value)
                 .unwrap_or_else(|err| format!("<failed to render json: {}>", err));
@@ -2175,6 +2275,7 @@ fn apply_core_snapshot(conn: &mut DbConnection, payload: &[u8]) -> Result<(), St
         "secrets",
         "provider_credentials",
         "prompt_templates",
+        "creation_helper_sessions",
     ] {
         tx.execute(&format!("DELETE FROM {}", table), [])
             .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
@@ -2243,6 +2344,23 @@ fn apply_core_snapshot(conn: &mut DbConnection, payload: &[u8]) -> Result<(), St
                 template.condense_prompt_entries,
                 template.created_at,
                 template.updated_at
+            ],
+        )
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    }
+
+    for session in snapshot.creation_helper_sessions {
+        tx.execute(
+            r#"INSERT OR REPLACE INTO creation_helper_sessions (id, creation_goal, status, session_json, uploaded_images_json, created_at, updated_at)
+               VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)"#,
+            params![
+                session.id,
+                session.creation_goal,
+                session.status,
+                session.session_json,
+                session.uploaded_images_json,
+                session.created_at,
+                session.updated_at
             ],
         )
         .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
@@ -2874,6 +2992,30 @@ fn apply_sessions_snapshot_struct(
         .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
     }
 
+    tx.execute("DELETE FROM companion_scheduled_notes", [])
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    for note in snapshot.companion_scheduled_notes {
+        tx.execute(
+            r#"INSERT INTO companion_scheduled_notes (id, character_id, label, content, available_at, expires_at, recurrence, recurrence_window_ms, enabled, created_at, updated_at)
+               SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11
+               WHERE EXISTS (SELECT 1 FROM characters WHERE id = ?2)"#,
+            params![
+                note.id,
+                note.character_id,
+                note.label,
+                note.content,
+                note.available_at,
+                note.expires_at,
+                note.recurrence,
+                note.recurrence_window_ms,
+                note.enabled,
+                note.created_at,
+                note.updated_at
+            ],
+        )
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    }
+
     delete_missing_rows(&tx, "sessions", "id", &incoming_session_ids)?;
     delete_missing_rows(
         &tx,
@@ -3072,6 +3214,35 @@ fn apply_messages_snapshot(conn: &mut DbConnection, payload: &[u8]) -> Result<()
         tx.execute(
             "INSERT OR REPLACE INTO usage_metadata (usage_id, key, value) VALUES (?1, ?2, ?3)",
             params![metadata.usage_id, metadata.key, metadata.value],
+        )
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    }
+
+    tx.execute("DELETE FROM companion_turn_effects", [])
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    for effect in snapshot.companion_turn_effects {
+        tx.execute(
+            r#"INSERT INTO companion_turn_effects (id, session_id, user_message_id, assistant_message_id, created_at, updated_at, status, summary, relationship_delta, emotion_delta, signal_changes, memory_changes, source_window)
+               SELECT ?1, ?2,
+                      CASE WHEN ?3 IS NOT NULL AND EXISTS (SELECT 1 FROM messages WHERE id = ?3) THEN ?3 ELSE NULL END,
+                      ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13
+               WHERE EXISTS (SELECT 1 FROM sessions WHERE id = ?2)
+                 AND EXISTS (SELECT 1 FROM messages WHERE id = ?4)"#,
+            params![
+                effect.id,
+                effect.session_id,
+                effect.user_message_id,
+                effect.assistant_message_id,
+                effect.created_at,
+                effect.updated_at,
+                effect.status,
+                effect.summary,
+                effect.relationship_delta,
+                effect.emotion_delta,
+                effect.signal_changes,
+                effect.memory_changes,
+                effect.source_window
+            ],
         )
         .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
     }
@@ -3726,6 +3897,97 @@ fn fetch_sessions_data(
     Ok((sessions, messages, variants, usages, metadata))
 }
 
+fn fetch_creation_helper_sessions(
+    conn: &DbConnection,
+) -> Result<Vec<CreationHelperSession>, String> {
+    let mut stmt = conn
+        .prepare(
+            "SELECT id, creation_goal, status, session_json, uploaded_images_json, created_at, updated_at
+             FROM creation_helper_sessions",
+        )
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    let rows = stmt
+        .query_map([], |r| {
+            Ok(CreationHelperSession {
+                id: r.get(0)?,
+                creation_goal: r.get(1)?,
+                status: r.get(2)?,
+                session_json: r.get(3)?,
+                uploaded_images_json: r.get(4)?,
+                created_at: r.get(5)?,
+                updated_at: r.get(6)?,
+            })
+        })
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    rows.collect::<Result<Vec<_>, _>>()
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))
+}
+
+fn fetch_companion_scheduled_notes(
+    conn: &DbConnection,
+) -> Result<Vec<SyncCompanionScheduledNote>, String> {
+    let mut stmt = conn
+        .prepare(
+            "SELECT id, character_id, label, content, available_at, expires_at, recurrence,
+                    recurrence_window_ms, enabled, created_at, updated_at
+             FROM companion_scheduled_notes",
+        )
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    let rows = stmt
+        .query_map([], |r| {
+            Ok(SyncCompanionScheduledNote {
+                id: r.get(0)?,
+                character_id: r.get(1)?,
+                label: r.get(2)?,
+                content: r.get(3)?,
+                available_at: r.get(4)?,
+                expires_at: r.get(5)?,
+                recurrence: r.get(6)?,
+                recurrence_window_ms: r.get(7)?,
+                enabled: r.get(8)?,
+                created_at: r.get(9)?,
+                updated_at: r.get(10)?,
+            })
+        })
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    rows.collect::<Result<Vec<_>, _>>()
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))
+}
+
+fn fetch_companion_turn_effects(
+    conn: &DbConnection,
+) -> Result<Vec<SyncCompanionTurnEffect>, String> {
+    let mut stmt = conn
+        .prepare(
+            "SELECT id, session_id, user_message_id, assistant_message_id, created_at, updated_at,
+                    status, summary, relationship_delta, emotion_delta, signal_changes,
+                    memory_changes, source_window
+             FROM companion_turn_effects",
+        )
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    let rows = stmt
+        .query_map([], |r| {
+            Ok(SyncCompanionTurnEffect {
+                id: r.get(0)?,
+                session_id: r.get(1)?,
+                user_message_id: r.get(2)?,
+                assistant_message_id: r.get(3)?,
+                created_at: r.get(4)?,
+                updated_at: r.get(5)?,
+                status: r.get(6)?,
+                summary: r.get(7)?,
+                relationship_delta: r.get(8)?,
+                emotion_delta: r.get(9)?,
+                signal_changes: r.get(10)?,
+                memory_changes: r.get(11)?,
+                source_window: r.get(12)?,
+            })
+        })
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    rows.collect::<Result<Vec<_>, _>>()
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))
+}
+
 fn fetch_companion_shared_memory_data(
     conn: &DbConnection,
 ) -> Result<Vec<CompanionSharedMemory>, String> {
@@ -4041,4 +4303,160 @@ pub fn scan_for_missing_files(conn: &DbConnection, app_handle: &tauri::AppHandle
     missing.sort();
     missing.dedup();
     missing
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn sample_record() -> SyncedMemoryEmbedding {
+        SyncedMemoryEmbedding {
+            session_id: "session-1".into(),
+            session_kind: "session".into(),
+            memory: SyncMemoryEmbeddingRecord {
+                id: "852275".into(),
+                text: "Sam is an Army soldier".into(),
+                embedding: vec![0.25, -0.5, 0.75],
+                created_at: 1776758542110,
+                token_count: 20,
+                is_cold: false,
+                last_accessed_at: 1776758600000,
+                importance_score: 1.0,
+                persistence_importance: 1.0,
+                prompt_importance: 1.0,
+                volatility: 0.4,
+                is_pinned: true,
+                access_count: 1,
+                embedding_source_version: Some("v4".into()),
+                embedding_dimensions: Some(3),
+                match_score: None,
+                category: Some("character_trait".into()),
+                observed_at: None,
+                observed_time_precision: None,
+                canonical_entities: Vec::new(),
+                fact_signature: None,
+                fact_polarity: None,
+                source_role: None,
+                source_message_id: None,
+                superseded_by: None,
+                superseded_at: None,
+                supersedes: Vec::new(),
+            },
+        }
+    }
+
+    fn head_record(payload: Vec<u8>) -> EntityHeadRecord {
+        EntityHeadRecord {
+            payload_hash: blake3::hash(&payload).to_hex().to_string(),
+            payload_schema: CHANGE_SCHEMA_VERSION,
+            payload,
+            deleted: false,
+            _last_change_id: 1,
+            source_device_id: "test-device".into(),
+            source_created_at: 1,
+            source_change_id: 1,
+        }
+    }
+
+    fn embedding_key() -> EntityKey {
+        EntityKey {
+            domain: SyncDomain::Sessions,
+            entity_type: "memory_embedding".into(),
+            entity_id: "session:session-1:852275".into(),
+        }
+    }
+
+    #[test]
+    fn wire_record_round_trips_mixed_optionals() {
+        let record = sample_record();
+        let payload = bincode::serialize(&record).unwrap();
+        let head = head_record(payload);
+        let decoded = deserialize_memory_embedding_head(&embedding_key(), &head).unwrap();
+        assert_eq!(decoded.memory.id, "852275");
+        assert_eq!(decoded.memory.created_at, 1776758542110);
+        assert_eq!(decoded.memory.token_count, 20);
+        assert_eq!(decoded.memory.embedding_source_version.as_deref(), Some("v4"));
+        assert_eq!(decoded.memory.match_score, None);
+        assert_eq!(decoded.memory.category.as_deref(), Some("character_trait"));
+    }
+
+    #[test]
+    fn skip_serialized_payload_is_rejected_instead_of_truncated() {
+        #[derive(serde::Serialize)]
+        struct LegacySkipSerialized {
+            session_id: String,
+            session_kind: String,
+            memory: crate::chat_manager::types::MemoryEmbedding,
+        }
+
+        let record = sample_record();
+        let legacy = LegacySkipSerialized {
+            session_id: record.session_id.clone(),
+            session_kind: record.session_kind.clone(),
+            memory: record.memory.clone().into(),
+        };
+        let payload = bincode::serialize(&legacy).unwrap();
+        let head = head_record(payload);
+        let result = deserialize_memory_embedding_head(&embedding_key(), &head);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn genuine_v0_payload_still_upgrades() {
+        #[derive(serde::Serialize)]
+        struct V0Memory {
+            id: String,
+            text: String,
+            embedding: Vec<f32>,
+        }
+        #[derive(serde::Serialize)]
+        struct V0Synced {
+            session_id: String,
+            session_kind: String,
+            memory: V0Memory,
+        }
+
+        let payload = bincode::serialize(&V0Synced {
+            session_id: "session-1".into(),
+            session_kind: "session".into(),
+            memory: V0Memory {
+                id: "852275".into(),
+                text: "Sam is an Army soldier".into(),
+                embedding: vec![0.25, -0.5, 0.75],
+            },
+        })
+        .unwrap();
+        let head = head_record(payload);
+        let decoded = deserialize_memory_embedding_head(&embedding_key(), &head).unwrap();
+        assert_eq!(decoded.memory.text, "Sam is an Army soldier");
+        assert_eq!(decoded.memory.embedding, vec![0.25, -0.5, 0.75]);
+    }
+
+    fn change_at(source_created_at: i64) -> ChangeRecord {
+        ChangeRecord {
+            change_id: source_created_at,
+            source_device_id: "other-device".into(),
+            source_created_at,
+            source_change_id: source_created_at,
+            entity_type: "settings".into(),
+            entity_id: "1".into(),
+            op: ChangeOp::Upsert,
+            payload_schema: CHANGE_SCHEMA_VERSION,
+            payload_hash: "hash".into(),
+            payload: Vec::new(),
+        }
+    }
+
+    #[test]
+    fn newer_remote_change_outranks_head_and_stale_does_not() {
+        let head = head_record(vec![1, 2, 3]);
+        assert_eq!(
+            compare_change_origin(&head, &change_at(2)),
+            std::cmp::Ordering::Greater
+        );
+        assert_eq!(
+            compare_change_origin(&head, &change_at(0)),
+            std::cmp::Ordering::Less
+        );
+    }
 }
