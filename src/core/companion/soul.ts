@@ -1,5 +1,29 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { CompanionConfig } from "../storage/schemas";
+import { readSettings, readSettingsCached } from "../storage/repo";
+
+function pickSoulWriterModelId(
+  settings:
+    | {
+        advancedSettings?: { companionSoulWriterModelId?: string } | null;
+        defaultModelId?: string | null;
+      }
+    | null
+    | undefined,
+): string | null {
+  const configured = settings?.advancedSettings?.companionSoulWriterModelId?.trim();
+  if (configured) return configured;
+  const fallback = settings?.defaultModelId?.trim();
+  return fallback || null;
+}
+
+export function soulWriterModelIdCached(): string | null {
+  return pickSoulWriterModelId(readSettingsCached());
+}
+
+export async function soulWriterModelId(): Promise<string | null> {
+  return pickSoulWriterModelId(await readSettings());
+}
 
 export interface GenerateCompanionSoulRequest {
   characterName: string;

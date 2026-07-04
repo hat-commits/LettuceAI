@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { AlertCircle, ArrowLeft, Heart, RefreshCcw } from "lucide-react";
 import type { CompanionConfig, Scene } from "../../../../core/storage/schemas";
+import { soulWriterModelId, soulWriterModelIdCached } from "../../../../core/companion/soul";
 import { useCompanionSoulGeneration } from "../../../../core/companion/useCompanionSoulGeneration";
 import { useI18n } from "../../../../core/i18n/context";
 import {
@@ -26,7 +27,6 @@ interface CompanionSoulStepProps {
   description: string;
   scenes: Scene[];
   companion: CompanionConfig | null | undefined;
-  selectedModelId: string | null;
   models?: ModelOption[];
   onCompanionChange: (value: CompanionConfig) => void;
   onBack: () => void;
@@ -46,7 +46,6 @@ export function CompanionSoulStep({
   description,
   scenes,
   companion,
-  selectedModelId,
   models,
   onCompanionChange,
   onBack,
@@ -56,8 +55,23 @@ export function CompanionSoulStep({
   const [error, setError] = useState<string | null>(null);
   const [draft, setDraft] = useState<Partial<CompanionConfig> | null>(null);
   const [direction, setDirection] = useState("");
+  const [writerModelId, setWriterModelId] = useState<string | null>(() =>
+    soulWriterModelIdCached(),
+  );
   const soulGen = useCompanionSoulGeneration();
   const generating = soulGen.generating;
+
+  useEffect(() => {
+    let cancelled = false;
+    void soulWriterModelId()
+      .then((value) => {
+        if (!cancelled) setWriterModelId(value);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const value = normalizeCompanionConfig(companion);
 
@@ -68,9 +82,9 @@ export function CompanionSoulStep({
   }, [name, definition]);
 
   const modelLabel = useMemo(() => {
-    if (!selectedModelId) return null;
-    return models?.find((m) => m.id === selectedModelId)?.displayName ?? null;
-  }, [selectedModelId, models]);
+    if (!writerModelId) return null;
+    return models?.find((m) => m.id === writerModelId)?.displayName ?? null;
+  }, [writerModelId, models]);
 
   const runGeneration = async () => {
     if (generationDisabledReason) {
@@ -86,7 +100,7 @@ export function CompanionSoulStep({
         openingContext: openingContextFromScenes(scenes),
         currentSoul: value,
         userNotes: direction.trim() || null,
-        modelId: selectedModelId,
+        modelId: null,
       });
       if (!next) return;
       setDraft(next);

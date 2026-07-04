@@ -116,7 +116,7 @@ export function CompanionSoulPage() {
         characterDescription: character.description ?? "",
         openingContext: openingContextFromCharacter(companion, selectedSceneText),
         currentSoul: companion,
-        modelId: character.defaultModelId,
+        modelId: null,
       });
       if (!generated) return;
       setDraft(mergeCompanionSoulDraft(companion, generated));

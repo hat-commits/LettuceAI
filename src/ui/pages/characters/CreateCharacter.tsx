@@ -508,7 +508,6 @@ export function CreateCharacterPage() {
               description={state.description}
               scenes={state.scenes}
               companion={state.companion}
-              selectedModelId={state.selectedModelId}
               models={state.models}
               onCompanionChange={actions.setCompanionConfig}
               onBack={() => actions.setStep(Step.StartingScene)}

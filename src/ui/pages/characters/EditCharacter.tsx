@@ -74,6 +74,7 @@ import {
   APP_GROUP_CHAT_ROLEPLAY_TEMPLATE_ID,
   APP_GROUP_CHAT_TEMPLATE_ID,
 } from "../../../core/prompts/constants";
+import { soulWriterModelId, soulWriterModelIdCached } from "../../../core/companion/soul";
 import { useCompanionSoulGeneration } from "../../../core/companion/useCompanionSoulGeneration";
 import { recalculateGradient } from "../../../core/storage/avatars";
 import { useImageData } from "../../hooks/useImageData";
@@ -530,10 +531,26 @@ export function EditCharacterPage() {
     return null;
   }, [name, definition, t]);
 
+  const [soulWriterId, setSoulWriterId] = React.useState<string | null>(() =>
+    soulWriterModelIdCached(),
+  );
+
+  React.useEffect(() => {
+    let cancelled = false;
+    void soulWriterModelId()
+      .then((value) => {
+        if (!cancelled) setSoulWriterId(value);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const soulModelLabel = React.useMemo(() => {
-    if (!selectedModelId) return null;
-    return models.find((m) => m.id === selectedModelId)?.displayName ?? null;
-  }, [selectedModelId, models]);
+    if (!soulWriterId) return null;
+    return models.find((m) => m.id === soulWriterId)?.displayName ?? null;
+  }, [soulWriterId, models]);
 
   const handleGenerateSoul = React.useCallback(async () => {
     if (soulGenerationDisabledReason || generatingSoul) {
@@ -549,7 +566,7 @@ export function EditCharacterPage() {
         openingContext: buildOpeningContext(scenes),
         currentSoul: companion,
         userNotes: soulDirection.trim() || null,
-        modelId: selectedModelId,
+        modelId: null,
       });
       if (!draft) return;
       setSoulDraft(draft);
