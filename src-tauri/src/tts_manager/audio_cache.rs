@@ -49,6 +49,7 @@ fn format_to_extension(format: &str) -> &str {
         "audio/wav" | "audio/wave" => "wav",
         "audio/ogg" => "ogg",
         "audio/webm" => "webm",
+        "audio/pcm" => "pcm",
         _ => "audio",
     }
 }
@@ -59,6 +60,7 @@ fn extension_to_format(ext: &str) -> String {
         "wav" => "audio/wav".to_string(),
         "ogg" => "audio/ogg".to_string(),
         "webm" => "audio/webm".to_string(),
+        "pcm" => "audio/pcm".to_string(),
         _ => "audio/octet-stream".to_string(),
     }
 }
@@ -88,7 +90,7 @@ pub fn load_audio_from_cache(
 ) -> Result<Option<(Vec<u8>, String)>, String> {
     let dir = tts_audio_dir(app)?;
 
-    for ext in &["mp3", "wav", "ogg", "webm", "audio"] {
+    for ext in &["mp3", "wav", "ogg", "webm", "pcm", "audio"] {
         let file_path = dir.join(format!("{}.{}", cache_key, ext));
         if file_path.exists() {
             let audio_data = fs::read(&file_path).map_err(|e| {
@@ -109,7 +111,7 @@ pub fn load_audio_from_cache(
 pub fn audio_exists_in_cache(app: &tauri::AppHandle, cache_key: &str) -> Result<bool, String> {
     let dir = tts_audio_dir(app)?;
 
-    for ext in &["mp3", "wav", "ogg", "webm", "audio"] {
+    for ext in &["mp3", "wav", "ogg", "webm", "pcm", "audio"] {
         let file_path = dir.join(format!("{}.{}", cache_key, ext));
         if file_path.exists() {
             return Ok(true);
@@ -122,7 +124,7 @@ pub fn audio_exists_in_cache(app: &tauri::AppHandle, cache_key: &str) -> Result<
 pub fn delete_audio_from_cache(app: &tauri::AppHandle, cache_key: &str) -> Result<(), String> {
     let dir = tts_audio_dir(app)?;
 
-    for ext in &["mp3", "wav", "ogg", "webm", "audio"] {
+    for ext in &["mp3", "wav", "ogg", "webm", "pcm", "audio"] {
         let file_path = dir.join(format!("{}.{}", cache_key, ext));
         if file_path.exists() {
             fs::remove_file(&file_path).map_err(|e| {
