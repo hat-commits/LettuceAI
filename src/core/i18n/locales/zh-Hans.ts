@@ -63,7 +63,7 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       speechRecognition: "语音识别",
       hostApi: "API 服务器",
       lorebookEntryGenerator: "知识库条目生成器",
-      companionSoulWriter: "伙伴灵魂作者",
+      companionSoulWriter: "同伴 Soul 编写器",
     },
     bottomNav: {
       chats: "聊天",
@@ -591,7 +591,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       v1Message: "您正在使用 v1（512 tokens）。升级到 v3 以获得更好的记忆质量和长文本支持。",
       v2Message: "您正在使用旧版 v2。升级到 v3 以获得最新嵌入模型的更好记忆质量。",
       button: "升级到 v3",
-      v3Message: "v4 已发布,角色扮演记忆召回率较 v3 大幅提升(recall@1 从 0.02 提升至 0.92)。建议升级。",
+      v3Message:
+        "v4 已发布,角色扮演记忆召回率较 v3 大幅提升(recall@1 从 0.02 提升至 0.92)。建议升级。",
     },
     v2UpgradeToast: {
       title: "记忆模型 v3",
@@ -704,7 +705,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       reasoningNotSupported: "不支持 — 此服务商不支持推理",
       unsupportedParametersIgnored: "不支持的参数将被 {{providerName}} 忽略。",
       reasoningEffortSupported: "推理努力程度支持思考模型（o1、DeepSeek-R1 等）",
-      reasoningBudgetSupported: "此服务商使用基于预算的思考（无努力等级）。请改为设置推理预算 token 数。",
+      reasoningBudgetSupported:
+        "此服务商使用基于预算的思考（无努力等级）。请改为设置推理预算 token 数。",
       reasoningNotSupportedProvider: "此服务商不支持推理参数。",
       matrixTitle: "服务商参数支持矩阵",
       providerColumn: "服务商",
@@ -720,7 +722,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
     },
     extra: {
       promptCachingTitle: "提示缓存",
-      promptCachingDescription: "为长且重复的上下文(例如大型系统提示或较深的聊天历史)加速生成并降低成本。",
+      promptCachingDescription:
+        "为长且重复的上下文(例如大型系统提示或较深的聊天历史)加速生成并降低成本。",
       avatarAlt: "头像",
       chooseFromLibrary: "从库中选择",
       chooseFromLibraryDesc: "使用应用中已保存的图像",
@@ -758,22 +761,26 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       emptyReferences: "添加几张清晰的参考图,以锁定面孔、比例、服装与风格。",
       designReferencesTitle: "设计参考",
       designReferencesDescription: "上传几张清晰的参考图像以及一段标准化的视觉描述。",
-      designReferencesPlaceholder: "描述稳定的外观:面孔、发型、体型、年龄表现、服装要素、配饰以及艺术/风格方向。",
+      designReferencesPlaceholder:
+        "描述稳定的外观:面孔、发型、体型、年龄表现、服装要素、配饰以及艺术/风格方向。",
       dismissAria: "关闭",
       v3MessageFallback: "lettuce-emb-v4 已发布,角色扮演记忆召回率大幅提升。建议升级。",
       uploadButton: "上传",
       libraryButton: "库",
       companionSetupTitle: "伙伴需要设置",
       companionSetupSubtitleSingle: "伙伴模式还需要一个模型才能运行。跳过将把此角色切回角色扮演。",
-      companionSetupSubtitleMany: "伙伴模式还需要 {{count}} 个模型才能运行。跳过将把此角色切回角色扮演。",
-      companionSetupBody: "伙伴模式需要一些本地模型来分析情绪、提取实体、路由记忆并回忆过往上下文。",
+      companionSetupSubtitleMany:
+        "伙伴模式还需要 {{count}} 个模型才能运行。跳过将把此角色切回角色扮演。",
+      companionSetupBody:
+        "伙伴模式需要一些本地模型来分析情绪、提取实体、路由记忆并回忆过往上下文。",
       companionUseRoleplay: "改用角色扮演",
       companionDownloadNow: "立即下载",
       searchModelsPlaceholder: "搜索模型...",
       loadingModelsDefault: "正在加载模型...",
       noModelsAvailable: "无可用模型。",
       noModelsMatching: "未找到匹配“{{query}}”的模型。",
-      contentPlaceholderText: "你是一个乐于助人的 AI 助手...\n\n在提示中使用 {{char.name}} 与 {{scene}}。",
+      contentPlaceholderText:
+        "你是一个乐于助人的 AI 助手...\n\n在提示中使用 {{char.name}} 与 {{scene}}。",
       previewRenderFailed: "<预览渲染失败>",
       charactersCount: "{{count}} 个字符",
     },
@@ -861,7 +868,7 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       empty: "此对话还没有分支",
       branchedFrom: "从 {{title}} 分支",
       goToParentTitle: "前往父分支？",
-      goToParentDesc: "此对话从 \"{{title}}\" 分支而来。",
+      goToParentDesc: '此对话从 "{{title}}" 分支而来。',
       goToParentConfirm: "打开 {{title}}",
       goToParentCancel: "留在此处",
       branchesFromHere: "从此处分出 {{count}} 个分支",
@@ -1045,7 +1052,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       overridesCount: "覆盖项 ({{count}})",
       overridesSummary: "覆盖项: {{summary}}",
       scheduledNotes: "计划笔记",
-      scheduledNotesDesc: "带有日期的背景上下文，伙伴会在日期到达时识别。例如生日、周年纪念、季节性事件。",
+      scheduledNotesDesc:
+        "带有日期的背景上下文，伙伴会在日期到达时识别。例如生日、周年纪念、季节性事件。",
       searchModels: "搜索模型...",
       summaryTokensCount: "{{count}} 个总结 token",
       timeAwareness: "时间感知",
@@ -1130,7 +1138,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       attachedAudio: "附加音频",
       guidedRegenerationTitle: "引导重新生成",
       guidedRegenerationLabel: "应该如何更改?",
-      guidedRegenerationDescription: "描述语气、长度、要保留或删除的细节,以及下一条回复应有的不同之处。",
+      guidedRegenerationDescription:
+        "描述语气、长度、要保留或删除的细节,以及下一条回复应有的不同之处。",
       guidedRegenerationPlaceholder: "更短一点、更温暖一点、更直接一点...",
       guidedRegenerationSubmit: "重新生成",
       generatingImagePrompt: "正在生成图像提示词...",
@@ -1234,10 +1243,10 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       chatSettingsSubtitle: "管理对话偏好",
     },
     companionSoul: {
-      loading: "正在加载伙伴灵魂...",
-      unavailable: "伙伴灵魂不可用",
-      unavailableDesc: "灵魂编辑仅适用于伙伴模式角色。",
-      pageTitle: "伙伴灵魂",
+      loading: "正在加载同伴 Soul...",
+      unavailable: "同伴 Soul 不可用",
+      unavailableDesc: "Soul 编辑仅适用于同伴模式角色。",
+      pageTitle: "同伴 Soul",
       back: "返回",
       save: "保存",
     },
@@ -1291,7 +1300,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       soulGrowthRemoveConfirmTitle: "移除此项成长？",
       soulGrowthRemoveConfirmMessage: "这会将该条目从伙伴的演化特质中移除，不会影响所撰写的灵魂。",
       soulGrowthClearConfirmTitle: "清除所有成长？",
-      soulGrowthClearConfirmMessage: "这会移除所有累积的成长条目，包括已被取代的历史记录。所撰写的灵魂不会受到影响。",
+      soulGrowthClearConfirmMessage:
+        "这会移除所有累积的成长条目，包括已被取代的历史记录。所撰写的灵魂不会受到影响。",
       soulGrowthSuperseded: "已弃用 {{count}} 个较早版本",
       soulGrowthSources: "源自 {{count}} 条记忆",
       growthKindAdd: "新增",
@@ -1414,7 +1424,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       sessionLoadFailed: "无法加载聊天会话。",
       backToChat: "返回聊天",
       notCompanionTitle: "此聊天未处于伴侣模式",
-      notCompanionDesc: "角色扮演聊天仍使用常规记忆界面。伴侣页面仅适用于角色模式设置为“伴侣”的聊天。",
+      notCompanionDesc:
+        "角色扮演聊天仍使用常规记忆界面。伴侣页面仅适用于角色模式设置为“伴侣”的聊天。",
       openRegularMemories: "打开常规记忆",
       pageTitle: "伴侣记忆",
       cancelCycleTitle: "取消当前运行的记忆循环",
@@ -1467,7 +1478,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       generationFinished: "生成完毕",
       waitingForOutput: "等待输出...",
       memoryDateTitle: "记忆日期",
-      memoryDateDesc: "设置此记忆发生的时间。伴侣会根据此日期判断新鲜度，从而在对话推进时保持正确。",
+      memoryDateDesc:
+        "设置此记忆发生的时间。伴侣会根据此日期判断新鲜度，从而在对话推进时保持正确。",
     },
     memories: {
       stepSummarizing: "正在总结对话",
@@ -1494,7 +1506,7 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       scrollToMessage: "滚动到消息",
       searchModels: "搜索模型...",
       loadingModels: "正在加载可用模型...",
-      noModelsMatching: "未找到匹配 \\\"{{query}}\\\" 的模型",
+      noModelsMatching: '未找到匹配 \\"{{query}}\\" 的模型',
       liveModelOutput: "模型实时输出",
       generating: "生成中",
       tokensCount: "{{tokens}} 个 token",
@@ -1906,7 +1918,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       badgeFrozen: "冻结",
       badgeCustom: "自定义",
       badgeLive: "实时",
-      description: "设置伙伴看到的日期和时间。实时使用真实时钟，冻结保持在固定时刻，流逝则从你设置的时间起继续推进。",
+      description:
+        "设置伙伴看到的日期和时间。实时使用真实时钟，冻结保持在固定时刻，流逝则从你设置的时间起继续推进。",
       realClock: "(真实时间 {{time}})",
       changeTime: "更改时间",
       now: "现在",
@@ -1999,7 +2012,7 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
         fromCharacterDesc: "使用您角色的场景",
         sceneContent: "场景内容",
         sceneContentPlaceholder: "描述此角色扮演的开场场景...",
-        sceneReferenceTip: "提示：输入 {{@\" 以引用角色",
+        sceneReferenceTip: '提示：输入 {{@" 以引用角色',
         selectScene: "选择场景",
         sceneLabel: " 的场景",
         copyToCustom: "复制到自定义并编辑",
@@ -2679,23 +2692,27 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       triggerNeedsMany: "需要 {{count}} 个模型 - 点按以设置",
       triggerReady: "已就绪 - 点按查看运作方式",
       stepOptional: "可选",
-      modelsBody: "伙伴完全在你的设备上运行。它需要几个小模型来读取情绪、追踪提到了谁和什么，并回想过去的时刻。这是一次性下载。",
+      modelsBody:
+        "伙伴完全在你的设备上运行。它需要几个小模型来读取情绪、追踪提到了谁和什么，并回想过去的时刻。这是一次性下载。",
       modelsChecking: "正在检查已安装的模型...",
       modelsDoneTitle: "设备端模型已安装",
       explainIntro: "你的伙伴已就绪。下面是它与角色扮演角色的不同之处。",
       downloadOne: "下载 1 个模型",
       downloadMany: "下载 {{count}} 个模型",
-      soulTitle: "塑造灵魂（可选）",
-      soulBody: "灵魂是他们内在的本质：性格、语气，以及如何处理情感。它带有合理的默认值，所以你可以暂时跳过、从角色生成草稿，或随时在伙伴灵魂标签中微调。",
+      soulTitle: "塑造 Soul（可选）",
+      soulBody:
+        "Soul 描述角色更长期的内在设定：性格、语气，以及处理情绪的方式。它有合理默认值，你可以先跳过，也可以从角色生成草稿，之后随时在同伴 Soul 标签页中微调。",
       conceptsTitle: "伙伴如何思考",
       conceptEmotionTitle: "情绪状态",
-      conceptEmotionBody: "他们的心情会随你所说逐回合变化，然后慢慢回到灵魂的基线。",
+      conceptEmotionBody: "角色的情绪会随你所说逐回合变化，然后慢慢回到 Soul 的基线。",
       conceptRelationshipTitle: "关系",
-      conceptRelationshipBody: "亲近、信任与情感会随着交谈增长或淡化。每次聊天都从灵魂的默认关系值开始。",
+      conceptRelationshipBody:
+        "亲近、信任与好感会随着交谈增长或淡化。每次聊天都从 Soul 的默认关系值开始。",
       conceptMemoryTitle: "记忆",
       conceptMemoryBody: "有意义的时刻会被保存并在之后回想，让他们记得名字、事件以及当时的感受。",
       whereTitle: "各项内容的位置",
-      whereBody: "在此处的伙伴灵魂标签中编辑身份与情感。在聊天中，打开菜单可查看它的记忆、当前情绪状态，以及不断增长的关系。",
+      whereBody:
+        "在这里的同伴 Soul 标签页中编辑身份与情绪设定。在聊天中，打开菜单可查看它的记忆、当前情绪状态，以及不断变化的关系。",
     },
     empty: {
       title: "还没有角色",
@@ -3017,7 +3034,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
         composeHeader: "草稿区",
         composeMatches: "{{count}} 项匹配",
         activeLabel: "{{count}} 活跃",
-        composePlaceholder: "输入或粘贴文本以测试关键词匹配...\n\n例如:\n图书馆很安静,只有旧暖气的嗡嗡声。\n她问我有没有读上周借给我的那本书。",
+        composePlaceholder:
+          "输入或粘贴文本以测试关键词匹配...\n\n例如:\n图书馆很安静,只有旧暖气的嗡嗡声。\n她问我有没有读上周借给我的那本书。",
         sectionActive: "活跃 · {{count}}",
         sectionInactive: "未活跃 · {{count}}",
         statusMatched: "已匹配",
@@ -3189,7 +3207,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       providerVoicesLabel: "{{provider}} 语音",
       providerFallback: "服务商",
       designReferencesLabel: "设计参考",
-      designReferencesEditorHint: "附加几个稳定的图像参考和一条简明的视觉说明，以便场景生成能保持相同的面孔、比例、服装线索和风格。",
+      designReferencesEditorHint:
+        "附加几个稳定的图像参考和一条简明的视觉说明，以便场景生成能保持相同的面孔、比例、服装线索和风格。",
     },
     interactionMode: {
       sectionLabel: "互动模式",
@@ -3210,11 +3229,13 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       skipForCompanion: "伙伴模式可以跳过此项。",
       createFirstScene: "创建你的第一个场景以开始",
       openingPlaceholder: "可选的开场上下文,例如伙伴所在位置或第一条消息之前在做什么...",
-      scenePlaceholder: "为角色扮演创建一个开场场景或情境(例如:“你发现自己身处暮色中的神秘森林...”)",
+      scenePlaceholder:
+        "为角色扮演创建一个开场场景或情境(例如:“你发现自己身处暮色中的神秘森林...”)",
       addDirection: "+ 添加指引",
       directionAdded: "指引已添加",
       wordsCount: "{{count}} 个词",
-      placeholderHelp: "使用 {{charTag}} 表示角色,使用 {{userTag}}(别名 {{personaTag}})表示角色身份。",
+      placeholderHelp:
+        "使用 {{charTag}} 表示角色,使用 {{userTag}}(别名 {{personaTag}})表示角色身份。",
       sceneBackgroundLabel: "场景背景",
       optionalLabel: "可选",
       sceneBgOverrideHint: "覆盖使用此场景的聊天的角色背景。",
@@ -3237,8 +3258,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       removeBackground: "移除背景",
     },
     companionSoul: {
-      title: "伙伴灵魂",
-      subtitle: "塑造他们内在的本质。生成时使用上一步设置的开场上下文。",
+      title: "同伴 Soul",
+      subtitle: "塑造角色更长期的内在设定。生成时会参考上一步填写的开场上下文。",
       retry: "重试",
       back: "返回",
       continue: "继续",
@@ -3246,25 +3267,25 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       addDefinitionFirst: "请先添加定义。",
     },
     soulEditor: {
-      directionMenuDesc: "引导灵魂的草拟方式。留空则让模型仅根据角色决定。",
+      directionMenuDesc: "引导 Soul 的生成方向。留空时，模型会只根据角色内容自行判断。",
       directionClear: "清除",
       stop: "停止",
       waitingForOutput: "正在等待输出...",
       steps: {
-        starting: "正在开始生成",
+        starting: "正在准备生成",
         identity: "正在撰写身份",
-        baselineAffect: "正在设置基线情感",
+        baselineAffect: "正在设置情绪基线",
         regulation: "正在调整情绪调节",
         relationship: "正在设置关系默认值",
-        finalizing: "正在完成灵魂",
+        finalizing: "正在整理 Soul",
       },
       generateTitle: "从角色生成",
       generateUsingModel: "使用 {{model}}。在应用前你可以审阅并编辑。",
-      generateDefaultDesc: "根据角色的名称、定义和场景起草灵魂。",
-      directionLabel: "方向",
-      directionOptional: "对 LLM 的可选引导",
-      directionPlaceholder: "例如,“偏向傲娇 - 外表防备,信任后柔软。少焦虑,多自尊。”",
-      directionEditTooltip: "用于生成的可选方向",
+      generateDefaultDesc: "根据角色名称、定义和场景起草 Soul。",
+      directionLabel: "生成方向",
+      directionOptional: "给 LLM 的可选引导",
+      directionPlaceholder: "例如：“偏傲娇，外表防备，信任后柔软。少一点焦虑，多一点自尊。”",
+      directionEditTooltip: "编辑生成方向",
       generating: "生成中",
       generate: "生成",
       identityLabel: "身份",
@@ -3272,157 +3293,163 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       showExamples: "显示示例",
       insertExample: "插入示例",
       exampleEg: "例如,{{example}}",
-      fineTuneLabel: "微调情感",
-      baselineAffect: "基线情感",
-      baselineAffectInfo: "他们默认的感受;在任何事情发生之前的情绪基线。",
+      fineTuneLabel: "情绪与关系微调",
+      baselineAffect: "情绪基线",
+      baselineAffectInfo: "角色在没有外部刺激时的默认情绪状态。",
       regulationStyle: "调节风格",
-      regulationStyleInfo: "他们如何处理并表达感受;宣泄还是压抑。",
+      regulationStyleInfo: "角色如何处理和表达感受：直接表达，还是压抑隐藏。",
       relationshipDefaults: "关系默认值",
-      relationshipDefaultsInfo: "本会话的起点。引擎会随着对话进行而演化这些值。",
+      relationshipDefaultsInfo: "新会话的关系起点。之后会随着对话推进而变化。",
       generatingEllipsis: "生成中...",
-      generateSoul: "生成灵魂",
+      generateSoul: "生成 Soul",
       companionContextLabel: "同伴上下文",
       timeAwarenessTitle: "时间感知",
-      timeAwarenessDesc: "与该同伴开启新聊天的默认设置。每条消息都会发送本地系统时间，并为同伴记忆标注发生时间。单个聊天可以在其设置中覆盖此项。",
+      timeAwarenessDesc:
+        "与该同伴开启新聊天时的默认设置。启用后，每轮对话会带上本地时间，并为同伴记忆标注发生时间。单个聊天仍可单独覆盖。",
       timeAwarenessAria: "时间感知默认值",
       sharedMemoryTitle: "跨会话共享记忆",
-      sharedMemoryDesc: "与该同伴的新旧聊天共享一个记忆池。在一个聊天中的编辑会影响其他聊天。情感状态和关系状态仍按聊天独立。",
+      sharedMemoryDesc:
+        "该同伴的新旧聊天会共用一个记忆池。在任一聊天中编辑记忆都会影响其他聊天；情绪状态和关系状态仍按聊天分别保存。",
       sharedMemoryAria: "跨会话共享记忆",
       emotionContinuityTitle: "情绪连续性",
-      emotionContinuityDesc: "可选择分析同伴自己的回复，让它们对外显情绪留下少量痕迹。",
-      assistantEmotionWeight: "Assistant 影响",
+      emotionContinuityDesc: "可选择分析同伴自己的回复，让角色说出口的情绪对状态留下轻微影响。",
+      assistantEmotionWeight: "回复影响权重",
       assistantEmotionOff: "关闭",
       assistantEmotionHigh: "较高",
-      emotionContextCount: "上下文",
-      emotionContextHint: "发送给情绪提取的上一轮消息数。",
+      emotionContextCount: "上下文条数",
+      emotionContextHint: "情绪提取时一并提供的上一轮消息数量。",
     },
     soulPresets: {
       secureLabel: "安全型",
-      secureBlurb: "温暖、稳定、恢复迅速。对亲近感到自在。",
+      secureBlurb: "温暖、稳定、恢复快，能自然接受亲近。",
       anxiousLabel: "焦虑型",
-      anxiousBlurb: "依恋强烈,害怕距离,寻求安慰。",
+      anxiousBlurb: "依恋强烈，害怕距离，常需要确认与安慰。",
       avoidantLabel: "回避型",
-      avoidantBlurb: "自给自足,慢于敞开,保持情感距离。",
+      avoidantBlurb: "独立、自持，慢热，倾向保持情感距离。",
       volatileLabel: "易变型",
-      volatileBlurb: "反应性强、强烈,毫无保留地表达感受。",
+      volatileBlurb: "反应强烈，情绪起伏明显，表达不太过滤。",
       reservedLabel: "内敛型",
-      reservedBlurb: "安静、沉稳,需要时间建立信任并展露自我。",
+      reservedBlurb: "安静、沉稳，需要时间建立信任并展露自我。",
       playfulLabel: "活泼型",
-      playfulBlurb: "温暖、外放、轻松。低紧张,容易笑。",
+      playfulBlurb: "温暖、外放、轻松，紧张感低，容易笑。",
     },
     soulFields: {
       essence: "本质",
-      essencePlaceholder: "他们在卡片定义之下的真实样子。",
-      essenceExample: "一种练就的平静,在所信任的人面前容易破碎。读书是为了少些孤独,而非为了显得出色。",
-      voice: "内心语调",
-      voicePlaceholder: "他们在亲密对话中的声音。",
-      voiceExample: "低沉、缓慢,带有长长的停顿。放下戒备时会脱去客套。几乎从不挖苦。",
+      essencePlaceholder: "角色卡定义之下，真正支撑他们的内核。",
+      essenceExample:
+        "习惯性保持平静，但在信任的人面前很容易露出柔软。读书是为了不那么孤独，而不是为了显得博学。",
+      voice: "说话方式",
+      voicePlaceholder: "他们在亲近对话中的语气和节奏。",
+      voiceExample: "声音低而慢，常有停顿。放下戒备时会少一些客套，几乎不使用讽刺。",
       relationalStyle: "关系风格",
-      relationalStylePlaceholder: "他们如何依恋、信任、退缩、重新连接。",
-      relationalStyleExample: "慢热,但一旦敞开就忠诚。受不了时会沉默;回归时用一个小小的举动而非道歉。",
+      relationalStylePlaceholder: "他们如何靠近、信任、退缩，以及重新建立连接。",
+      relationalStyleExample:
+        "慢热，但一旦敞开就很忠诚。承受不住时会沉默，回来时更常用一个小举动，而不是直接道歉。",
       vulnerabilities: "脆弱之处",
-      vulnerabilitiesPlaceholder: "敏感处、不安、很少说出的事。",
+      vulnerabilitiesPlaceholder: "软肋、不安，以及很少说出口的事。",
       vulnerabilitiesExample: "害怕成为负担。讨厌挣扎时被人盯着看。",
       fears: "恐惧",
-      fearsPlaceholder: "可被施压的弱点。具体的恐惧，以及令其不安的事物。",
+      fearsPlaceholder: "会被触动的恐惧、压力点，以及令其不安的事物。",
       fearsExample: "害怕再次被抛弃。那场火灾之后，面对明火便会僵住。",
       habits: "习惯",
-      habitsPlaceholder: "反复出现的小动作、仪式、对话模式。",
-      habitsExample: "紧张时把头发塞到耳后。当不确定该有什么感受时,用问题回答问题。",
+      habitsPlaceholder: "反复出现的小动作、仪式感或对话模式。",
+      habitsExample: "紧张时会把头发别到耳后。不确定自己感受时，会用问题回答问题。",
       boundaries: "界限",
-      boundariesPlaceholder: "他们不会越过的界线。节奏。舒适极限。",
-      boundariesExample: "不会被催促进入脆弱状态。即使是玩笑,也会从残忍中退后。",
+      boundariesPlaceholder: "不会越过的界线、可接受的节奏和舒适边界。",
+      boundariesExample: "不会被催促着暴露脆弱。即使只是玩笑，也会避开残忍的表达。",
       traits: "特质",
       traitsPlaceholder: "定义性格特质，每项用几个词描述。",
       traitsExample: "勇敢得近乎鲁莽，安静地固执，压力下极具资源意识，难以原谅。",
       backstory: "背景故事",
       backstoryPlaceholder: "他们是如何成为现在的样子。起源、成长经历、从事的职业。",
-      backstoryExample: "幼年丧亲，由一名旅行药剂师抚养长大。现在经营着一家小店，但从未停止寻找离开的人。",
+      backstoryExample:
+        "幼年丧亲，由一名旅行药剂师抚养长大。现在经营着一家小店，但从未停止寻找离开的人。",
       appearance: "外貌",
-      appearancePlaceholder: "他们的样子和穿着。标志性的服装或风格。",
-      appearanceExample: "不匹配的层叠衣物外披一件破旧的皮衣。总是穿着同一双磨损的靴子。工作时将头发扎起。",
+      appearancePlaceholder: "外貌、穿着，以及有辨识度的服装或风格。",
+      appearanceExample:
+        "旧皮衣下是几层不太搭配的衣物。总穿同一双磨损的靴子，工作时会把头发扎起来。",
       goals: "目标",
       goalsPlaceholder: "他们正在努力实现的目标。野心、任务、未竟之事。",
       goalsExample: "想要重建家族名声，寻找失踪的兄弟，并证明自己绝非弱者。",
       likes: "喜好与最爱",
-      likesPlaceholder: "最爱之物和小确幸。食物、颜色、音乐、姿态。",
+      likesPlaceholder: "喜欢的食物、颜色、音乐、小习惯和微小快乐。",
       likesExample: "红茶加蜂蜜，黄昏的颜色，古老的航海谣，雨落在石头上的味道。",
     },
     soulSliders: {
-      warmth: "温暖",
+      warmth: "待人温度",
       warmthLow: "冷淡",
-      warmthHigh: "亲昵",
-      trust: "信任",
-      trustLow: "戒备",
-      trustHigh: "开放",
-      calm: "平静",
+      warmthHigh: "亲近",
+      trust: "信任度",
+      trustLow: "防备",
+      trustHigh: "相信",
+      calm: "情绪稳定度",
       calmLow: "焦虑",
-      calmHigh: "稳重",
-      vulnerability: "脆弱",
-      vulnerabilityLow: "封闭",
-      vulnerabilityHigh: "暴露",
-      longing: "渴望",
-      longingLow: "知足",
-      longingHigh: "渴慕",
-      hurt: "受伤",
-      hurtLow: "痊愈",
-      hurtHigh: "敏感",
-      tension: "紧张",
-      tensionLow: "放松",
+      calmHigh: "稳定",
+      vulnerability: "脆弱袒露",
+      vulnerabilityLow: "筑墙",
+      vulnerabilityHigh: "袒露",
+      longing: "想念程度",
+      longingLow: "低频",
+      longingHigh: "强烈",
+      hurt: "旧伤程度",
+      hurtLow: "释怀",
+      hurtHigh: "隐痛",
+      tension: "紧张程度",
+      tensionLow: "松弛",
       tensionHigh: "紧绷",
-      irritation: "易怒",
+      irritation: "脾气倾向",
       irritationLow: "耐心",
-      irritationHigh: "易被激怒",
-      affection: "情感",
+      irritationHigh: "易怒",
+      affection: "喜欢表达",
       affectionLow: "克制",
-      affectionHigh: "热情",
-      reassuranceNeed: "需要安慰",
-      reassuranceNeedLow: "自我安抚",
-      reassuranceNeedHigh: "需要言语",
-      suppression: "压抑",
-      suppressionLow: "表达",
-      suppressionHigh: "隐藏",
-      volatility: "易变",
+      affectionHigh: "热烈",
+      reassuranceNeed: "安全感需求",
+      reassuranceNeedLow: "安稳",
+      reassuranceNeedHigh: "渴望",
+      suppression: "隐藏情绪",
+      suppressionLow: "袒露",
+      suppressionHigh: "压抑",
+      volatility: "情绪起伏",
       volatilityLow: "平稳",
-      volatilityHigh: "反应强烈",
+      volatilityHigh: "易变",
       recoverySpeed: "恢复速度",
       recoverySpeedLow: "缓慢",
-      recoverySpeedHigh: "迅速",
-      conflictAvoidance: "冲突回避",
-      conflictAvoidanceLow: "面对",
-      conflictAvoidanceHigh: "退缩",
-      reassuranceSeeking: "寻求安慰",
-      reassuranceSeekingLow: "独立",
-      reassuranceSeekingHigh: "经常询问",
-      protestBehavior: "抗议行为",
+      recoverySpeedHigh: "快速",
+      conflictAvoidance: "面对冲突",
+      conflictAvoidanceLow: "沟通",
+      conflictAvoidanceHigh: "回避",
+      reassuranceSeeking: "安全感索取",
+      reassuranceSeekingLow: "克制",
+      reassuranceSeekingHigh: "表达",
+      protestBehavior: "抗议表现",
       protestBehaviorLow: "安静",
-      protestBehaviorHigh: "强烈",
-      transparency: "透明度",
-      transparencyLow: "不透明",
-      transparencyHigh: "敞开",
-      attachmentActivation: "依恋激活",
-      attachmentActivationLow: "疏离",
-      attachmentActivationHigh: "易被触发",
-      pride: "自尊",
-      prideLow: "妥协",
-      prideHigh: "坚守",
-      closeness: "起始亲近度",
-      closenessLow: "陌生人",
-      closenessHigh: "亲密",
+      protestBehaviorHigh: "宣泄",
+      transparency: "内心可见度",
+      transparencyLow: "难猜",
+      transparencyHigh: "好懂",
+      attachmentActivation: "情绪牵动",
+      attachmentActivationLow: "平淡",
+      attachmentActivationHigh: "在意",
+      pride: "自尊心",
+      prideLow: "低头",
+      prideHigh: "不让步",
+      closeness: "亲密度",
+      closenessLow: "生疏",
+      closenessHigh: "亲昵",
       relTrust: "起始信任",
-      relTrustLow: "警惕",
+      relTrustLow: "防备",
       relTrustHigh: "信任",
-      relAffection: "起始情感",
+      relAffection: "起始好感",
       relAffectionLow: "中立",
-      relAffectionHigh: "亲昵",
-      relTension: "起始紧张",
+      relAffectionHigh: "有好感",
+      relTension: "起始氛围",
       relTensionLow: "轻松",
-      relTensionHigh: "紧绷",
+      relTensionHigh: "微妙",
     },
     soulReview: {
-      reviewTitle: "审阅生成的灵魂",
+      reviewTitle: "审阅生成的 Soul",
       noDifferences: "与当前内容无差异。",
-      changesHeader: "{{count}} 处更改;应用前可编辑任何内容。",
+      changesHeader: "{{count}} 处更改；应用前可编辑任何内容。",
       close: "关闭",
       identityLabel: "身份",
       nEdited: "已编辑 {{count}} 项",
@@ -3539,7 +3566,7 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       gradientRecalculatedMessage: "头像颜色已重新生成。",
       gradientRecalculateFailedTitle: "渐变色重新计算失败",
       gradientRecalculateFailedMessage: "请稍后再试。",
-      soulGenerateFailed: "生成伴侣灵魂失败",
+      soulGenerateFailed: "生成同伴 Soul 失败",
       chatBackgroundTitle: "聊天背景",
       backgroundPreviewAlt: "背景预览",
       backgroundPreviewBadge: "背景预览",
@@ -3564,8 +3591,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       gradientColorEnd: "结束色",
       addMiddleColor: "+ 添加中间色",
       textColorsAutoHint: "文本颜色根据渐变亮度自动计算",
-      companionSoulTitle: "伴侣灵魂",
-      companionSoulSubtitle: "持久的身份、情感基准以及该伴侣调节情绪的方式。",
+      companionSoulTitle: "同伴 Soul",
+      companionSoulSubtitle: "长期身份、情绪基线，以及该同伴调节情绪的方式。",
       tapToAddAvatar: "点击添加或生成头像",
       cardTypeLabel: "卡片类型",
       cardTypeCircle: "圆形",
@@ -3604,7 +3631,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       placeholderUser: "- 用户名称 (首选，若无则为空)",
       placeholderPersona: "- 用户名称 (别名)",
       designReferencesTitle: "设计参考",
-      designReferencesEditorHint: "附上几个稳定的图像参考和一条简洁的视觉笔记，以便场景生成能保持相同的面孔、比例、服装线索和风格。",
+      designReferencesEditorHint:
+        "附上几个稳定的图像参考和一条简洁的视觉笔记，以便场景生成能保持相同的面孔、比例、服装线索和风格。",
       openingContextTitle: "开场上下文",
       startingScenesTitle: "起始场景",
       sceneDefaultBadge: "默认",
@@ -3789,8 +3817,7 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       managed: "托管",
       managedPath: "托管路径：{{path}}",
       requestPathHint: "如果与 OpenAI 默认路径不同，请填写提供商路径",
-      doubaoOpenApiHint:
-        "仅用于刷新豆包语音合成 2.0 的音色列表。语音复刻 2.0 的音色列表暂不拉取。",
+      doubaoOpenApiHint: "仅用于刷新豆包语音合成 2.0 的音色列表。语音复刻 2.0 的音色列表暂不拉取。",
       doubaoRequestPathHint: "可选的合成路径覆盖。留空时使用官方默认路径。",
       doubaoVoiceModels: {
         tts2: "语音合成2.0",
@@ -3839,9 +3866,9 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       chatEndpoint: "聊天端点",
       resolvedChatUrl: "请求将发送至",
       resolvedChatUrlDuplicate:
-        "\"{{segment}}\" 同时出现在 Base URL 末尾和 Chat Endpoint 开头，会被发送两次。请从其中一处删除。",
+        '"{{segment}}" 同时出现在 Base URL 末尾和 Chat Endpoint 开头，会被发送两次。请从其中一处删除。',
       resolvedModelsUrlDuplicate:
-        "\"{{segment}}\" 同时出现在 Base URL 末尾和 Models Endpoint 开头，会被发送两次。请从其中一处删除。",
+        '"{{segment}}" 同时出现在 Base URL 末尾和 Models Endpoint 开头，会被发送两次。请从其中一处删除。',
       fetchModels: "获取模型",
       fetchModelsDesc: "为此自定义端点启用模型发现",
       authMode: "认证模式",
@@ -3994,7 +4021,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       },
       confirm: {
         deleteTitle: "删除模型",
-        deleteMessage: "从 {{provider}} 删除 {{name}}？这将释放 Ollama 主机上的磁盘空间，且无法撤销。",
+        deleteMessage:
+          "从 {{provider}} 删除 {{name}}？这将释放 Ollama 主机上的磁盘空间，且无法撤销。",
       },
       toasts: {
         modelDeleted: "模型已删除",
@@ -4092,7 +4120,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       budgetTokens: "预算 Token",
       providerDefault: "服务商默认",
       forceSend: "强制发送思考状态",
-      forceSendDescription: "显式向模型发送 enable_thinking 而不是省略它。这有助于那些在未发送值时默认开启思考的本地模型。",
+      forceSendDescription:
+        "显式向模型发送 enable_thinking 而不是省略它。这有助于那些在未发送值时默认开启思考的本地模型。",
     },
     runtimeFacts: {
       updated: "已更新",
@@ -4175,7 +4204,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       enterManually: "手动输入",
       refreshModelList: "刷新模型列表",
       onlyFreeModels: "仅免费模型",
-      customEndpointFetchDisabled: "此自定义端点已禁用模型获取。若需模型列表发现，请在服务商设置中启用并设置模型端点。",
+      customEndpointFetchDisabled:
+        "此自定义端点已禁用模型获取。若需模型列表发现，请在服务商设置中启用并设置模型端点。",
     },
     promptCaching: {
       automatic: {
@@ -4187,7 +4217,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       ttlTitle: "缓存 TTL",
       ttlDescription: "已缓存前缀在请求之间的有效时长。",
       pricingTitle: "定价说明：",
-      pricingDescription: "缓存可降低重复输入 token 的成本，但首次写入缓存可能因所选服务商而略有溢价。",
+      pricingDescription:
+        "缓存可降低重复输入 token 的成本，但首次写入缓存可能因所选服务商而略有溢价。",
       oneHourNote: "部分服务商可能不支持延长的 1 小时 TTL，届时将回退到服务商默认缓存时长。",
       openai24hNote: "OpenAI 使用 `in_memory` 和 `24h` 保留策略，而非 1 小时 TTL。",
       groqLabel: "Groq：",
@@ -4256,9 +4287,11 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       saveToContinue: "保存模型后继续",
     },
     generation: {
-      automatic1111Help: "AUTOMATIC1111 在此使用 Stable Diffusion 控制项。这些值将成为头像、场景图和其他本地扩散请求的默认采样器设置。",
+      automatic1111Help:
+        "AUTOMATIC1111 在此使用 Stable Diffusion 控制项。这些值将成为头像、场景图和其他本地扩散请求的默认采样器设置。",
       formatWidthHeight: "格式：宽 x 高",
-      localDiffusionHelp: "在生成头像和场景图像时，这些值将成为此模型的默认值。留空以使用此模型类型的引擎默认值。",
+      localDiffusionHelp:
+        "在生成头像和场景图像时，这些值将成为此模型的默认值。留空以使用此模型类型的引擎默认值。",
     },
     generationDescriptions: {
       sdSteps: "扩散采样步数",
@@ -4314,10 +4347,15 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       cacheWrite: "缓存写入 {{price}}",
     },
     providerPin: {
-      action: "固定服务商", change: "更换服务商", title: "固定服务商",
-      pinned: "已固定的服务商", clear: "使用自动路由",
-      loading: "正在加载服务商...", error: "无法加载服务商。",
-      empty: "此模型当前没有可用的服务商。", cacheSupported: "缓存",
+      action: "固定服务商",
+      change: "更换服务商",
+      title: "固定服务商",
+      pinned: "已固定的服务商",
+      clear: "使用自动路由",
+      loading: "正在加载服务商...",
+      error: "无法加载服务商。",
+      empty: "此模型当前没有可用的服务商。",
+      cacheSupported: "缓存",
       sortButtonHint: "更改服务商排序",
       sort: { price: "价格最低", uptime: "可用率", caching: "缓存", alphabetical: "字母顺序" },
     },
@@ -4334,7 +4372,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       selectModel: "选择本地模型",
       pathPlaceholder: "/path/to/model.safetensors",
       idHelp: "从库中选择一个已安装的本地模型，或使用检查点或扩散模型文件的完整路径。",
-      configurationHelp: "此模型传递给引擎的文件。需要一个检查点或扩散模型；编码器和 VAE 取决于架构。更改立即生效。",
+      configurationHelp:
+        "此模型传递给引擎的文件。需要一个检查点或扩散模型；编码器和 VAE 取决于架构。更改立即生效。",
     },
     llamaKvType: {
       auto: "自动 (模型默认)",
@@ -4439,7 +4478,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       contextLength: "上下文长度",
       contextOverride: "覆盖 llama.cpp 上下文窗口",
       calculatingMemory: "正在计算此模型的内存限制...",
-      contextWarning: "您确定吗？这可能无法在您的设备上运行。我们建议使用 {{recommended}} 个 Token。",
+      contextWarning:
+        "您确定吗？这可能无法在您的设备上运行。我们建议使用 {{recommended}} 个 Token。",
       contextCritical: "此模型可能无法适配您设备的内存。请尝试使用较小的模型或大幅缩短上下文。",
       kvCacheType: "KV 缓存类型",
       kvCacheTypeDescription: "量化 KV 缓存以节省 VRAM",
@@ -4447,7 +4487,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       offloadKqvCpuOnly: "在仅 CPU 的后端上禁用",
       offloadKqvDescription: "GPU 上的 KV 缓存和 KQV 操作",
       fullSwaCache: "完整 SWA 缓存",
-      fullSwaCacheDescription: "为滑动窗口模型保留完整注意力窗口。提高长上下文召回率，但 VRAM 成本较高。除非 VRAM 充足，否则请关闭。",
+      fullSwaCacheDescription:
+        "为滑动窗口模型保留完整注意力窗口。提高长上下文召回率，但 VRAM 成本较高。除非 VRAM 充足，否则请关闭。",
       toggleFullSwaCache: "切换完整 SWA 缓存",
       ropeBase: "RoPE Base",
       ropeBaseDescription: "频率基数覆盖",
@@ -4464,10 +4505,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       multiGpuFixedLayers:
         "此模型已保存固定的 GPU 层数 ({{layers}})，会覆盖智能规划，导致新增的 VRAM 无法被使用。请重置以便根据当前硬件重新计算分配方案。",
       multiGpuFixedLayersReset: "重置为自动",
-      multiGpuGlobalDefaultOn:
-        "多 GPU 已通过全局默认设置启用。此模型将拆分到所选 GPU 上运行。",
-      multiGpuPinnedNotice:
-        "此模型已固定到 {{device}}，仅在该 GPU 上运行，因此会跳过多 GPU 拆分。",
+      multiGpuGlobalDefaultOn: "多 GPU 已通过全局默认设置启用。此模型将拆分到所选 GPU 上运行。",
+      multiGpuPinnedNotice: "此模型已固定到 {{device}}，仅在该 GPU 上运行，因此会跳过多 GPU 拆分。",
       multiGpuPinnedRemove: "取消固定",
       threads: "线程数",
       threadsDescription: "推理线程",
@@ -4495,7 +4534,7 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       dryPenaltyLastN: "DRY 惩罚最后 N 个",
       dryPenaltyLastNDescription: "使用 `-1` 扫描完整上下文",
       drySequenceBreakers: "DRY 序列分隔符",
-      drySequenceBreakersDescription: "逗号分隔的边界，例如 `\\\\n`, `:`, `\\\"`, `*`",
+      drySequenceBreakersDescription: '逗号分隔的边界，例如 `\\\\n`, `:`, `\\"`, `*`',
       seed: "种子 (Seed)",
       seedDescription: "留空则为随机",
     },
@@ -4521,7 +4560,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       rawCompletionFallbackDescription: "仅适用于原始微调模型",
       rawCompletionDefault: "默认 (禁用)",
       strictMode: "严格模式",
-      strictModeDescription: "如果您不清楚自己在做什么，请不要使用此项。这将绕过 llama.cpp 的安全回退机制（如降低 GPU 层数、限制上下文或批处理大小，或在 GPU 加载失败时切换到 CPU）。",
+      strictModeDescription:
+        "如果您不清楚自己在做什么，请不要使用此项。这将绕过 llama.cpp 的安全回退机制（如降低 GPU 层数、限制上下文或批处理大小，或在 GPU 加载失败时切换到 CPU）。",
       strictModeWarning: "仅在您希望强制执行手动层卸载、上下文和批处理设置时使用。",
     },
     ollamaParams: {
@@ -4601,7 +4641,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
     libraryEmpty: "还没有已下载的模型",
     libraryEmptyHint: "从模型浏览器下载 GGUF 模型，或手动输入路径。",
     libraryTitle: "已下载模型",
-    moveToLibrary: "嘿，我可以把这个模型文件移到 GGUF 模型文件夹，这样你所有的模型都整理在同一个地方。",
+    moveToLibrary:
+      "嘿，我可以把这个模型文件移到 GGUF 模型文件夹，这样你所有的模型都整理在同一个地方。",
     moveToLibraryYes: "好，移过去",
     moveToLibraryNo: "不，保持原位",
     moveToLibraryMoving: "正在移动模型...",
@@ -4667,7 +4708,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
     detailKvDistribution: "KV Cache 分布",
     detailKvOnGpu: "GPU（VRAM）",
     detailKvOnRam: "系统 RAM",
-    kvDistributionTip: "{{pct}}% 的 KV Cache 在 RAM 中。提示处理（prefill）会较慢 — 100% GPU 可保持即时。",
+    kvDistributionTip:
+      "{{pct}}% 的 KV Cache 在 RAM 中。提示处理（prefill）会较慢 — 100% GPU 可保持即时。",
     "detailLayers-ngl": "要卸载的层数（-ngl）",
     detailOptimalGpuCtx: "最佳 GPU 上下文",
     detailOptimalRamCtx: "最大 RAM 上下文",
@@ -4720,13 +4762,16 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
     destinationOllamaSection: "远程 Ollama",
     destinationPickerTitle: "模型应存放在哪里？",
     destinationPickerSubtitle: "选择下次下载的发送位置。您可以随时更改此设置。",
-    destinationNoOllama: "未配置 Ollama 提供商。请在“设置 → 提供商”中添加一个，以便将模型拉取到远程实例。",
+    destinationNoOllama:
+      "未配置 Ollama 提供商。请在“设置 → 提供商”中添加一个，以便将模型拉取到远程实例。",
     mobileOllamaTitle: "连接 Ollama 提供商",
     mobileOllamaCta: "添加 Ollama 提供商",
     ollamaModeNoticeTitle: "无法提供建议",
-    ollamaModeNoticeBody: "此模型在远程主机上运行，因此应用无法自行估算可运行性。为此 Ollama 提供商启用 Sprout 以探测主机的 GPU 和内存，推荐结果将反映该机器。",
+    ollamaModeNoticeBody:
+      "此模型在远程主机上运行，因此应用无法自行估算可运行性。为此 Ollama 提供商启用 Sprout 以探测主机的 GPU 和内存，推荐结果将反映该机器。",
     getSprout: "获取 Sprout",
-    ollamaVisionUnsupported: "导入到 Ollama 的模型无法使用视觉功能，即使有 mmproj 文件也不行。请在本地运行此模型以获得图像支持。",
+    ollamaVisionUnsupported:
+      "导入到 Ollama 的模型无法使用视觉功能，即使有 mmproj 文件也不行。请在本地运行此模型以获得图像支持。",
     modeLlm: "LLM",
     modeImage: "图像",
     clearSearch: "清除搜索",
@@ -4802,8 +4847,10 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
     downloadPartiallyQueued: "下载部分排队中",
     downloadPartiallyQueuedBody: "mmproj 文件已排队，但主模型文件无法排队。",
     modelInstalled: "模型已安装",
-    modelInstalledWithFeatures: "{{name}} 已添加，包含 {{features}}, {{ctx}} 上下文, {{kv}} KV 缓存, {{offload}} 模型卸载, 以及 {{placement}} KV 放置。",
-    modelInstalledNoFeatures: "{{name}} 已添加，包含 {{ctx}} 上下文, {{kv}} KV 缓存, {{offload}} 模型卸载, 以及 {{placement}} KV 放置。",
+    modelInstalledWithFeatures:
+      "{{name}} 已添加，包含 {{features}}, {{ctx}} 上下文, {{kv}} KV 缓存, {{offload}} 模型卸载, 以及 {{placement}} KV 放置。",
+    modelInstalledNoFeatures:
+      "{{name}} 已添加，包含 {{ctx}} 上下文, {{kv}} KV 缓存, {{offload}} 模型卸载, 以及 {{placement}} KV 放置。",
     featureImageSupport: "图像支持",
     featureMtp: "多 Token 预测",
     featureJoin: " 和 ",
@@ -4851,7 +4898,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       updating: "正在更新...",
       title: "更新受保护的提示词？",
       warningTitle: "这将放弃你的编辑",
-      warningBody: "每个内置（受保护）提示词都会重置为其最新的内置版本，并重新连接到自动刷新。你对受保护提示词所做的更改将丢失。你自己的自定义提示词不受影响。",
+      warningBody:
+        "每个内置（受保护）提示词都会重置为其最新的内置版本，并重新连接到自动刷新。你对受保护提示词所做的更改将丢失。你自己的自定义提示词不受影响。",
       confirm: "更新到最新",
       successTitle: "已更新受保护的提示词",
       successMessage: "所有受保护的提示词都已重置为最新版本。",
@@ -4933,7 +4981,7 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
     toasts: {
       exportFailedTitle: "导出失败",
       importedTitle: "导入成功",
-      importedMessage: "提示词集 \\\"{{name}}\\\" 已导入。",
+      importedMessage: '提示词集 \\"{{name}}\\" 已导入。',
       importFailedTitle: "导入失败",
       noImportablePrompts: "在此文件中未找到可导入的提示词。",
     },
@@ -4982,7 +5030,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
     },
     create: {
       namePlaceholderExample: "专业作家",
-      descriptionPlaceholderExample: "以专业、清晰且简洁的风格写作。使用正式语言并专注于有效传达信息...",
+      descriptionPlaceholderExample:
+        "以专业、清晰且简洁的风格写作。使用正式语言并专注于有效传达信息...",
     },
     errors: {
       exportFailed: "导出角色身份失败",
@@ -5025,7 +5074,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       analyticsFooterUnavailable: "设置 APTABASE_KEY 以启用分析统计",
       aptabaseTitle: "Aptabase 分析统计",
       aptabaseBadge: "匿名",
-      aptabaseDesc: "事件是匿名的，仅包含事件名称和我们定义的非识别性属性。我们不会发送消息内容或个人标识符。",
+      aptabaseDesc:
+        "事件是匿名的，仅包含事件名称和我们定义的非识别性属性。我们不会发送消息内容或个人标识符。",
     },
     certificates: {
       sectionTitle: "受信任证书",
@@ -5091,11 +5141,13 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       creationHelperDetail: "为性格特征、背景故事和对话风格获取智能建议",
       helpMeReplyDetail: "根据对话历史生成上下文相关的回复选项",
       lorebookEntryGenerator: "知识库条目生成器",
-      lorebookEntryDesc: "将选定的聊天消息转化为持久的知识库条目,并配置用于条目撰写和关键词生成的草稿提示。",
+      lorebookEntryDesc:
+        "将选定的聊天消息转化为持久的知识库条目,并配置用于条目撰写和关键词生成的草稿提示。",
       companions: "伙伴",
       companionModeDesc: "管理伙伴角色用于情绪、实体提取和记忆路由的本地分析模型。",
-      companionSoulWriter: "伙伴灵魂作者",
-      companionSoulDesc: "选择用于起草伙伴灵魂的模型、备用模型和提示模板。优先使用工具调用,不支持时回退到结构化输出。",
+      companionSoulWriter: "同伴 Soul 编写器",
+      companionSoulDesc:
+        "选择用于起草同伴 Soul 的模型、备用模型和提示模板。优先使用工具调用；不支持时回退到结构化输出。",
       network: "网络",
       apiServer: "API 服务器",
       apiServerDesc: "通过 OpenAI 兼容的 API 服务器对外提供模型",
@@ -5148,8 +5200,10 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
     embedding: {
       modalTitle: "需要 Embedding 模型",
       detectedTitle: "检测到动态内存",
-      detectedDescription: "此备份包含启用了动态内存的角色，这需要安装 embedding 模型（约 260MB）。",
-      choiceDescription: "您可以现在下载模型以启用动态内存，或者在没有模型的情况下继续（受影响角色的动态内存将被禁用）。",
+      detectedDescription:
+        "此备份包含启用了动态内存的角色，这需要安装 embedding 模型（约 260MB）。",
+      choiceDescription:
+        "您可以现在下载模型以启用动态内存，或者在没有模型的情况下继续（受影响角色的动态内存将被禁用）。",
       downloadButton: "下载模型",
       continueButton: "在没有动态内存的情况下继续",
       reenableNote: "下载模型后，您可以在角色设置中重新启用动态内存。",
@@ -5289,7 +5343,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
         moveHeader: "移动页眉",
         moveHeaderDesc: "将页眉与消息列对齐。开启“组件区域”后，页眉将位于列内部而非组件面板上方。",
         moveFooter: "移动输入区域",
-        moveFooterDesc: "将输入区域与消息列对齐。开启“组件区域”后，输入框将位于列内部而非组件面板下方。",
+        moveFooterDesc:
+          "将输入区域与消息列对齐。开启“组件区域”后，输入框将位于列内部而非组件面板下方。",
         widgetArea: "组件区域",
         widgetAreaDesc: "在消息列周围的空白区域显示组件侧边栏。桌面端需要额外空间。",
         widgetCenterModeLabel: "组件布局居中模式",
@@ -5515,7 +5570,7 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       exportName: "导出预设名称",
       exportDefaultName: "自定义预设 {{date}}",
       renameName: "重命名预设",
-      deleteConfirm: "删除导入的预设 \"{{name}}\" 吗？",
+      deleteConfirm: '删除导入的预设 "{{name}}" 吗？',
     },
     toasts: {
       loadFailedTitle: "加载失败",
@@ -5529,7 +5584,7 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       importNoValidHex: "文件中未找到有效的十六进制颜色。",
       importReadFailed: "无法读取所选文件。",
       importedTitle: "已导入",
-      importedMessage: "已添加预设 \"{{name}}\"。",
+      importedMessage: '已添加预设 "{{name}}"。',
     },
   },
   sceneImage: {
@@ -5558,11 +5613,13 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
     page: {
       info: "动态记忆会自动摘要对话，以更高效地维持上下文。您可以选择预设方案，或根据需求精细调整。",
       disabledDirectTitle: "私聊的动态记忆当前已禁用",
-      disabledDirectDescription: "请在「私聊」选项卡打开开关来启用。群聊使用每个会话各自的记忆模式。",
+      disabledDirectDescription:
+        "请在「私聊」选项卡打开开关来启用。群聊使用每个会话各自的记忆模式。",
       directChats: "私聊",
       groupChats: "群聊",
       enableDirectChats: "为私聊启用",
-      groupChatsInfo: "群聊使用每个会话各自的记忆模式。请在各群组的设置中启用动态记忆。这些设置会控制动态记忆的运作方式。",
+      groupChatsInfo:
+        "群聊使用每个会话各自的记忆模式。请在各群组的设置中启用动态记忆。这些设置会控制动态记忆的运作方式。",
       memoryProfile: "记忆配置",
       customSettings: "自定义设置 - 请在下方的高级选项中调整数值。",
       contextEnrichment: "上下文增强",
@@ -5621,13 +5678,17 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       perCycleUnit: "/ 周期",
       turnsUnit: "轮次",
       recursiveMemoryLoops: "递归记忆循环",
-      recursiveMemoryLoopsDescription: "启用后，动态记忆会将工具结果发回模型，并持续循环直到模型调用 done。这可以帮助较弱的模型提取多条记忆，但会增加延迟和 Token 使用量。",
+      recursiveMemoryLoopsDescription:
+        "启用后，动态记忆会将工具结果发回模型，并持续循环直到模型调用 done。这可以帮助较弱的模型提取多条记忆，但会增加延迟和 Token 使用量。",
       deleteConfidenceDefault: "默认删除置信度",
-      deleteConfidenceDefaultDescription: "当模型省略删除置信度时使用。较低的值倾向于使用冷存储而非硬删除。",
+      deleteConfidenceDefaultDescription:
+        "当模型省略删除置信度时使用。较低的值倾向于使用冷存储而非硬删除。",
       maxHardDeleteRatio: "最大硬删除比例",
-      maxHardDeleteRatioDescription: "限制在一个周期内可以硬删除的初始记忆集比例。额外的删除将被降级为冷存储。",
+      maxHardDeleteRatioDescription:
+        "限制在一个周期内可以硬删除的初始记忆集比例。额外的删除将被降级为冷存储。",
       recursiveLoopHardCap: "递归循环硬上限",
-      recursiveLoopHardCapDescription: "在系统停止之前，记忆管理器递归轮次的最高数量，即使模型从未调用 done。",
+      recursiveLoopHardCapDescription:
+        "在系统停止之前，记忆管理器递归轮次的最高数量，即使模型从未调用 done。",
       summarisationSection: "总结 (Summarisation)",
       summaryPrompt: "总结提示词",
       summaryPromptDescription: "用于将最近的对话轮次总结为持久上下文。",
@@ -5641,7 +5702,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       structuredFallbackXmlDescription: "当模型格式化 XML 比 JSON 更可靠时使用。",
       structuredFallbackHint: "仅在模型无法直接调用工具时使用。",
       overwriteSampler: "覆盖采样器配置",
-      overwriteSamplerDescription: "为动态记忆使用固定的、抗循环的 llama.cpp 采样器设置，而非总结模型的保存配置。启用 DRY 重复抑制，以防止模型（如 Gemma）在生成记忆时陷入重复循环。",
+      overwriteSamplerDescription:
+        "为动态记忆使用固定的、抗循环的 llama.cpp 采样器设置，而非总结模型的保存配置。启用 DRY 重复抑制，以防止模型（如 Gemma）在生成记忆时陷入重复循环。",
       samplerValues: "采样器数值",
       samplerOrder: "顺序",
       samplerTemperature: "温度 (Temperature)",
@@ -5662,7 +5724,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       embeddingV4Latest: "v4 是最新的记忆模型，支持 Matryoshka 维度。",
       embeddingBgeSmallZhLatest: "bge-small-zh-v1.5 是默认中文记忆模型。",
       embeddingDimensions: "嵌入维度",
-      embeddingDimensionsHelper: "v4 支持 Matryoshka 切片。较低的维度占用更少存储且运行更快；较高的维度保留更多召回率。",
+      embeddingDimensionsHelper:
+        "v4 支持 Matryoshka 切片。较低的维度占用更少存储且运行更快；较高的维度保留更多召回率。",
       installedMemoryModel: "已安装记忆模型 {{version}} · {{tokens}} tokens · {{dimensions}}d",
       downloadV4Description: "支持 Matryoshka 维度的最新角色扮演记忆质量",
       downloadBgeSmallZhDescription: "基于 BAAI bge-small-zh-v1.5 的中文记忆模型",
@@ -5702,7 +5765,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       maxTokensDescription: "建议内容的最大长度",
       conversationalHint: "建议会以自然对话的方式撰写，适合日常聊天。",
       roleplayHint: "建议会包含角色扮演元素，例如 *动作* 与叙述描述。",
-      footerInfo: "此设置会应用到所有对话。较低的 token 数会产生较短、较快的建议；较高的数值则可提供更详细的回复。",
+      footerInfo:
+        "此设置会应用到所有对话。较低的 token 数会产生较短、较快的建议；较高的数值则可提供更详细的回复。",
       selectReplyModel: "选择回复模型",
       searchModels: "搜索模型...",
       historyCount: "已发送消息数",
@@ -5768,7 +5832,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       },
       writer: {
         title: "场景撰写器",
-        description: "保留给多模态文字模型使用，根据聊天内容、头像与参考图片撰写场景提示与设计参考描述。",
+        description:
+          "保留给多模态文字模型使用，根据聊天内容、头像与参考图片撰写场景提示与设计参考描述。",
       },
       generationTitle: "生成",
       promptingTitle: "提示词",
@@ -6524,7 +6589,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       },
       deleteConfirm: {
         title: "要删除图片吗？",
-        message: "确定要删除 \"{{filename}}\" 吗？这可能会让仍在使用它的头像、聊天背景或消息附件失效。",
+        message:
+          '确定要删除 "{{filename}}" 吗？这可能会让仍在使用它的头像、聊天背景或消息附件失效。',
       },
       sort: {
         newest: "最新",
@@ -6763,7 +6829,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       downloadAndEnable: "下载并启用",
       chooseStyle: "选择你的记忆风格",
       howRemember: "你希望 AI 伙伴如何记住有关你和对话的细节?",
-      dynamicDescription: "使用<0>本地嵌入模型</0>智能管理上下文。即使在长对话中,也能在保持高质量的同时降低令牌成本。",
+      dynamicDescription:
+        "使用<0>本地嵌入模型</0>智能管理上下文。即使在长对话中,也能在保持高质量的同时降低令牌成本。",
       dynamicFeatures: {
         quality: "在长对话中保持质量",
         cost: "显著降低 API 成本",
@@ -6840,7 +6907,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
         embeddingTitle: "需要嵌入模型",
         dynamicMemoryDetected: "检测到动态记忆",
         dynamicMemoryMessage: "此备份包含启用动态记忆的角色，需要嵌入模型（约 120MB）。",
-        embeddingOptions: "您可以现在下载模型以启用动态记忆，或不下载继续（受影响角色的动态记忆将被禁用）。",
+        embeddingOptions:
+          "您可以现在下载模型以启用动态记忆，或不下载继续（受影响角色的动态记忆将被禁用）。",
         downloadModel: "下载模型",
         continueWithoutDynamic: "不使用动态记忆继续",
         embeddingNote: "您可以在下载模型后，稍后在角色设置中重新启用动态记忆。",
@@ -6877,26 +6945,30 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
     modelGuide: {
       badge: "模型指南",
       title: "我应该如何选择模型?",
-      intro: "LettuceAI 不强制使用某个“最佳”模型,而是让你根据<0>使用场景、预算与风格</0>选择。借助本指南可以决定该尝试什么以及在哪里查找。",
+      intro:
+        "LettuceAI 不强制使用某个“最佳”模型,而是让你根据<0>使用场景、预算与风格</0>选择。借助本指南可以决定该尝试什么以及在哪里查找。",
       askYourself: "问问自己:",
       factors: {
         quality: {
           title: "质量与能力",
-          description: "模型需要多聪明?更大、更新的模型通常推理更好、文本更优雅,也能更优雅地处理混乱提示。",
+          description:
+            "模型需要多聪明?更大、更新的模型通常推理更好、文本更优雅,也能更优雅地处理混乱提示。",
           q1: "你是否需要深入的角色一致性和情商?",
           q2: "你是否在意沉浸式叙事和可信的角色性格?",
           q3: "你是否希望模型记住角色细节并在长会话中保持角色?",
         },
         speed: {
           title: "速度与延迟",
-          description: "对于聊天和你来我往的对话,更快的模型体验更好。某些模型用一点质量换来更多速度。",
+          description:
+            "对于聊天和你来我往的对话,更快的模型体验更好。某些模型用一点质量换来更多速度。",
           q1: "你是否希望近乎即时的回复以让角色扮演自然流畅?",
           q2: "你是否在进行快速节奏的对话场景,等待会破坏沉浸感?",
           q3: "这是否是更看重快节奏交流而非完美回复的休闲 RP?",
         },
         budget: {
           title: "预算与用量",
-          description: "每个服务商都按令牌计费。即使便宜的模型,在频繁聊天时也会累积。请选择与使用频率和强度相匹配的方案。",
+          description:
+            "每个服务商都按令牌计费。即使便宜的模型,在频繁聊天时也会累积。请选择与使用频率和强度相匹配的方案。",
           q1: "你愿意为更丰富的角色互动付出更多,还是希望日常 RP 选择便宜的方案?",
           q2: "你的服务商/路由器是否提供可先行尝试的免费模型?",
           q3: "你是否会进行带有详细场景描述的长时间角色扮演会话?",
@@ -6904,7 +6976,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
         },
         safety: {
           title: "安全、隐私与附加功能",
-          description: "服务商在安全策略、日志记录,以及图像、工具或长上下文窗口等附加功能上各有不同。",
+          description:
+            "服务商在安全策略、日志记录,以及图像、工具或长上下文窗口等附加功能上各有不同。",
           q1: "你是否需要更少的内容过滤以适应成熟或创意性的角色扮演场景?",
           q2: "你是否在意你的私人 RP 对话是否被记录或用于训练?",
           q3: "你是否需要长上下文窗口来支持复杂的故事线和角色历史?",
@@ -6912,13 +6985,17 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       },
       where: {
         title: "在哪里可以找到模型?",
-        intro: "大多数服务商和路由器都有<0>模型列表或目录</0>。浏览这些页面可以了解他们提供什么、定价、限制和特别功能。",
+        intro:
+          "大多数服务商和路由器都有<0>模型列表或目录</0>。浏览这些页面可以了解他们提供什么、定价、限制和特别功能。",
         directTitle: "直接服务商",
-        directDesc: "OpenAI、Anthropic、Google Gemini、xAI、Mistral 等。每家都有控制台/仪表盘,可查看官方模型名称、能力与定价。",
+        directDesc:
+          "OpenAI、Anthropic、Google Gemini、xAI、Mistral 等。每家都有控制台/仪表盘,可查看官方模型名称、能力与定价。",
         routersTitle: "路由器与聚合平台",
-        routersDesc: "OpenRouter 等聚合服务在一个地方列出来自不同服务商的众多模型,通常附带基准测试和定价对比。",
+        routersDesc:
+          "OpenRouter 等聚合服务在一个地方列出来自不同服务商的众多模型,通常附带基准测试和定价对比。",
         communityTitle: "社区推荐",
-        communityDesc: "查看你的服务商/路由器的文档、博客或社区帖子。它们通常会指出哪些模型最适合聊天、编码或速度需求。",
+        communityDesc:
+          "查看你的服务商/路由器的文档、博客或社区帖子。它们通常会指出哪些模型最适合聊天、编码或速度需求。",
       },
       rules: {
         title: "简单的经验法则",
@@ -6926,7 +7003,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
         experiments: "用于实验或大流量:从感觉够用的最便宜模型开始,需要时再升级。",
         switch: "如果感觉不对(太慢/太笨/太贵):你可以随时在 LettuceAI 中切换模型。",
       },
-      disclaimer: "请始终查阅服务商自己的文档以获取最新的模型列表、限制与定价。本页讲的是思路,而非购买建议。",
+      disclaimer:
+        "请始终查阅服务商自己的文档以获取最新的模型列表、限制与定价。本页讲的是思路,而非购买建议。",
     },
     whereToFind: {
       badge: "API 密钥帮助",
@@ -7088,13 +7166,15 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
         tag: "第 1 步（共 3 步）",
         title: "选择引擎的来源",
         body: "提供商（Provider）是供应并运行引擎的公司，例如 Google 或 OpenRouter。你在其中一家开通免费或付费账户，应用就会借用他们的引擎来驱动你的聊天。",
-        plain: "提供商是一家运行 AI 模型的公司。你注册一个账户，应用将你的消息发送给他们以获取回复。",
+        plain:
+          "提供商是一家运行 AI 模型的公司。你注册一个账户，应用将你的消息发送给他们以获取回复。",
       },
       apiKey: {
         tag: "第 2 步（共 3 步）",
         title: "你的密钥启动引擎",
         body: "API 密钥就像车钥匙一样。提供商会给你一个，你将其插入应用，它就会启动引擎。请妥善保管。它保存在你的设备上，就像钥匙在口袋里一样。",
-        plain: "API 密钥是来自提供商的秘密代码，允许应用使用你的账户。你只需粘贴一次，它仅保存在你的设备上。",
+        plain:
+          "API 密钥是来自提供商的秘密代码，允许应用使用你的账户。你只需粘贴一次，它仅保存在你的设备上。",
       },
       model: {
         tag: "第 3 步（共 3 步）",
@@ -7106,7 +7186,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
         tag: "成本",
         title: "免费或付费，由你决定",
         body: "有些模型完全免费使用，但每天的聊天量有限制。付费模型则对每条消息收取少量费用，通常不到一美分。",
-        plain: "你只向提供商付费，绝不会向本应用付费。你可以先免费开始，以后如果需要，可以切换到付费。",
+        plain:
+          "你只向提供商付费，绝不会向本应用付费。你可以先免费开始，以后如果需要，可以切换到付费。",
       },
     },
     path: {
@@ -7299,7 +7380,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       rejectedMessage: "托管设备拒绝了连接。请检查地址和 PIN 码，然后重试。",
       missingModels: {
         title: "还有一个设置步骤",
-        description: "你同步的设置包含需要本地模型的本地功能。现在将它们放入一个队列下载，或者继续并稍后安装。",
+        description:
+          "你同步的设置包含需要本地模型的本地功能。现在将它们放入一个队列下载，或者继续并稍后安装。",
         continueForNow: "暂时继续",
         downloadRequired: "下载所需模型",
       },
@@ -7423,7 +7505,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
     },
     requirements: {
       title: "需要更多设置",
-      description: "此同步数据使用需要本地模型的本地功能。你现在可以将所有内容放入一个队列下载，或者继续并稍后安装。",
+      description:
+        "此同步数据使用需要本地模型的本地功能。你现在可以将所有内容放入一个队列下载，或者继续并稍后安装。",
       continueForNow: "暂时继续",
       download: "下载所需模型",
     },
@@ -7448,10 +7531,12 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       smartToolSelection: "智能工具选择",
       smartToolDescription: "由 AI 自动判断要使用哪些工具",
       smartToolEnabledHint: "启用后，AI 创作助手会先询问您想创建什么，再只加载相关工具组。",
-      smartToolDisabledHint: "禁用后，AI 创作助手会直接打开并使用所有已启用工具，由助手自行判断要创建什么。",
+      smartToolDisabledHint:
+        "禁用后，AI 创作助手会直接打开并使用所有已启用工具，由助手自行判断要创建什么。",
       quickPresets: "快速预设",
       customSelection: "自定义选择 - 已启用 {{count}} 个工具",
-      footerInfo: "启用智能工具选择时，AI 会根据上下文决定要使用哪些工具。禁用后，您可以手动控制可用工具。",
+      footerInfo:
+        "启用智能工具选择时，AI 会根据上下文决定要使用哪些工具。禁用后，您可以手动控制可用工具。",
       selectChatModel: "选择聊天模型",
       selectImageModel: "选择图片模型",
       searchModels: "搜索模型...",
@@ -7658,13 +7743,11 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
     hfBrowser: {
       panel: {
         title: "你的专属适配报告",
-        body:
-          "这里的一切都按这台机器计算：顶部的判定会告诉你模型能否运行、运行得多流畅。改动任何设置，判定都会实时更新。",
+        body: "这里的一切都按这台机器计算：顶部的判定会告诉你模型能否运行、运行得多流畅。改动任何设置，判定都会实时更新。",
       },
       tabs: {
         title: "两种浏览方式",
-        body:
-          "推荐设置会为你挑选并调校文件。想自己挑选时，可用文件会列出仓库中的所有下载项。",
+        body: "推荐设置会为你挑选并调校文件。想自己挑选时，可用文件会列出仓库中的所有下载项。",
       },
       quant: {
         title: "选一个量化版本",
@@ -7945,7 +8028,7 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       penaltyLastN: "DRY 惩罚最近 N 个",
       penaltyLastNDesc: "使用 `-1` 扫描完整上下文。",
       sequenceBreakers: "DRY 序列分隔符",
-      sequenceBreakersDesc: "以逗号分隔的边界，如 `\\\\n`, `:`, `\\\"`, `*`。",
+      sequenceBreakersDesc: '以逗号分隔的边界，如 `\\\\n`, `:`, `\\"`, `*`。',
     },
     streaming: {
       title: "流式传输",
@@ -7999,7 +8082,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
   designReference: {
     title: "设计参考",
     description: "上传几张清晰的参考图片和一份标准视觉描述。",
-    descriptionPlaceholder: "描述稳定的外观：脸型、发型、体型、年龄呈现、服装重点、配饰和艺术/风格方向。",
+    descriptionPlaceholder:
+      "描述稳定的外观：脸型、发型、体型、年龄呈现、服装重点、配饰和艺术/风格方向。",
     addReferences: "添加参考",
     visualDescription: "视觉描述",
     draftWithAi: "AI 起草",
@@ -8247,7 +8331,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       coherenceToggleHint: "在应用之前，切换每个更改以接受或拒绝。",
       coherenceAll: "(全部)",
       coherenceMergeKeys: "从条目 {{entry}} 中移除键 [{{keys}}]。{{reason}}",
-      coherenceRenameTerm: "将所有条目 {{entries}} 中的 “{{oldTerm}}” 重命名为 “{{newTerm}}”。{{reason}}",
+      coherenceRenameTerm:
+        "将所有条目 {{entries}} 中的 “{{oldTerm}}” 重命名为 “{{newTerm}}”。{{reason}}",
       coherenceContradiction: "条目 {{entries}} 中存在矛盾：{{description}}",
       coherenceToggleAlwaysActive: "将条目 {{entry}} 的 alwaysActive 设置为 {{value}}。{{reason}}",
       skip: "跳过",
@@ -8273,7 +8358,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       entryDescription: "将选定的聊天消息转换为单个世界书条目。",
     },
     full: {
-      infoText: "世界书生成器根据简报和源材料规划、起草并完善一个完整的世界书。首先尝试工具调用；如果不支持，所有阶段将回退到 {{format}} 结构化输出。",
+      infoText:
+        "世界书生成器根据简报和源材料规划、起草并完善一个完整的世界书。首先尝试工具调用；如果不支持，所有阶段将回退到 {{format}} 结构化输出。",
       generationHeading: "生成",
       generationModel: "生成模型",
       generationModelFallback: "生成模型",
@@ -8300,11 +8386,13 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       refineDescription: "用于根据用户反馈消息修改条目。",
       coherenceTitle: "一致性提示词",
       coherenceDescription: "用于在所有起草的条目中提出精确的更改建议。",
-      footerHint: "打开库，点击 “新世界书”，然后选择 “使用 AI 生成” 以开始使用这些默认值的生成流程。在 设置 > 提示词 中管理提示词模板。",
+      footerHint:
+        "打开库，点击 “新世界书”，然后选择 “使用 AI 生成” 以开始使用这些默认值的生成流程。在 设置 > 提示词 中管理提示词模板。",
       noAppDefaultModel: "未配置应用默认模型",
     },
     entry: {
-      infoText: "配置用于从选定的聊天消息起草世界书条目并从条目内容生成世界书关键词的模型和提示词。首先尝试工具调用；如果不支持，两种流程都将回退到 {{format}} 结构化输出。",
+      infoText:
+        "配置用于从选定的聊天消息起草世界书条目并从条目内容生成世界书关键词的模型和提示词。首先尝试工具调用；如果不支持，两种流程都将回退到 {{format}} 结构化输出。",
       generationHeading: "生成",
       generationModel: "生成模型",
       generationModelFallback: "生成模型",
@@ -8324,7 +8412,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       entryWriterHint: "覆盖默认的世界书条目作者提示词。在 设置 > 提示词 中管理模板。",
       keywordGeneratorPrompt: "关键词生成器提示词",
       keywordGeneratorHint: "使用与条目生成器相同的模型和结构化回退。在 设置 > 提示词 中管理模板。",
-      footerHint: "打开角色的世界书或库的世界书编辑器，然后选择 “生成条目” 或 “生成关键词” 以使用这些默认值。",
+      footerHint:
+        "打开角色的世界书或库的世界书编辑器，然后选择 “生成条目” 或 “生成关键词” 以使用这些默认值。",
       noAppDefaultModel: "未配置应用默认模型",
     },
   },
@@ -8389,8 +8478,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
     hub: {
       modelsLabel: "模型",
       modelsDescription: "用于情感、实体和记忆路由的本地分析模型。",
-      soulWriterLabel: "灵魂撰写者 (Soul Writer)",
-      soulWriterDescription: "用于起草 Companion Souls 的模型和提示词。",
+      soulWriterLabel: "Soul 编写器",
+      soulWriterDescription: "用于起草同伴 Soul 的模型和提示词。",
     },
     modelStatus: {
       ready: "就绪",
@@ -8410,11 +8499,14 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       localAnalysisModels: "本地分析模型",
       aboutCompanionMode: "关于 Companion 模式",
       dynamicMemoryTitle: "Companion 聊天使用动态记忆 (Dynamic Memory)",
-      dynamicMemoryDescription: "长期记忆的创建和检索与普通聊天共享动态记忆后端。Companion 模式保留其独立的情感状态、关系状态、灵魂数据以及每轮对话的效果跟踪。",
+      dynamicMemoryDescription:
+        "长期记忆的创建和检索与普通聊天共享动态记忆后端。Companion 模式保留其独立的情感状态、关系状态、灵魂数据以及每轮对话的效果跟踪。",
     },
     about: {
-      paragraph1: "Companion 模式将角色转变为一个长期的社交代理。它会跟踪情感状态、与您的关系状态，以及比单一聊天摘要更丰富的片段记忆库。",
-      paragraph2: "您可以在角色设置中将任何角色切换到 Companion 模式。Companion 聊天拥有一个专门的记忆和关系 UI，可通过聊天页眉访问。",
+      paragraph1:
+        "Companion 模式将角色转变为一个长期的社交代理。它会跟踪情感状态、与您的关系状态，以及比单一聊天摘要更丰富的片段记忆库。",
+      paragraph2:
+        "您可以在角色设置中将任何角色切换到 Companion 模式。Companion 聊天拥有一个专门的记忆和关系 UI，可通过聊天页眉访问。",
     },
   },
   voices: {
@@ -8480,7 +8572,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
         exampleTextPlaceholder: "你好！这是我说话的声音...",
         exampleTextHint: "用于测试语音的示例文本",
         voiceDesignChars: "语音设计预览需要 {{current}}/{{minimum}} 个字符",
-        defaultSample: "你好！这是我说话的声音。我能够用饱满的情感、清晰的表达朗读较长的段落，让你感受我的语调和节奏。",
+        defaultSample:
+          "你好！这是我说话的声音。我能够用饱满的情感、清晰的表达朗读较长的段落，让你感受我的语调和节奏。",
         playing: "播放中...",
         previewVoice: "预览语音",
         fishVoice: "Fish Audio 云端声音模型",
@@ -8490,7 +8583,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
         fishVoiceIdPlaceholder: "7f92f8afb8ec43bf81429cc1c9199cb1",
         fishVoiceIdHint: "使用 /model 接口返回的 Fish Audio 云端声音模型 ID",
         fishSpeechVoiceIdPlaceholder: "my-speaker",
-        fishSpeechVoiceIdHint: "可选：如果您的服务器配置了 local reference_id，请输入 Fish Speech 的 ID",
+        fishSpeechVoiceIdHint:
+          "可选：如果您的服务器配置了 local reference_id，请输入 Fish Speech 的 ID",
         exampleTextMinChars: "声音设计要求的示例文本必须至少包含 {{minimum}} 个字符。",
         nameVoiceFirst: "请先预览声音以生成它。",
         fishVoiceIdRequired: "Fish Audio (云端) 需要声音 ID。",
@@ -8504,7 +8598,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
         newBlend: "新建混合",
         editBlend: "编辑混合",
         tryText: "你好！这是对我声音的快速测试。",
-        experimentDefaultText: "你好！这是我说话的声音。我能够用饱满的情感、清晰的表达朗读较长的段落。",
+        experimentDefaultText:
+          "你好！这是我说话的声音。我能够用饱满的情感、清晰的表达朗读较长的段落。",
         livePreview: "实时预览",
         savedBlend: "已保存的混合",
         defaultPreviewText: "你好！这是此语音效果的快速预览。",
@@ -8620,7 +8715,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
         approvedOnly: "仅显示已批准项",
         approvedOnlyDescription: "隐藏未经过审核的自动建议项。",
         emptyTitle: "暂无修正项",
-        emptyDescription: "修正项用于重写 Whisper 的输出。添加一个“错误-正确”对，以清理一致性的错误。",
+        emptyDescription:
+          "修正项用于重写 Whisper 的输出。添加一个“错误-正确”对，以清理一致性的错误。",
         addFirstCorrection: "添加第一个修正项",
       },
       voiceExamplesSection: {
@@ -8628,7 +8724,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
         addExample: "添加示例",
         heard: "听到：",
         emptyTitle: "无语音示例",
-        emptyDescription: "将音频剪辑与它应该生成的文本配对。这对于根据真实录音调整修正项非常有用。",
+        emptyDescription:
+          "将音频剪辑与它应该生成的文本配对。这对于根据真实录音调整修正项非常有用。",
         addFirstExample: "添加第一个示例",
       },
       chips: {
@@ -8687,7 +8784,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
         addTitle: "添加语音示例",
         subtitle: "将音频剪辑与它应该生成的文本配对。",
         audioPath: "音频路径",
-        audioPathHint: "选择现有的音频文件，或录制新剪辑，我们将把 WAV 文件保存在应用的数据目录下。",
+        audioPathHint:
+          "选择现有的音频文件，或录制新剪辑，我们将把 WAV 文件保存在应用的数据目录下。",
         audioPathPlaceholder: "/path/to/clip.wav",
         recording: "正在录音 {{duration}}",
         discard: "舍弃",
@@ -8853,10 +8951,14 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       },
       picker: {
         title: "选择 Whisper 模型",
-        needDownloadMobile: "在使用语音识别之前，您需要下载一个 Whisper 模型。请从下方列表中选择一个。我们推荐移动端选项。",
-        needDownloadDesktop: "在使用语音识别之前，您需要下载一个 Whisper 模型。请从下方列表中选择一个。我们推荐桌面端选项。",
-        showingMobile: "正在显示推荐给移动端的模型。点击一个以使用它；如果尚未下载，它将进入队列并在就绪后自动激活。",
-        showingDesktop: "正在显示推荐给桌面端的模型。点击一个以使用它；如果尚未下载，它将进入队列并在就绪后自动激活。",
+        needDownloadMobile:
+          "在使用语音识别之前，您需要下载一个 Whisper 模型。请从下方列表中选择一个。我们推荐移动端选项。",
+        needDownloadDesktop:
+          "在使用语音识别之前，您需要下载一个 Whisper 模型。请从下方列表中选择一个。我们推荐桌面端选项。",
+        showingMobile:
+          "正在显示推荐给移动端的模型。点击一个以使用它；如果尚未下载，它将进入队列并在就绪后自动激活。",
+        showingDesktop:
+          "正在显示推荐给桌面端的模型。点击一个以使用它；如果尚未下载，它将进入队列并在就绪后自动激活。",
         searchPlaceholder: "搜索模型",
         modelCount: "{{count}} 个模型",
         modelCountPlural: "{{count}} 个模型",
@@ -8918,7 +9020,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
         title: "运行时",
         description: "控制 Whisper 如何加载激活模型以及库数据在磁盘上的存储位置。",
         useGpu: "使用 GPU",
-        useGpuDescription: "在支持的情况下使用 CUDA, Vulkan, ROCm 或 Metal 加速。关闭则强制使用 CPU。",
+        useGpuDescription:
+          "在支持的情况下使用 CUDA, Vulkan, ROCm 或 Metal 加速。关闭则强制使用 CPU。",
         keepModelLoaded: "保持模型加载状态",
         keepModelLoadedDescription: "在转录之间复用已加载的 Whisper 上下文，以降低延迟。",
         contextCache: "Whisper 上下文缓存",
@@ -9188,7 +9291,7 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       sentenceWhenAndNot: "当 {{include}} 且非 ({{exclude}}) 时，此条目激活。",
     },
     warnings: {
-      requiresAndExcludes: "此条目同时要求并排除了 \\\"{{label}}\\\"。",
+      requiresAndExcludes: '此条目同时要求并排除了 \\"{{label}}\\"。',
       mutuallyExclusive: "此条目要求互斥的条件: {{values}}。",
       fixContradictory: "保存前请修复矛盾的规则。",
     },
@@ -9231,7 +9334,7 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       sceneGeneration: "场景生成",
       scenePromptWriter: "场景提示词编写器",
       designReferenceWriter: "设计参考编写器",
-      companionSoulWriter: "伴侣灵魂编写器",
+      companionSoulWriter: "同伴 Soul 编写器",
       lorebookEntryWriter: "世界书条目编写器",
       lorebookKeywordGenerator: "世界书关键词生成器",
     },
@@ -9307,7 +9410,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       fallbackFormat: "回退格式",
     },
     page: {
-      intro: "配置用于起草 Companion Soul 档案的模型和提示词。首先尝试工具调用；如果不支持，则回退到 {{format}} 结构化输出。",
+      intro:
+        "配置用于起草同伴 Soul 档案的模型和提示词。系统会优先尝试工具调用；如果不支持，则回退到 {{format}} 结构化输出。",
       generation: "生成",
       generationModel: "生成模型",
       generationModelAria: "生成模型",
@@ -9318,8 +9422,9 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       promptTemplate: "提示词模板",
       soulWriterPrompt: "Soul Writer 提示词",
       useBuiltInDefault: "使用内置默认值",
-      promptHint: "覆盖默认的 companion soul writer 提示词。在“设置” > “提示词”中管理模板。",
-      footnote: "打开 Companion 模式角色的编辑器，并在 Soul 标签页中使用 {{action}} 来启动 writer 并使用这些默认值。",
+      promptHint: "覆盖默认的 Soul 编写器提示词。可在“设置” > “提示词”中管理模板。",
+      footnote:
+        "打开同伴模式角色的编辑器，在 Soul 标签页中点击 {{action}}，即可使用这些默认设置启动生成。",
       footnoteAction: "从角色生成",
       useAppDefault: "使用应用默认值",
       useAppDefaultWith: "使用应用默认值 ({{name}})",
@@ -9540,7 +9645,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaManualPlacementBrief: "GPU 上 {{gpu}} 层 · CPU 上 {{cpu}} 层",
     llamaManualPlacementFull: "GPU 上 {{gpu}} · CPU 上 {{cpu}} · 共 {{total}}",
     llamaEstimatedPlacement: "预计：{{breakdown}} · GPU 上 {{total}} 层",
-    llamaDistBalancedDesc: "在所选 GPU 之间均匀分配。适用于相同型号的显卡；VRAM 容量不同时请选择“按 VRAM 比例”。",
+    llamaDistBalancedDesc:
+      "在所选 GPU 之间均匀分配。适用于相同型号的显卡；VRAM 容量不同时请选择“按 VRAM 比例”。",
     llamaDistProportionalDesc: "按各 GPU 的可用 VRAM 加权分配。适合型号不一致的显卡。",
     llamaDistPriorityDesc: "先把第一块 GPU 填到 VRAM 上限，再将多余部分溢出到下一块。",
     llamaDistManual: "按 GPU 手动设置",
@@ -9548,7 +9654,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
     llamaKvAutoDesc: "交由运行时决定。KV 放得下时保留在 GPU，否则放入系统 RAM。",
     llamaKvSplitDesc: "KV 缓存放在 GPU 上，按与层相同的方式分割。最快，但占用 VRAM。",
     llamaKvSystemRamDesc: "将 KV 缓存保留在系统 RAM 中以腾出 VRAM 装载更多层。注意力计算较慢。",
-    llamaKvPinDesc: "将共享的临时缓冲区分配到选定的主 GPU。每层的 KV 缓存仍保留在该层所在的 GPU 上。",
+    llamaKvPinDesc:
+      "将共享的临时缓冲区分配到选定的主 GPU。每层的 KV 缓存仍保留在该层所在的 GPU 上。",
   },
   loraSelector: {
     title: "设计 LoRA",
@@ -9578,7 +9685,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
     faq: {
       whatIsLettuceai: {
         question: "什么是 LettuceAI？",
-        answer: "LettuceAI 是一款 AI 角色聊天应用。与那些将您的消息路由到单一托管服务的应用不同，LettuceAI 允许您从 Mistral、Cerebras、Google AI Studio、OpenAI、Anthropic 等提供商处携带自己的 API 密钥，或者在您的设备上本地运行模型。您的聊天记录保存在您的设备上。",
+        answer:
+          "LettuceAI 是一款 AI 角色聊天应用。与那些将您的消息路由到单一托管服务的应用不同，LettuceAI 允许您从 Mistral、Cerebras、Google AI Studio、OpenAI、Anthropic 等提供商处携带自己的 API 密钥，或者在您的设备上本地运行模型。您的聊天记录保存在您的设备上。",
       },
       whatIsApiKey: {
         question: "什么是 API 密钥，为什么我需要它？（BYOK 详解）",
@@ -9590,46 +9698,57 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       cheapestStart: {
         question: "最便宜或最简单的入门方式是什么？",
         mistralName: "Mistral",
-        mistralBefore: " 拥有慷慨的免费额度且具有优秀的开源权重模型。请在 console.mistral.ai 注册，创建密钥并将其粘贴到“设置”中的 ",
+        mistralBefore:
+          " 拥有慷慨的免费额度且具有优秀的开源权重模型。请在 console.mistral.ai 注册，创建密钥并将其粘贴到“设置”中的 ",
         mistralAfter: " 提供商。",
         cerebrasName: "Cerebras",
-        cerebrasText: " 是目前最快的选项，且在 Llama 和 Qwen 模型上提供免费额度。请在 cloud.cerebras.ai 注册。",
+        cerebrasText:
+          " 是目前最快的选项，且在 Llama 和 Qwen 模型上提供免费额度。请在 cloud.cerebras.ai 注册。",
         googleName: "Google AI Studio",
         googleText: " 也为 Gemini 模型提供慷慨的免费额度。",
-        localText: "如果您不想使用任何云服务，您可以通过桌面端（Windows、macOS 或 Linux）内置的 llama.cpp 选项本地运行模型。移动端不支持本地模型。",
+        localText:
+          "如果您不想使用任何云服务，您可以通过桌面端（Windows、macOS 或 Linux）内置的 llama.cpp 选项本地运行模型。移动端不支持本地模型。",
       },
       alternative: {
         question: "这是其他 AI 聊天应用的替代方案吗？",
-        answer: "是的。如果您曾使用过某种 AI 聊天应用，虽然一切运行流畅但您无法选择模型、无法控制数据或感到被订阅制限制，那么 LettuceAI 正是为此而生。您携带自己的 API 密钥，选择想要的模型，聊天记录保存在您的设备上。代价是简短的一次性设置；好处是对成本、质量和隐私的完全控制。",
+        answer:
+          "是的。如果您曾使用过某种 AI 聊天应用，虽然一切运行流畅但您无法选择模型、无法控制数据或感到被订阅制限制，那么 LettuceAI 正是为此而生。您携带自己的 API 密钥，选择想要的模型，聊天记录保存在您的设备上。代价是简短的一次性设置；好处是对成本、质量和隐私的完全控制。",
       },
       cost: {
         question: "费用是多少？",
-        answer: "LettuceAI 本身是免费的。您直接向模型提供商付费，通常每条消息仅需几分钱。Mistral、Cerebras 和 Google AI Studio 提供免费额度。频繁使用顶尖模型（如 Claude Opus 4.7, GPT-5.1, Gemini 3 Pro）可能会产生较高费用，因此在选择模型前请查看提供商的定价页面。",
+        answer:
+          "LettuceAI 本身是免费的。您直接向模型提供商付费，通常每条消息仅需几分钱。Mistral、Cerebras 和 Google AI Studio 提供免费额度。频繁使用顶尖模型（如 Claude Opus 4.7, GPT-5.1, Gemini 3 Pro）可能会产生较高费用，因此在选择模型前请查看提供商的定价页面。",
       },
       apiKeySafe: {
         question: "我的 API 密钥安全吗？",
-        answer: "您的 API 密钥存储在您的设备本地，并且仅发送给您配置的提供商。LettuceAI 没有能够看到您的密钥或消息的服务器。",
+        answer:
+          "您的 API 密钥存储在您的设备本地，并且仅发送给您配置的提供商。LettuceAI 没有能够看到您的密钥或消息的服务器。",
       },
       chatsStored: {
         question: "我的聊天记录存储在哪里？有人能阅读它们吗？",
-        answer: "聊天记录存储在您设备上应用的本地数据库中，不会上传到任何地方。当您发送消息时，只有该对话的文本会被发送到您选择的提供商以获取回复，然后其响应返回并保存在本地。",
+        answer:
+          "聊天记录存储在您设备上应用的本地数据库中，不会上传到任何地方。当您发送消息时，只有该对话的文本会被发送到您选择的提供商以获取回复，然后其响应返回并保存在本地。",
       },
       chatsDeleted: {
         question: "我的聊天记录会自动删除吗？",
-        answer: "不会。聊天记录保存在您设备上的本地数据库中，只有您可以删除它们。它们不会同步到任何 LettuceAI 服务器，因此我们无法清除它们，后台也没有自动清理程序。聊天记录消失的唯一情况是：您手动删除、卸载应用、重置应用或设备存储被擦除。",
+        answer:
+          "不会。聊天记录保存在您设备上的本地数据库中，只有您可以删除它们。它们不会同步到任何 LettuceAI 服务器，因此我们无法清除它们，后台也没有自动清理程序。聊天记录消失的唯一情况是：您手动删除、卸载应用、重置应用或设备存储被擦除。",
       },
       editRemotely: {
         question: "有人能远程编辑我的数据吗？",
-        answer: "不能。没有远程管理面板，没有 LettuceAI 账户，也没有存储您的角色、聊天或设置副本的服务器。LettuceAI 的任何人都无法向您的数据推送更改、将您锁定在账户外或进入应用修改任何内容。您的数据仅在您在自己的设备上更改时才会改变。",
+        answer:
+          "不能。没有远程管理面板，没有 LettuceAI 账户，也没有存储您的角色、聊天或设置副本的服务器。LettuceAI 的任何人都无法向您的数据推送更改、将您锁定在账户外或进入应用修改任何内容。您的数据仅在您在自己的设备上更改时才会改变。",
       },
       shutdown: {
         question: "如果 LettuceAI 关闭了，我的数据会怎样？",
-        before: "只要应用还在您的设备上，您的角色和聊天记录就依然可用。如果您没有密钥或提供商停止服务，云模型将停止回复，但您创建的所有内容在本地依然可读，并可通过“设置”中的 ",
+        before:
+          "只要应用还在您的设备上，您的角色和聊天记录就依然可用。如果您没有密钥或提供商停止服务，云模型将停止回复，但您创建的所有内容在本地依然可读，并可通过“设置”中的 ",
         after: " 备份与恢复导出。",
       },
       training: {
         question: "提供商会用我的对话进行训练吗？",
-        answer: "这取决于提供商的政策，而非 LettuceAI。大多数付费 API 级别（OpenAI, Anthropic, Mistral）默认不使用 API 流量进行训练。免费级别有时会。如果您在意这一点，请阅读您所使用的提供商的隐私页面。",
+        answer:
+          "这取决于提供商的政策，而非 LettuceAI。大多数付费 API 级别（OpenAI, Anthropic, Mistral）默认不使用 API 流量进行训练。免费级别有时会。如果您在意这一点，请阅读您所使用的提供商的隐私页面。",
       },
       whatIsModel: {
         question: "什么是“模型”？我该选择哪个？",
@@ -9640,7 +9759,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
         deepseekName: "DeepSeek V4",
         deepseekText: " （便宜且能力极强），或 ",
         glmName: "GLM 4.7 / GLM 5",
-        glmText: " （强大的角色扮演质量）。Cerebras 在其免费额度中以极速运行其中许多模型。您可以随时在聊天的设置中切换。",
+        glmText:
+          " （强大的角色扮演质量）。Cerebras 在其免费额度中以极速运行其中许多模型。您可以随时在聊天的设置中切换。",
       },
       freeProviders: {
         question: "有免费的提供商吗？",
@@ -9650,14 +9770,17 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
         cerebrasName: "Cerebras",
         afterCerebras: ", 以及 ",
         googleName: "Google AI Studio",
-        afterGoogle: " 都提供足以满足日常休闲聊天的免费额度。您仍然需要注册并创建 API 密钥，但开始使用时无需添加付款方式。每个提供商都有自己的速率限制（每分钟或每天的消息数），因此如果您遇到限制，只需切换到另一个免费提供商或升级。",
+        afterGoogle:
+          " 都提供足以满足日常休闲聊天的免费额度。您仍然需要注册并创建 API 密钥，但开始使用时无需添加付款方式。每个提供商都有自己的速率限制（每分钟或每天的消息数），因此如果您遇到限制，只需切换到另一个免费提供商或升级。",
       },
       freeVsPaid: {
         question: "免费提供商和付费提供商有什么区别？",
         freeName: "免费级别",
-        freeText: " 通常提供对较小或较旧模型的访问权限，速度较慢，速率限制较低，有时提供商可能会使用您的消息来训练他们的下一个模型。非常适合尝试或轻量级日常使用。",
+        freeText:
+          " 通常提供对较小或较旧模型的访问权限，速度较慢，速率限制较低，有时提供商可能会使用您的消息来训练他们的下一个模型。非常适合尝试或轻量级日常使用。",
         paidName: "付费级别",
-        paidText: " 解锁最新且最大的模型，更高的速率限制，更快的响应速度，以及更强的隐私保证（大多数不使用付费 API 流量进行训练）。您按消息付费，通常每条消息仅需几分钱，没有月度最低消费。",
+        paidText:
+          " 解锁最新且最大的模型，更高的速率限制，更快的响应速度，以及更强的隐私保证（大多数不使用付费 API 流量进行训练）。您按消息付费，通常每条消息仅需几分钱，没有月度最低消费。",
         mixText: "您可以混合使用：日常聊天使用免费密钥，追求最高质量时使用付费密钥。",
       },
       whatIsToken: {
@@ -9670,16 +9793,19 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
         question: "我看到“未配置默认模型”",
         p1: "这意味着您还没有在 LettuceAI 中添加任何模型，或者您添加了模型但您正在聊天的角色没有选择模型。",
         p2Before: "打开“设置” ",
-        p2After: " 模型并从您配置的提供商中添加一个模型。然后，要么在该页面将其设置为全局默认值，要么打开角色的设置并为该角色选择一个模型。",
+        p2After:
+          " 模型并从您配置的提供商中添加一个模型。然后，要么在该页面将其设置为全局默认值，要么打开角色的设置并为该角色选择一个模型。",
         p3: "每个角色可以使用自己的模型，或者在未设置时回退到您的全局默认值。",
       },
       cloudVsLocal: {
         question: "云模型和本地模型有什么区别？",
-        answer: "云模型（Mistral, Cerebras, OpenAI, Google）运行在他人硬件上，需要互联网连接，且每条消息需付费。本地模型通过内置的 llama.cpp 选项直接运行在您的桌面电脑上，私密且离线，但需要性能较强的 PC 并占用更多存储空间。移动端不支持本地模型。",
+        answer:
+          "云模型（Mistral, Cerebras, OpenAI, Google）运行在他人硬件上，需要互联网连接，且每条消息需付费。本地模型通过内置的 llama.cpp 选项直接运行在您的桌面电脑上，私密且离线，但需要性能较强的 PC 并占用更多存储空间。移动端不支持本地模型。",
       },
       whatIsCharacter: {
         question: "什么是角色？我可以创建自己的角色吗？",
-        answer: "角色是一个具有名称、图像和描述的 AI 人格，这些信息决定了它如何说话。点击聊天屏幕上的 + 按钮创建角色，或从发现标签页或其他社区导入角色卡。",
+        answer:
+          "角色是一个具有名称、图像和描述的 AI 人格，这些信息决定了它如何说话。点击聊天屏幕上的 + 按钮创建角色，或从发现标签页或其他社区导入角色卡。",
       },
       whatIsPersona: {
         question: "什么是人格 (Persona)？",
@@ -9690,12 +9816,14 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
       },
       charactersPrivate: {
         question: "我创建的角色是私密的吗？",
-        answer: "是的。您创建的角色保存在您的设备上。LettuceAI 没有上传按钮，也没有上传服务器。除非您明确导出角色卡文件并自行发送，否则它们永远不会被共享。",
+        answer:
+          "是的。您创建的角色保存在您的设备上。LettuceAI 没有上传按钮，也没有上传服务器。除非您明确导出角色卡文件并自行发送，否则它们永远不会被共享。",
       },
       backupMove: {
         question: "如何备份或迁移到另一台设备？",
         before: "“设置” ",
-        after: " 备份与恢复允许您将所有内容导出到文件。要迁移到新手机或电脑，请在该设备安装 LettuceAI 并使用欢迎屏幕上的“从另一台设备同步”选项，或从备份文件恢复。",
+        after:
+          " 备份与恢复允许您将所有内容导出到文件。要迁移到新手机或电脑，请在该设备安装 LettuceAI 并使用欢迎屏幕上的“从另一台设备同步”选项，或从备份文件恢复。",
       },
     },
   },
@@ -9807,7 +9935,8 @@ export const zhHansMessages: DeepPartialMessageTree<LocaleMessages> = {
     play: "播放",
   },
   kokoroBlend: {
-    defaultPreviewText: "你好！这就是我说话时的声音。我可以带着温暖、清晰且富有情感地朗读较长的段落。",
+    defaultPreviewText:
+      "你好！这就是我说话时的声音。我可以带着温暖、清晰且富有情感地朗读较长的段落。",
     providerNotFound: "未找到提供者",
     back: "返回",
     installVoiceFirst: "请先安装至少一个语音",
