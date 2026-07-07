@@ -37,6 +37,7 @@ import { DesignReferenceEditor } from "../../components/DesignReferenceEditor";
 import { LoraSelector } from "../../components/LoraSelector";
 import { CompanionSoulEditor } from "./components/CompanionSoulEditor";
 import { CompanionScheduledNotesEditor } from "./components/CompanionScheduledNotesEditor";
+import { DoubaoVoiceSettingsPanel } from "./components/DoubaoVoiceSettingsPanel";
 import { SoulGenerationReviewOverlay } from "./components/SoulGenerationReviewOverlay";
 import { normalizeCompanionConfig } from "./utils/companionDefaults";
 import { BottomMenu, MenuButton, MenuButtonGroup, MenuSection } from "../../components/BottomMenu";
@@ -81,6 +82,10 @@ import { useImageData } from "../../hooks/useImageData";
 import { useAvatarGradient } from "../../hooks/useAvatarGradient";
 import { toast } from "../../components/toast";
 import { processBackgroundImage } from "../../../core/utils/image";
+import {
+  DEFAULT_DOUBAO_VOICE_SETTINGS,
+  normalizeDoubaoVoiceSettings,
+} from "../../../core/voice/doubaoVoiceSettings";
 
 const wordCount = (text: string) => {
   const trimmed = text.trim();
@@ -93,6 +98,9 @@ const summarizeAvatarValue = (value?: string | null) => {
   if (value.startsWith("data:")) return `data-url(${value.slice(0, 24)}..., len=${value.length})`;
   return value.length > 96 ? `${value.slice(0, 96)}...` : value;
 };
+
+const resolveDoubaoModelId = (provider?: AudioProvider | null) =>
+  provider?.resourceId?.trim() || "seed-tts-2.0";
 
 const GradientColorField = React.memo(function GradientColorField({
   label,
@@ -617,6 +625,12 @@ export function EditCharacterPage() {
     }
     return "";
   })();
+  const selectedVoiceProvider = voiceConfig?.providerId
+    ? audioProviders.find((provider) => provider.id === voiceConfig.providerId)
+    : undefined;
+  const showDoubaoVoiceSettings =
+    voiceConfig?.source === "provider" && selectedVoiceProvider?.providerType === "doubao_tts";
+  const doubaoVoiceSettings = normalizeDoubaoVoiceSettings(voiceConfig?.doubaoVoiceSettings);
 
   React.useEffect(() => {
     const globalWindow = window as any;
@@ -2064,6 +2078,34 @@ export function EditCharacterPage() {
                     <p className="text-xs text-fg/50">
                       {t("characters.edit.voiceAssignHint")}
                     </p>
+                    {showDoubaoVoiceSettings && (
+                      <DoubaoVoiceSettingsPanel
+                        settings={doubaoVoiceSettings}
+                        providerId={voiceConfig?.providerId}
+                        modelId={voiceConfig?.modelId ?? resolveDoubaoModelId(selectedVoiceProvider)}
+                        voiceId={voiceConfig?.voiceId}
+                        onChange={(settings) =>
+                          voiceConfig &&
+                          setFields({
+                            voiceConfig: {
+                              ...voiceConfig,
+                              doubaoVoiceSettings: settings,
+                            },
+                          })
+                        }
+                        labels={{
+                          title: t("characters.edit.doubaoVoiceSettingsTitle"),
+                          reset: t("characters.edit.resetVoiceSettings"),
+                          pitch: t("characters.edit.voicePitch"),
+                          speechRate: t("characters.edit.voiceSpeechRate"),
+                          loudnessRate: t("characters.edit.voiceLoudnessRate"),
+                          previewPlaceholder: t("characters.edit.voicePreviewPlaceholder"),
+                          previewPlay: t("characters.edit.voicePreviewPlay"),
+                          previewStop: t("characters.edit.voicePreviewStop"),
+                          previewError: t("characters.edit.voicePreviewError"),
+                        }}
+                      />
+                    )}
                     <div
                       className={cn(
                         "flex items-center justify-between rounded-xl border border-fg/10 bg-surface-el/20 px-4 py-3",
@@ -2838,16 +2880,27 @@ export function EditCharacterPage() {
                       <button
                         key={`${provider.id}:${voice.voiceId}`}
                         onClick={() => {
+                          const doubaoSettings =
+                            provider.providerType === "doubao_tts"
+                              ? {
+                                  ...DEFAULT_DOUBAO_VOICE_SETTINGS,
+                                  ...voiceConfig?.doubaoVoiceSettings,
+                                }
+                              : undefined;
+                          const providerModelId =
+                            provider.providerType === "kokoro"
+                              ? provider.kokoroVariant
+                              : provider.providerType === "doubao_tts"
+                                ? resolveDoubaoModelId(provider)
+                                : undefined;
                           setFields({
                             voiceConfig: {
                               source: "provider",
                               providerId: provider.id,
                               voiceId: voice.voiceId,
-                              modelId:
-                                provider.providerType === "kokoro"
-                                  ? provider.kokoroVariant
-                                  : undefined,
+                              modelId: providerModelId,
                               voiceName: voice.name,
+                              doubaoVoiceSettings: doubaoSettings,
                             },
                           });
                           setShowVoiceMenu(false);

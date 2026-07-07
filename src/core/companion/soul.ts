@@ -155,6 +155,10 @@ function createDefaultCompanionConfig(): CompanionConfig {
       promptTemplateId: null,
       styleNotes: "",
     },
+    emotion: {
+      assistantUpdateWeight: 0,
+      contextMessageCount: 1,
+    },
     timeAwareness: false,
   };
 }
@@ -189,6 +193,10 @@ function normalizeCompanionConfig(companion: CompanionConfig | null | undefined)
     prompting: {
       ...defaults.prompting,
       ...companion.prompting,
+    },
+    emotion: {
+      ...defaults.emotion,
+      ...companion.emotion,
     },
   };
 }

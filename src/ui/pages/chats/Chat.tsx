@@ -72,6 +72,7 @@ import { playAccessibilitySound } from "../../../core/utils/accessibilityAudio";
 import { replacePlaceholders } from "../../../core/utils/placeholders";
 import { splitThinkTags } from "../../../core/utils/thinkTags";
 import { getPlatform } from "../../../core/utils/platform";
+import { buildDoubaoVoicePrompt } from "../../../core/voice/doubaoVoiceSettings";
 import {
   ChatHeader,
   ChatFooter,
@@ -1447,11 +1448,16 @@ export function ChatConversationPage() {
           throw new Error(t("chats.errors.noAudioModelsForProvider"));
         }
 
+        const prompt =
+          provider.providerType === "doubao_tts"
+            ? buildDoubaoVoicePrompt(character.voiceConfig.doubaoVoiceSettings)
+            : undefined;
         const cacheKey = buildAudioCacheKey({
           providerId,
           modelId,
           voiceId,
           text: trimmedText,
+          prompt,
         });
         const cached = audioPreviewCacheRef.current.get(cacheKey);
 
@@ -1462,6 +1468,7 @@ export function ChatConversationPage() {
             modelId,
             voiceId,
             text: trimmedText,
+            prompt,
             requestId,
             cached,
             onCache: (response) => cacheAudioPreview(cacheKey, response),

@@ -14,6 +14,7 @@ import {
 const DOUBAO_STREAM_BUFFER_SECONDS = 0.7;
 const S16_MAX = 32768;
 const PCM_MIME_TYPE = "audio/pcm";
+const PCM_PLAYBACK_GAIN = 1.35;
 
 export interface MessageAudioRequest {
   providerId: string;
@@ -69,7 +70,7 @@ function concatByteChunks(chunks: Uint8Array[]): Uint8Array {
   return out;
 }
 
-function pcm16ToFloat32(bytes: Uint8Array): Float32Array {
+function pcm16ToFloat32(bytes: Uint8Array): Float32Array<ArrayBuffer> {
   const sampleCount = Math.floor(bytes.byteLength / 2);
   const out = new Float32Array(sampleCount);
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
@@ -82,7 +83,7 @@ function pcm16ToFloat32(bytes: Uint8Array): Float32Array {
 class PcmStreamQueue {
   private audioContext: AudioContext | null = null;
   private sampleRate = 24000;
-  private queue: Float32Array[] = [];
+  private queue: Float32Array<ArrayBuffer>[] = [];
   private queuedSamples = 0;
   private started = false;
   private ended = false;
@@ -161,12 +162,17 @@ class PcmStreamQueue {
       const buffer = ctx.createBuffer(1, samples.length, this.sampleRate);
       buffer.copyToChannel(samples, 0);
       const source = ctx.createBufferSource();
+      const gain = ctx.createGain();
+      gain.gain.value = PCM_PLAYBACK_GAIN;
       source.buffer = buffer;
-      source.connect(ctx.destination);
+      source.connect(gain);
+      gain.connect(ctx.destination);
       const startAt = Math.max(this.nextStartTime, ctx.currentTime + 0.02);
       this.nextStartTime = startAt + buffer.duration;
       this.pendingSources += 1;
       source.onended = () => {
+        source.disconnect();
+        gain.disconnect();
         this.pendingSources = Math.max(0, this.pendingSources - 1);
         this.checkDone();
       };

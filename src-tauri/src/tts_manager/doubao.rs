@@ -121,6 +121,7 @@ struct DoubaoPromptOptions {
     emotion_scale: Option<u8>,
     speech_rate: Option<i32>,
     loudness_rate: Option<i32>,
+    pitch: Option<i32>,
     enable_subtitle: Option<bool>,
     additions: Option<serde_json::Map<String, serde_json::Value>>,
 }
@@ -175,6 +176,9 @@ impl DoubaoPromptOptions {
         if let Some(loudness_rate) = value.get("loudnessRate").and_then(|v| v.as_i64()) {
             options.loudness_rate = Some((loudness_rate as i32).clamp(-50, 100));
         }
+        if let Some(pitch) = value.get("pitch").and_then(|v| v.as_i64()) {
+            options.pitch = Some((pitch as i32).clamp(-12, 12));
+        }
         if let Some(enable_subtitle) = value.get("enableSubtitle").and_then(|v| v.as_bool()) {
             options.enable_subtitle = Some(enable_subtitle);
         }
@@ -216,6 +220,17 @@ impl DoubaoPromptOptions {
         if let Some(extra) = value.get("additions").and_then(|v| v.as_object()) {
             for (key, value) in extra {
                 additions.insert(key.clone(), value.clone());
+            }
+        }
+        if let Some(pitch) = options.pitch {
+            let post_process = additions
+                .entry("post_process".to_string())
+                .or_insert_with(|| serde_json::Value::Object(serde_json::Map::new()));
+            if !post_process.is_object() {
+                *post_process = serde_json::Value::Object(serde_json::Map::new());
+            }
+            if let Some(object) = post_process.as_object_mut() {
+                object.insert("pitch".to_string(), serde_json::Value::from(pitch));
             }
         }
         if !additions.is_empty() {

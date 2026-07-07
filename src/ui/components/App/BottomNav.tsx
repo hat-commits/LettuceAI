@@ -1,4 +1,4 @@
-import { MessageCircle, Plus, Library, Users, Compass } from "lucide-react";
+import { MessageCircle, BadgePlus, BookOpen, Users, Compass } from "lucide-react";
 import { useLocation } from "react-router-dom";
 
 import { TabItem } from "./NavItem";
@@ -65,10 +65,12 @@ export function BottomNav({ onCreateClick }: { onCreateClick: () => void }) {
         <button
           onClick={handleCreateClick}
           data-tour-id="nav-create"
-          className="flex flex-1 h-12 items-center justify-center rounded-xl border border-fg/15 bg-fg/10 text-fg shadow-[0_8px_20px_rgba(0,0,0,0.25)] transition hover:border-fg/25 hover:bg-fg/20"
+          className="flex flex-1 h-12 items-center justify-center rounded-full text-fg/80 transition hover:text-fg active:scale-95"
           aria-label={t("common.bottomNav.create")}
         >
-          <Plus size={20} />
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-fg/8 shadow-[0_0_24px_rgba(255,255,255,0.18)]">
+            <BadgePlus size={23} strokeWidth={2.2} />
+          </span>
         </button>
 
         <TabItem
@@ -82,7 +84,7 @@ export function BottomNav({ onCreateClick }: { onCreateClick: () => void }) {
 
         <TabItem
           to="/library"
-          icon={Library}
+          icon={BookOpen}
           label={t("common.bottomNav.library")}
           active={pathname.startsWith("/library")}
           className="flex-1 h-12 text-sm"

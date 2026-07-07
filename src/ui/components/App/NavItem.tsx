@@ -25,19 +25,20 @@ export function TabItem({
       className={`relative block ${className}`}
     >
       <motion.div
-        className={`relative flex h-full w-full items-center justify-center rounded-2xl font-medium transition ${
-          active ? "text-fg" : "text-fg/40 hover:text-fg"
+        className={`relative flex h-full w-full items-center justify-center rounded-full font-medium transition ${
+          active ? "text-fg" : "text-fg/38 hover:text-fg/80"
         }`}
         whileTap={{ scale: 0.95 }}
       >
         {active && (
           <motion.div
-            className="absolute inset-0 rounded-2xl border border-fg/15 bg-fg/10"
-            layoutId="activeTab"
-            transition={{ type: "spring", stiffness: 320, damping: 28 }}
+            className="absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-fg/8 shadow-[0_0_24px_rgba(255,255,255,0.22)]"
+            initial={{ opacity: 0, scale: 0.84 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.16, ease: "easeOut" }}
           />
         )}
-        <Icon size={22} className="relative z-10" />
+        <Icon size={22} strokeWidth={active ? 2.45 : 2.2} className="relative z-10" />
         <span className="sr-only">{label}</span>
       </motion.div>
     </Link>

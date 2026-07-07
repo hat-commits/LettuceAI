@@ -41,8 +41,9 @@ use crate::chat_manager::turn_builder::{
     swapped_prompt_entities,
 };
 use crate::chat_manager::types::{
-    ChatCompletionArgs, ChatTurnResult, ImageAttachment, StoredMessage,
+    Character, ChatCompletionArgs, ChatTurnResult, ImageAttachment, Session, StoredMessage,
 };
+use crate::storage_manager::sessions::session_update_companion_state_internal;
 use crate::usage::tracking::UsageOperationType;
 use crate::utils::{
     emit_debug, emit_error_event, emit_info, log_error, log_info, log_warn, now_millis,
@@ -820,24 +821,7 @@ impl CompletionFlow {
             model_id: Some(selected_model.id.clone()),
         };
 
-        if companion::update_state_for_assistant_message(
-            &app,
-            &mut session,
-            &character,
-            &assistant_message.content,
-            assistant_created_at,
-        )
-        .await
-        {
-            log_info(
-                &app,
-                "companion",
-                format!(
-                    "updated companion state from assistant message for session={}",
-                    session.id
-                ),
-            );
-        }
+        let companion_update_base_session = companion_mode_enabled.then(|| session.clone());
 
         session.messages.push(assistant_message.clone());
         session.updated_at = now_millis()?;
@@ -870,6 +854,16 @@ impl CompletionFlow {
                 "updatedAt": session.updated_at,
             }),
         );
+
+        if let Some(base_session) = companion_update_base_session {
+            spawn_assistant_companion_update(
+                app.clone(),
+                base_session,
+                character.clone(),
+                assistant_message.content.clone(),
+                assistant_created_at,
+            );
+        }
 
         record_usage_if_available(
             &context,
@@ -904,4 +898,47 @@ impl CompletionFlow {
             usage,
         })
     }
+}
+
+fn spawn_assistant_companion_update(
+    app: AppHandle,
+    mut base_session: Session,
+    character: Character,
+    assistant_content: String,
+    assistant_created_at: u64,
+) {
+    let session_id = base_session.id.clone();
+    tauri::async_runtime::spawn(async move {
+        if !companion::update_state_for_assistant_message(
+            &app,
+            &mut base_session,
+            &character,
+            &assistant_content,
+            assistant_created_at,
+        )
+        .await
+        {
+            return;
+        }
+
+        let companion_state = base_session.companion_state.clone();
+        match session_update_companion_state_internal(&app, &session_id, companion_state) {
+            Ok(()) => log_info(
+                &app,
+                "companion",
+                format!(
+                    "updated companion state from assistant message for session={}",
+                    session_id
+                ),
+            ),
+            Err(err) => log_warn(
+                &app,
+                "companion",
+                format!(
+                    "failed to persist assistant companion state for session={}: {}",
+                    session_id, err
+                ),
+            ),
+        }
+    });
 }

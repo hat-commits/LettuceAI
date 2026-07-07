@@ -76,21 +76,15 @@ export async function getMissingModelRequirements(
   policy: ModelRequirementPolicy,
 ): Promise<ModelRequirement[]> {
   const requireEmbedding = policy.requireEmbedding === true;
-  const requireCompanion = policy.requireCompanion === true;
-  if (!requireEmbedding && !requireCompanion) {
+  if (!requireEmbedding) {
     return [];
   }
 
   const info = await getEmbeddingModelInfo();
   const missingKinds: ModelRequirementKind[] = [];
 
-  if ((requireEmbedding || requireCompanion) && !info.installed) {
+  if (!info.installed) {
     missingKinds.push("embedding");
-  }
-  if (requireCompanion) {
-    if (!info.companionEmotionInstalled) missingKinds.push("emotion");
-    if (!info.companionNerInstalled) missingKinds.push("ner");
-    if (!info.companionRouterInstalled) missingKinds.push("router");
   }
 
   return missingKinds.map(describeRequirement);

@@ -1546,6 +1546,59 @@ pub fn session_upsert_meta_internal(
     upsert_session_meta_value(app, &value)
 }
 
+pub fn session_update_companion_state_internal(
+    app: &tauri::AppHandle,
+    session_id: &str,
+    companion_state: Option<JsonValue>,
+) -> Result<(), String> {
+    let conn = open_db(app)?;
+    let mut next_state = companion_state;
+
+    if let Some(state_obj) = next_state.as_mut().and_then(|value| value.as_object_mut()) {
+        let persisted: Option<String> = conn
+            .query_row(
+                "SELECT companion_state FROM sessions WHERE id = ?",
+                params![session_id],
+                |row| row.get::<_, Option<String>>(0),
+            )
+            .optional()
+            .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?
+            .flatten();
+
+        if let Some(prefs) = persisted
+            .as_deref()
+            .and_then(|raw| serde_json::from_str::<JsonValue>(raw).ok())
+            .and_then(|value| value.get("preferences").cloned())
+        {
+            state_obj.insert("preferences".to_string(), prefs);
+        }
+    }
+
+    let companion_state_json = next_state
+        .as_ref()
+        .map(serde_json::to_string)
+        .transpose()
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+    let updated_at = now_ms();
+
+    let changed = conn
+        .execute(
+            "UPDATE sessions SET companion_state = ?, updated_at = ? WHERE id = ?",
+            params![companion_state_json, updated_at, session_id],
+        )
+        .map_err(|e| crate::utils::err_to_string(module_path!(), line!(), e))?;
+
+    if changed == 0 {
+        return Err(crate::utils::err_msg(
+            module_path!(),
+            line!(),
+            format!("session {} not found", session_id),
+        ));
+    }
+
+    Ok(())
+}
+
 pub fn messages_upsert_batch_internal(
     app: &tauri::AppHandle,
     session_id: &str,

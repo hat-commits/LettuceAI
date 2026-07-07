@@ -371,10 +371,6 @@ pub fn get_embedding_model_info(app: AppHandle) -> Result<EmbeddingModelInfo, St
     };
 
     let detected = detect_model_version(&app)?;
-    let companions_complete = installed.has_companion_emotion
-        && installed.has_companion_ner
-        && installed.has_companion_router;
-
     Ok(match detected {
         Some(version) => EmbeddingModelInfo {
             installed: true,
@@ -386,7 +382,7 @@ pub fn get_embedding_model_info(app: AppHandle) -> Result<EmbeddingModelInfo, St
             companion_emotion_installed: installed.has_companion_emotion,
             companion_ner_installed: installed.has_companion_ner,
             companion_router_installed: installed.has_companion_router,
-            install_bundle_complete: companions_complete,
+            install_bundle_complete: true,
         },
         None => EmbeddingModelInfo {
             installed: false,

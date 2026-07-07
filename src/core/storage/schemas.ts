@@ -3186,6 +3186,13 @@ export const CharacterVoiceConfigSchema = z.object({
   voiceId: z.string().optional(),
   modelId: z.string().optional(),
   voiceName: z.string().optional(),
+  doubaoVoiceSettings: z
+    .object({
+      pitch: z.number().int().min(-12).max(12).default(0),
+      speechRate: z.number().int().min(-50).max(100).default(0),
+      loudnessRate: z.number().int().min(-50).max(100).default(0),
+    })
+    .optional(),
 });
 export type CharacterVoiceConfig = z.infer<typeof CharacterVoiceConfigSchema>;
 
