@@ -56,7 +56,7 @@ impl ProviderAdapter for NanoGPTAdapter {
         reasoning_effort: Option<String>,
         reasoning_budget: Option<u32>,
     ) -> Value {
-        DeepSeekAdapter.body(
+        let mut value = DeepSeekAdapter.body(
             model_name,
             messages_for_api,
             system_prompt,
@@ -72,6 +72,10 @@ impl ProviderAdapter for NanoGPTAdapter {
             reasoning_enabled,
             reasoning_effort,
             reasoning_budget,
-        )
+        );
+        if let Some(map) = value.as_object_mut() {
+            map.remove("thinking");
+        }
+        value
     }
 }

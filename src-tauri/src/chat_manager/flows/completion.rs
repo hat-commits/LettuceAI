@@ -273,6 +273,7 @@ impl CompletionFlow {
 
             select_relevant_memories(
                 &app,
+                settings,
                 &mut session,
                 &search_query,
                 dynamic_retrieval_limit(settings),

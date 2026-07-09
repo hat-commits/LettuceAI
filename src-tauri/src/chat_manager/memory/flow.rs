@@ -51,7 +51,7 @@ use crate::chat_manager::service::{record_usage_if_available, require_api_key, C
 use crate::chat_manager::storage::save_session;
 use crate::chat_manager::temporal::{
     companion_effective_now, companion_time_awareness_enabled, detect_temporal_query_range,
-    memory_matches_temporal_range,
+    memory_matches_temporal_range, TemporalRange,
 };
 use crate::chat_manager::thinking::normalize_thinking_content;
 use crate::chat_manager::tooling::{
@@ -1367,8 +1367,282 @@ fn lexical_anchor_boost(query: &str, memory_text: &str) -> f32 {
     (token_overlap * 0.2) + sequence_boost
 }
 
+fn likely_temporal_query(query: &str) -> bool {
+    let normalized = query.trim();
+    if normalized.is_empty() {
+        return false;
+    }
+
+    let fixed_temporal_phrases = [
+        "大前天",
+        "前天",
+        "昨天",
+        "昨日",
+        "今天",
+        "今日",
+        "今晚",
+        "上上周",
+        "上上星期",
+        "上上礼拜",
+        "上周",
+        "上星期",
+        "上礼拜",
+        "这周",
+        "本周",
+        "这个星期",
+        "这星期",
+        "星期",
+        "这个礼拜",
+        "这礼拜",
+        "礼拜",
+        "上上个月",
+        "上上月",
+        "上个月",
+        "上月",
+        "这个月",
+        "本月",
+        "这月",
+        "前年",
+        "去年",
+        "今年",
+        "年初",
+        "年中",
+        "年底",
+        "最近",
+        "近来",
+        "近期",
+        "过去",
+        "过去的",
+        "之前",
+        "之后",
+        "前后",
+        "当时",
+        "那天",
+        "那时候",
+        "那会儿",
+        "上次",
+        "这次",
+        "春节",
+        "假期",
+    ];
+    if fixed_temporal_phrases
+        .iter()
+        .any(|needle| normalized.contains(needle))
+    {
+        return true;
+    }
+
+    let has_time_unit = ["天", "日", "周", "星期", "礼拜", "月", "年"]
+        .iter()
+        .any(|unit| normalized.contains(unit));
+    if !has_time_unit {
+        return false;
+    }
+
+    ["前", "近", "最近", "过去", "过去的", "这", "上", "本"]
+        .iter()
+        .any(|anchor| normalized.contains(anchor))
+}
+
+#[cfg(test)]
+mod temporal_query_gate_tests {
+    use super::likely_temporal_query;
+
+    #[test]
+    fn recognizes_fixed_zh_temporal_phrases() {
+        assert!(likely_temporal_query("上上个月发生了什么"));
+        assert!(likely_temporal_query("昨日我们聊过什么"));
+        assert!(likely_temporal_query("这个礼拜有什么安排"));
+    }
+
+    #[test]
+    fn recognizes_relative_zh_temporal_units() {
+        assert!(likely_temporal_query("三天前我们说了什么"));
+        assert!(likely_temporal_query("近两周有什么重要记忆"));
+        assert!(likely_temporal_query("过去3个月的事情"));
+    }
+
+    #[test]
+    fn ignores_non_temporal_queries() {
+        assert!(!likely_temporal_query("帮我回忆钥匙藏在哪里"));
+    }
+}
+
+fn parse_llm_temporal_range(raw: &str) -> Option<TemporalRange> {
+    let trimmed = normalize_thinking_content(Some(raw), None)
+        .content
+        .trim()
+        .trim_matches('`')
+        .to_string();
+    let start = trimmed.find('{')?;
+    let end = trimmed.rfind('}')?;
+    let value: Value = serde_json::from_str(&trimmed[start..=end]).ok()?;
+    if !value
+        .get("hasRange")
+        .and_then(Value::as_bool)
+        .unwrap_or(false)
+    {
+        return None;
+    }
+    let confidence = value
+        .get("confidence")
+        .and_then(Value::as_f64)
+        .unwrap_or(0.0);
+    if confidence < 0.65 {
+        return None;
+    }
+    let start_ms = value.get("startMs").and_then(Value::as_u64)?;
+    let end_ms = value.get("endMs").and_then(Value::as_u64)?;
+    (end_ms > start_ms).then_some(TemporalRange { start_ms, end_ms })
+}
+
+async fn infer_temporal_query_range_with_llm(
+    app: &AppHandle,
+    settings: &Settings,
+    query: &str,
+    reference_ms: u64,
+) -> Option<TemporalRange> {
+    if !likely_temporal_query(query) {
+        return None;
+    }
+
+    let model_id = match resolve_dynamic_memory_summarisation_model_id(app, settings, None) {
+        Ok(id) => id,
+        Err(err) => {
+            log_warn(
+                app,
+                "memory_retrieval",
+                format!("temporal LLM fallback skipped: {}", err),
+            );
+            return None;
+        }
+    };
+    let Some((model, credential)) = find_model_with_credential(settings, &model_id) else {
+        log_warn(
+            app,
+            "memory_retrieval",
+            "temporal LLM fallback skipped: model unavailable",
+        );
+        return None;
+    };
+    let api_key = match require_api_key(app, credential, "temporal_memory_query") {
+        Ok(key) => key,
+        Err(err) => {
+            log_warn(
+                app,
+                "memory_retrieval",
+                format!("temporal LLM fallback skipped: {}", err),
+            );
+            return None;
+        }
+    };
+
+    let reference = crate::chat_manager::temporal::time_placeholder_values(reference_ms)
+        .into_iter()
+        .find(|(key, _)| *key == "{{datetime_iso}}")
+        .map(|(_, value)| value)
+        .unwrap_or_else(|| reference_ms.to_string());
+    let system_role = request_builder::system_role_for(credential);
+    let mut messages = Vec::new();
+    crate::chat_manager::messages::push_system_message(
+        &mut messages,
+        &system_role,
+        Some(
+            "You parse temporal references for memory retrieval. Return only compact JSON. Do not reason, explain, or use markdown. Schema: {\"hasRange\":true|false,\"startMs\":0,\"endMs\":0,\"confidence\":0.0}. Use millisecond Unix timestamps. If the query does not request a time range, set hasRange false."
+                .to_string(),
+        ),
+    );
+    messages.push(json!({
+        "role": "user",
+        "content": format!(
+            "Current local time: {}\nCurrent timestamp ms: {}\nQuery:\n{}",
+            reference, reference_ms, query
+        ),
+    }));
+
+    let mut extra_body_fields = HashMap::new();
+    extra_body_fields.insert("enable_thinking".to_string(), json!(false));
+    extra_body_fields.insert(
+        "chat_template_kwargs".to_string(),
+        json!({ "enable_thinking": false }),
+    );
+
+    let built = request_builder::build_chat_request(
+        credential,
+        &api_key,
+        &model.name,
+        &messages,
+        None,
+        Some(0.0),
+        Some(1.0),
+        160,
+        None,
+        false,
+        Some(format!("temporal-memory-query-{}", Uuid::new_v4())),
+        None,
+        None,
+        None,
+        None,
+        false,
+        None,
+        None,
+        false,
+        Some(extra_body_fields),
+    );
+
+    let response = match api_request(
+        app.clone(),
+        ApiRequest {
+            url: built.url,
+            method: Some("POST".into()),
+            headers: Some(built.headers),
+            query: None,
+            body: Some(built.body),
+            timeout_ms: Some(12_000),
+            stream: Some(false),
+            request_id: built.request_id,
+            provider_id: Some(credential.provider_id.clone()),
+        },
+    )
+    .await
+    {
+        Ok(response) => response,
+        Err(err) => {
+            log_warn(
+                app,
+                "memory_retrieval",
+                format!("temporal LLM fallback failed: {}", err),
+            );
+            return None;
+        }
+    };
+
+    if !response.ok {
+        let fallback = format!("provider returned status {}", response.status);
+        let err = extract_error_message(response.data()).unwrap_or(fallback);
+        log_warn(
+            app,
+            "memory_retrieval",
+            format!("temporal LLM fallback failed: {}", err),
+        );
+        return None;
+    }
+
+    let text = extract_text(response.data(), Some(&credential.provider_id))?;
+    let range = parse_llm_temporal_range(&text);
+    if range.is_some() {
+        log_info(
+            app,
+            "memory_retrieval",
+            "temporal query range inferred by LLM fallback",
+        );
+    }
+    range
+}
+
 pub(crate) async fn select_relevant_memories(
     app: &AppHandle,
+    settings: &Settings,
     session: &mut Session,
     query: &str,
     limit: usize,
@@ -1381,12 +1655,16 @@ pub(crate) async fn select_relevant_memories(
     }
 
     let reference_ms = companion_effective_now(session);
-    let temporal_range =
-        if temporal_query_features_enabled && companion_time_awareness_enabled(session) {
-            detect_temporal_query_range(query, reference_ms)
-        } else {
-            None
-        };
+    let temporal_range = if temporal_query_features_enabled
+        && companion_time_awareness_enabled(session)
+    {
+        match detect_temporal_query_range(query, reference_ms) {
+            Some(range) => Some(range),
+            None => infer_temporal_query_range_with_llm(app, settings, query, reference_ms).await,
+        }
+    } else {
+        None
+    };
     let temporal_query_active = temporal_range.is_some();
     let effective_min_similarity = if temporal_query_active {
         -1.0

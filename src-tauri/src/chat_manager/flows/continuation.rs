@@ -169,6 +169,7 @@ impl ContinueFlow {
             );
             select_relevant_memories(
                 &app,
+                &context.settings,
                 &mut session,
                 &search_query,
                 dynamic_retrieval_limit(&context.settings),

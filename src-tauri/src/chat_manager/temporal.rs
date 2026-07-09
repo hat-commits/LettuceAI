@@ -94,6 +94,22 @@ fn weekday_ago_regex() -> &'static Regex {
     })
 }
 
+fn zh_ago_regex() -> &'static Regex {
+    static REGEX: OnceLock<Regex> = OnceLock::new();
+    REGEX.get_or_init(|| {
+        Regex::new(r"(?P<num>\d+|[一二两三四五六七八九十]+)\s*个?\s*(?P<unit>天|日|周|星期|礼拜|月|年)\s*前")
+            .expect("valid zh ago regex")
+    })
+}
+
+fn zh_recent_regex() -> &'static Regex {
+    static REGEX: OnceLock<Regex> = OnceLock::new();
+    REGEX.get_or_init(|| {
+        Regex::new(r"(?:最近|近|过去|过去的|这)\s*(?P<num>\d+|[一二两三四五六七八九十]+)\s*个?\s*(?P<unit>天|日|周|星期|礼拜|月|年)")
+            .expect("valid zh recent regex")
+    })
+}
+
 fn parse_count(raw: &str) -> Option<i64> {
     match raw {
         "one" => Some(1),
@@ -110,6 +126,67 @@ fn parse_count(raw: &str) -> Option<i64> {
         "twelve" => Some(12),
         _ => raw.parse::<i64>().ok(),
     }
+}
+
+fn parse_zh_count(raw: &str) -> Option<i64> {
+    if let Ok(value) = raw.parse::<i64>() {
+        return Some(value);
+    }
+    match raw {
+        "一" => Some(1),
+        "二" | "两" => Some(2),
+        "三" => Some(3),
+        "四" => Some(4),
+        "五" => Some(5),
+        "六" => Some(6),
+        "七" => Some(7),
+        "八" => Some(8),
+        "九" => Some(9),
+        "十" => Some(10),
+        value if value.starts_with('十') => parse_zh_count(&value[3..]).map(|v| 10 + v),
+        value if value.ends_with('十') => {
+            parse_zh_count(&value[..value.len() - 3]).map(|v| v * 10)
+        }
+        value if value.contains('十') => {
+            let mut parts = value.splitn(2, '十');
+            let tens = parts.next().and_then(parse_zh_count).unwrap_or(1);
+            let ones = parts
+                .next()
+                .filter(|s| !s.is_empty())
+                .and_then(parse_zh_count)
+                .unwrap_or(0);
+            Some(tens * 10 + ones)
+        }
+        _ => None,
+    }
+}
+
+fn month_range(today: NaiveDate, months_ago: i32) -> Option<TemporalRange> {
+    let mut year = today.year();
+    let mut month = today.month() as i32 - months_ago;
+    while month <= 0 {
+        month += 12;
+        year -= 1;
+    }
+    while month > 12 {
+        month -= 12;
+        year += 1;
+    }
+    let start = NaiveDate::from_ymd_opt(year, month as u32, 1)?;
+    let end = if month == 12 {
+        NaiveDate::from_ymd_opt(year + 1, 1, 1)?
+    } else {
+        NaiveDate::from_ymd_opt(year, month as u32 + 1, 1)?
+    };
+    Some(range_from_local_dates(start, end))
+}
+
+fn year_range(today: NaiveDate, years_ago: i32) -> Option<TemporalRange> {
+    let year = today.year() - years_ago;
+    Some(range_from_local_dates(
+        NaiveDate::from_ymd_opt(year, 1, 1)?,
+        NaiveDate::from_ymd_opt(year + 1, 1, 1)?,
+    ))
 }
 
 fn weekday_number(name: &str) -> Option<u32> {
@@ -368,6 +445,105 @@ pub fn detect_temporal_query_range(query: &str, reference_ms: u64) -> Option<Tem
     let today = now.date_naive();
     let tomorrow = today + Duration::days(1);
 
+    if normalized.contains("大前天") {
+        let start = today - Duration::days(3);
+        return Some(range_from_local_dates(start, start + Duration::days(1)));
+    }
+    if normalized.contains("前天") {
+        let start = today - Duration::days(2);
+        return Some(range_from_local_dates(start, start + Duration::days(1)));
+    }
+    if normalized.contains("昨天") || normalized.contains("昨日") {
+        let start = today - Duration::days(1);
+        return Some(range_from_local_dates(start, today));
+    }
+    if normalized.contains("今天") || normalized.contains("今日") || normalized.contains("今晚")
+    {
+        return Some(range_from_local_dates(today, tomorrow));
+    }
+    if normalized.contains("上上周")
+        || normalized.contains("上上星期")
+        || normalized.contains("上上礼拜")
+    {
+        let start_of_week = today - Duration::days(today.weekday().num_days_from_monday() as i64);
+        return Some(range_from_local_dates(
+            start_of_week - Duration::days(14),
+            start_of_week - Duration::days(7),
+        ));
+    }
+    if normalized.contains("上周") || normalized.contains("上星期") || normalized.contains("上礼拜")
+    {
+        let start_of_week = today - Duration::days(today.weekday().num_days_from_monday() as i64);
+        return Some(range_from_local_dates(
+            start_of_week - Duration::days(7),
+            start_of_week,
+        ));
+    }
+    if normalized.contains("这周")
+        || normalized.contains("本周")
+        || normalized.contains("这个星期")
+        || normalized.contains("这星期")
+        || normalized.contains("这个礼拜")
+        || normalized.contains("这礼拜")
+    {
+        let start_of_week = today - Duration::days(today.weekday().num_days_from_monday() as i64);
+        return Some(range_from_local_dates(
+            start_of_week,
+            start_of_week + Duration::days(7),
+        ));
+    }
+    if normalized.contains("上上个月") || normalized.contains("上上月") {
+        return month_range(today, 2);
+    }
+    if normalized.contains("上个月") || normalized.contains("上月") {
+        return month_range(today, 1);
+    }
+    if normalized.contains("这个月") || normalized.contains("本月") || normalized.contains("这月")
+    {
+        return month_range(today, 0);
+    }
+    if normalized.contains("前年") {
+        return year_range(today, 2);
+    }
+    if normalized.contains("去年") {
+        return year_range(today, 1);
+    }
+    if normalized.contains("今年") {
+        return year_range(today, 0);
+    }
+
+    if let Some(captures) = zh_ago_regex().captures(&normalized) {
+        let amount = parse_zh_count(captures.name("num")?.as_str())?;
+        let unit = captures.name("unit")?.as_str();
+        return match unit {
+            "天" | "日" => {
+                let start = today - Duration::days(amount);
+                Some(range_from_local_dates(start, start + Duration::days(1)))
+            }
+            "周" | "星期" | "礼拜" => {
+                let start_of_this_week =
+                    today - Duration::days(today.weekday().num_days_from_monday() as i64);
+                let start = start_of_this_week - Duration::days(7 * amount);
+                Some(range_from_local_dates(start, start + Duration::days(7)))
+            }
+            "月" => month_range(today, amount as i32),
+            "年" => year_range(today, amount as i32),
+            _ => None,
+        };
+    }
+
+    if let Some(captures) = zh_recent_regex().captures(&normalized) {
+        let amount = parse_zh_count(captures.name("num")?.as_str())?;
+        let unit = captures.name("unit")?.as_str();
+        return match unit {
+            "天" | "日" => Some(rolling_range(now, Duration::days(amount))),
+            "周" | "星期" | "礼拜" => Some(rolling_range(now, Duration::days(7 * amount))),
+            "月" => Some(rolling_range(now, Duration::days(30 * amount))),
+            "年" => Some(rolling_range(now, Duration::days(365 * amount))),
+            _ => None,
+        };
+    }
+
     if normalized.contains("yesterday") {
         let start = today - Duration::days(1);
         return Some(range_from_local_dates(start, today));
@@ -540,4 +716,59 @@ fn days_in_month(year: i32, month: u32) -> u32 {
     };
     let next = NaiveDate::from_ymd_opt(next_year, next_month, 1).expect("valid next month");
     (next - Duration::days(1)).day()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn ms_utc(year: i32, month: u32, day: u32) -> u64 {
+        Utc.with_ymd_and_hms(year, month, day, 12, 0, 0)
+            .single()
+            .unwrap()
+            .timestamp_millis() as u64
+    }
+
+    fn local_date(ms: u64) -> NaiveDate {
+        local_datetime_from_ms(ms).date_naive()
+    }
+
+    #[test]
+    fn detects_zh_yesterday() {
+        let range = detect_temporal_query_range("昨天我们聊了什么", ms_utc(2026, 7, 9)).unwrap();
+        assert_eq!(
+            local_date(range.start_ms),
+            NaiveDate::from_ymd_opt(2026, 7, 8).unwrap()
+        );
+        assert_eq!(
+            local_date(range.end_ms),
+            NaiveDate::from_ymd_opt(2026, 7, 9).unwrap()
+        );
+    }
+
+    #[test]
+    fn detects_zh_month_before_last() {
+        let range = detect_temporal_query_range("上上个月发生了什么", ms_utc(2026, 7, 9)).unwrap();
+        assert_eq!(
+            local_date(range.start_ms),
+            NaiveDate::from_ymd_opt(2026, 5, 1).unwrap()
+        );
+        assert_eq!(
+            local_date(range.end_ms),
+            NaiveDate::from_ymd_opt(2026, 6, 1).unwrap()
+        );
+    }
+
+    #[test]
+    fn detects_zh_numeric_ago() {
+        let range = detect_temporal_query_range("三天前说过什么", ms_utc(2026, 7, 9)).unwrap();
+        assert_eq!(
+            local_date(range.start_ms),
+            NaiveDate::from_ymd_opt(2026, 7, 6).unwrap()
+        );
+        assert_eq!(
+            local_date(range.end_ms),
+            NaiveDate::from_ymd_opt(2026, 7, 7).unwrap()
+        );
+    }
 }

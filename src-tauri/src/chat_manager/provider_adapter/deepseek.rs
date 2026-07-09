@@ -108,6 +108,68 @@ impl ProviderAdapter for DeepSeekAdapter {
             tools,
             tool_choice,
         };
-        serde_json::to_value(body).unwrap_or_else(|_| json!({}))
+        let mut value = serde_json::to_value(body).unwrap_or_else(|_| json!({}));
+        if let Some(map) = value.as_object_mut() {
+            map.insert(
+                "thinking".to_string(),
+                json!({
+                    "type": if reasoning_enabled { "enabled" } else { "disabled" }
+                }),
+            );
+        }
+        value
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn deepseek_sends_enabled_thinking_state() {
+        let body = DeepSeekAdapter.body(
+            "deepseek-reasoner",
+            &vec![json!({"role": "user", "content": "hello"})],
+            None,
+            Some(0.7),
+            Some(0.9),
+            1024,
+            None,
+            true,
+            None,
+            None,
+            None,
+            None,
+            true,
+            Some("medium".to_string()),
+            Some(2048),
+        );
+
+        assert_eq!(body.pointer("/thinking/type"), Some(&json!("enabled")));
+        assert_eq!(body.get("reasoning_effort"), Some(&json!("medium")));
+    }
+
+    #[test]
+    fn deepseek_sends_disabled_thinking_state() {
+        let body = DeepSeekAdapter.body(
+            "deepseek-chat",
+            &vec![json!({"role": "user", "content": "hello"})],
+            None,
+            Some(0.7),
+            Some(0.9),
+            1024,
+            None,
+            true,
+            None,
+            None,
+            None,
+            None,
+            false,
+            Some("medium".to_string()),
+            Some(2048),
+        );
+
+        assert_eq!(body.pointer("/thinking/type"), Some(&json!("disabled")));
+        assert!(body.get("reasoning_effort").is_none());
     }
 }
