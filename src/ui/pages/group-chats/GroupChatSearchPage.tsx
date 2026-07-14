@@ -94,7 +94,7 @@ export function GroupChatSearchPage() {
     <div className={cn("flex h-screen flex-col", colors.surface.base, colors.text.primary)}>
       <div
         className={cn(
-          "flex items-center gap-3 border-b pl-3 pb-3 pt-[calc(env(safe-area-inset-top)+12px)] shrink-0 z-20",
+          "flex items-center gap-3 border-b pl-3 pb-3 pt-[calc(var(--lettuce-safe-area-inset-top)+12px)] shrink-0 z-20",
           "pr-3",
           colors.glass.strong,
         )}

@@ -1120,7 +1120,10 @@ pub fn get_imported_memory_job(
 
 #[tauri::command]
 pub async fn resume_imported_memory_job(app: AppHandle, session_id: String) -> Result<(), String> {
-    super::memory::flow::initialize_imported_chat_memory(app, session_id, None).await
+    // Keep resume behavior identical to the initial launch: validation errors
+    // are persisted on the job and reported through dynamic-memory events,
+    // rather than escaping as a WebView command rejection.
+    initialize_imported_chat_memory(app, session_id, None).await
 }
 
 #[tauri::command]

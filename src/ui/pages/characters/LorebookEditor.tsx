@@ -1642,7 +1642,7 @@ export function LorebookEditor() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-surface pt-[calc(72px+env(safe-area-inset-top))]">
+    <div className="flex h-full flex-col bg-surface pt-[calc(72px+var(--lettuce-safe-area-inset-top))]">
       <TopNav
         currentPath={location.pathname + location.search}
         titleOverride={pageTitle}

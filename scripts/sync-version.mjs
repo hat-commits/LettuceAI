@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Syncs version from package.json to tauri.conf.json, Cargo.toml, and utils.rs
+ * Syncs version from package.json to tauri.conf.json and Cargo.toml.
  * Run this before builds to ensure versions stay in sync.
  */
 
@@ -14,7 +14,6 @@ const rootDir = join(__dirname, '..');
 const packageJsonPath = join(rootDir, 'package.json');
 const tauriConfPath = join(rootDir, 'src-tauri', 'tauri.conf.json');
 const cargoTomlPath = join(rootDir, 'src-tauri', 'Cargo.toml');
-const utilsRsPath = join(rootDir, 'src-tauri', 'src', 'utils.rs');
 
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 const version = packageJson.version;
@@ -39,18 +38,6 @@ if (cargoMatch && cargoMatch[0] !== `version = "${version}"`) {
     writeFileSync(cargoTomlPath, cargoToml);
 } else {
     console.log(`  Cargo.toml: already ${version}`);
-}
-
-let utilsRs = readFileSync(utilsRsPath, 'utf-8');
-const utilsVersionRegex = /"[\d\.a-z-]+"/;
-const utilsMatch = utilsRs.match(utilsVersionRegex);
-const targetUtilsVersion = `"${version}"`;
-if (utilsMatch && utilsMatch[0] !== targetUtilsVersion) {
-    console.log(`  utils.rs: ${utilsMatch[0]} -> ${targetUtilsVersion}`);
-    utilsRs = utilsRs.replace(utilsVersionRegex, targetUtilsVersion);
-    writeFileSync(utilsRsPath, utilsRs);
-} else {
-    console.log(`  utils.rs: already ${targetUtilsVersion}`);
 }
 
 console.log('Version sync complete!');

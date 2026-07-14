@@ -401,7 +401,7 @@ export function GroupChatSettingsPage({
       {!isDrawer && (
         <header
           className={cn(
-            "z-20 shrink-0 border-b border-fg/10 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+12px)] shrink-0",
+            "z-20 shrink-0 border-b border-fg/10 px-4 pb-3 pt-[calc(var(--lettuce-safe-area-inset-top)+12px)] shrink-0",
             !backgroundImagePath ? "bg-surface" : "",
           )}
         >

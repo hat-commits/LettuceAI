@@ -348,7 +348,7 @@ export function SoulGenerationReviewOverlay({
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 260 }}
             className={cn(
-              "fixed inset-x-0 bottom-0 top-[max(48px,calc(72px+env(safe-area-inset-top)))] z-40 flex flex-col overflow-hidden border-t border-fg/15 bg-surface shadow-2xl",
+              "fixed inset-x-0 bottom-0 top-[max(48px,calc(72px+var(--lettuce-safe-area-inset-top)))] z-40 flex flex-col overflow-hidden border-t border-fg/15 bg-surface shadow-2xl",
               "rounded-t-2xl",
             )}
           >

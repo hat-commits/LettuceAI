@@ -1554,7 +1554,7 @@ function LogsPageInner() {
 
   if (isDesktop) {
     return (
-      <div className="flex h-[calc(100dvh-var(--titlebar-h,0px)-72px-env(safe-area-inset-top))] overflow-hidden">
+      <div className="flex h-[calc(100dvh-var(--titlebar-h,0px)-72px-var(--lettuce-safe-area-inset-top))] overflow-hidden">
         {/* Left sidebar */}
         <div className="w-48 shrink-0 flex flex-col border-r border-fg/10">
           <div className="shrink-0 px-3 pt-3 pb-1 flex items-center justify-between">
@@ -1589,7 +1589,7 @@ function LogsPageInner() {
   const fileTabsRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="flex h-[calc(100dvh-var(--titlebar-h,0px)-72px-env(safe-area-inset-top))] flex-col overflow-hidden">
+    <div className="flex h-[calc(100dvh-var(--titlebar-h,0px)-72px-var(--lettuce-safe-area-inset-top))] flex-col overflow-hidden">
       {/* Header bar: file tabs + action buttons */}
       <div className="flex items-center gap-1 px-3 py-1.5 border-b border-fg/10 shrink-0 min-w-0">
         <div ref={fileTabsRef} className="flex-1 flex gap-1 overflow-x-auto scrollbar-hide min-w-0">

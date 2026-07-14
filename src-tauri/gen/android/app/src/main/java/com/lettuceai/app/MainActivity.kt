@@ -3,11 +3,21 @@ package com.lettuceai.app
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
+import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsAnimationCompat
+import androidx.core.view.WindowInsetsCompat
 
 class MainActivity : TauriActivity() {
+  private var lastImeInsetPx = -1
+  private var lastStatusBarInsetPx = -1
+  private var imeAnimationInProgress = false
+  private val windowInsetsBridge = WindowInsetsBridge()
+
   override fun onCreate(savedInstanceState: Bundle?) {
     if (BuildConfig.DEBUG) {
       WebView.setWebContentsDebuggingEnabled(true)
@@ -18,5 +28,98 @@ class MainActivity : TauriActivity() {
     )
     super.onCreate(savedInstanceState)
     startService(Intent(this, CrashMonitorService::class.java))
+  }
+
+  override fun onWebViewCreate(webView: WebView) {
+    super.onWebViewCreate(webView)
+    val rootView = window.decorView
+    webView.addJavascriptInterface(windowInsetsBridge, "LettuceAndroidWindowInsets")
+    ViewCompat.setOnApplyWindowInsetsListener(webView) { _, insets ->
+      dispatchWindowInsets(webView, insets, "apply")
+      insets
+    }
+    ViewCompat.setWindowInsetsAnimationCallback(
+      rootView,
+      object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_CONTINUE_ON_SUBTREE) {
+        override fun onPrepare(animation: WindowInsetsAnimationCompat) {
+          super.onPrepare(animation)
+          if (animation.typeMask and WindowInsetsCompat.Type.ime() != 0) {
+            imeAnimationInProgress = true
+            Log.i("LettuceInsets", "IME animation started")
+          }
+        }
+
+        override fun onProgress(
+          insets: WindowInsetsCompat,
+          runningAnimations: MutableList<WindowInsetsAnimationCompat>,
+        ): WindowInsetsCompat {
+          dispatchWindowInsets(webView, insets, "animation_progress")
+          return insets
+        }
+
+        override fun onEnd(animation: WindowInsetsAnimationCompat) {
+          super.onEnd(animation)
+          if (animation.typeMask and WindowInsetsCompat.Type.ime() == 0) return
+          imeAnimationInProgress = false
+          Log.i("LettuceInsets", "IME animation ended")
+          rootView.post {
+            ViewCompat.getRootWindowInsets(rootView)?.let { insets ->
+              dispatchWindowInsets(webView, insets, "animation_end")
+            }
+          }
+        }
+      },
+    )
+    rootView.post {
+      ViewCompat.requestApplyInsets(rootView)
+      ViewCompat.getRootWindowInsets(rootView)?.let { insets ->
+        dispatchWindowInsets(webView, insets, "root_initial")
+      }
+    }
+  }
+
+  private fun dispatchWindowInsets(
+    webView: WebView,
+    insets: WindowInsetsCompat,
+    source: String,
+  ) {
+    val imeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
+    val imeInsetPx = if (imeVisible) {
+      insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+    } else {
+      0
+    }
+    val statusBarInsetPx = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+    if (imeInsetPx == lastImeInsetPx && statusBarInsetPx == lastStatusBarInsetPx) return
+    lastImeInsetPx = imeInsetPx
+    lastStatusBarInsetPx = statusBarInsetPx
+    if (source != "animation_progress") {
+      Log.i(
+        "LettuceInsets",
+        "source=$source ime_visible=$imeVisible ime_bottom_px=$imeInsetPx status_top_px=$statusBarInsetPx",
+      )
+    }
+    windowInsetsBridge.update(imeInsetPx, statusBarInsetPx)
+    val isIntermediateImeLayout = source == "apply" && imeAnimationInProgress
+    if (isIntermediateImeLayout) return
+
+    webView.evaluateJavascript(
+      "(() => { const lettuceDensity = window.devicePixelRatio || 1; window.__lettuceWindowInsets = { imeBottomPx: $imeInsetPx, statusBarTopPx: $statusBarInsetPx, source: '$source' }; document.documentElement?.style.setProperty('--lettuce-safe-area-inset-top', String($statusBarInsetPx / lettuceDensity) + 'px'); document.documentElement?.style.setProperty('--lettuce-keyboard-inset', String($imeInsetPx / lettuceDensity) + 'px'); window.dispatchEvent(new CustomEvent('lettuce:window-insets', { detail: window.__lettuceWindowInsets })); })();",
+      null,
+    )
+  }
+
+  private class WindowInsetsBridge {
+    @Volatile private var imeBottomPx = 0
+    @Volatile private var statusBarTopPx = 0
+
+    fun update(imeBottomPx: Int, statusBarTopPx: Int) {
+      this.imeBottomPx = imeBottomPx
+      this.statusBarTopPx = statusBarTopPx
+    }
+
+    @JavascriptInterface
+    fun getSnapshotJson(): String =
+      "{\"imeBottomPx\":$imeBottomPx,\"statusBarTopPx\":$statusBarTopPx}"
   }
 }

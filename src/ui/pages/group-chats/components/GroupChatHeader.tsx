@@ -126,7 +126,7 @@ export function GroupChatHeader({
           : "bg-surface",
       )}
       style={{
-        paddingTop: "calc(env(safe-area-inset-top) + 12px)",
+        paddingTop: "calc(var(--lettuce-safe-area-inset-top) + 12px)",
         paddingBottom: "12px",
       }}
     >

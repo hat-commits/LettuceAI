@@ -1964,7 +1964,7 @@ function MobileEntryEditorPage({
       {isOpen && entry ? (
         <motion.div
           className="fixed inset-0 z-50 flex flex-col bg-surface lg:hidden"
-          style={{ paddingTop: "env(safe-area-inset-top)" }}
+          style={{ paddingTop: "var(--lettuce-safe-area-inset-top)" }}
           initial={{ x: "100%" }}
           animate={{ x: 0 }}
           exit={{ x: "100%" }}

@@ -822,6 +822,14 @@ export function getOpenRouterModelReasoningCapability(
  * Provider parameter support information
  * Documents which advanced parameters are supported by each LLM provider
  */
+type ProviderParameterSupportDefinition = {
+  providerId: string;
+  displayName: string;
+  reasoningSupport: ReasoningSupport;
+  defaultReasoningEnabled?: boolean;
+  supportedParameters: Record<string, boolean>;
+};
+
 export const PROVIDER_PARAMETER_SUPPORT = {
   automatic1111: {
     providerId: "automatic1111",
@@ -1420,7 +1428,8 @@ export const PROVIDER_PARAMETER_SUPPORT = {
   deepseek: {
     providerId: "deepseek",
     displayName: "DeepSeek",
-    reasoningSupport: "none" as ReasoningSupport,
+    reasoningSupport: "effort" as ReasoningSupport,
+    defaultReasoningEnabled: true,
     supportedParameters: {
       temperature: true,
       topP: true,
@@ -1429,8 +1438,8 @@ export const PROVIDER_PARAMETER_SUPPORT = {
       frequencyPenalty: true,
       presencePenalty: true,
       topK: false,
-      reasoningEnabled: false, // R1 auto-reasons, no control
-      reasoningEffort: false,
+      reasoningEnabled: true,
+      reasoningEffort: true,
       reasoningBudgetTokens: false,
       llamaGpuLayers: false,
       llamaThreads: false,
@@ -2287,10 +2296,11 @@ export const PROVIDER_PARAMETER_SUPPORT = {
       ollamaStop: false,
     },
   },
-} as const;
+} as const satisfies Record<string, ProviderParameterSupportDefinition>;
 
 export type ProviderId = keyof typeof PROVIDER_PARAMETER_SUPPORT;
-export type ProviderParameterSupport = (typeof PROVIDER_PARAMETER_SUPPORT)[ProviderId];
+export type ProviderParameterSupport = ProviderParameterSupportDefinition &
+  (typeof PROVIDER_PARAMETER_SUPPORT)[ProviderId];
 
 // resolve a provider id (incl. aliases) to its param-support entry
 export function resolveParameterSupport(providerId: string): ProviderParameterSupport | null {
@@ -2322,6 +2332,10 @@ export function getProviderReasoningSupport(providerId: string): ReasoningSuppor
 
   if (!provider) return "none";
   return provider.reasoningSupport;
+}
+
+export function getProviderDefaultReasoningEnabled(providerId: string): boolean | null {
+  return resolveParameterSupport(providerId)?.defaultReasoningEnabled ?? null;
 }
 
 /**

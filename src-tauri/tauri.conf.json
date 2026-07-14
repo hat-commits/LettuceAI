@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "菜包",
-  "version": "1.2.0",
+  "version": "1.2.2",
   "identifier": "com.lettuceai.app",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -25,7 +25,9 @@
       "csp": null,
       "assetProtocol": {
         "enable": true,
-        "scope": ["$APPDATA/**"]
+        "scope": [
+          "$APPDATA/**"
+        ]
       }
     }
   },
@@ -34,7 +36,9 @@
     "targets": "all",
     "fileAssociations": [
       {
-        "ext": ["uec"],
+        "ext": [
+          "uec"
+        ],
         "name": "Unified Entity Card",
         "description": "LettuceAI Unified Entity Card",
         "role": "Editor",
@@ -42,11 +46,15 @@
         "rank": "Owner",
         "exportedType": {
           "identifier": "com.lettuceai.uec",
-          "conformsTo": ["public.json"]
+          "conformsTo": [
+            "public.json"
+          ]
         }
       },
       {
-        "ext": ["usc"],
+        "ext": [
+          "usc"
+        ],
         "name": "Unified System Card",
         "description": "LettuceAI Unified System Card",
         "role": "Editor",
@@ -54,11 +62,15 @@
         "rank": "Owner",
         "exportedType": {
           "identifier": "com.lettuceai.usc",
-          "conformsTo": ["public.json"]
+          "conformsTo": [
+            "public.json"
+          ]
         }
       },
       {
-        "ext": ["lettuce"],
+        "ext": [
+          "lettuce"
+        ],
         "name": "LettuceAI Backup",
         "description": "LettuceAI encrypted backup",
         "role": "Editor",
@@ -66,7 +78,10 @@
         "rank": "Owner",
         "exportedType": {
           "identifier": "com.lettuceai.backup",
-          "conformsTo": ["public.zip-archive", "public.data"]
+          "conformsTo": [
+            "public.zip-archive",
+            "public.data"
+          ]
         }
       }
     ],

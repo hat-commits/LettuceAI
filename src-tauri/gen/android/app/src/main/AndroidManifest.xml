@@ -23,7 +23,7 @@
             android:launchMode="singleTask"
             android:label="菜包"
             android:name="com.lettuceai.app.MainActivity"
-            android:windowSoftInputMode="adjustResize|stateHidden"
+            android:windowSoftInputMode="adjustNothing|stateHidden"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

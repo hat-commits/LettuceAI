@@ -847,7 +847,7 @@ export function StandaloneLorebookEditor() {
         }}
         exporting={isExporting}
       />
-      <div className="flex h-full flex-col text-fg/80 overflow-hidden pb-6 pt-[calc(72px+env(safe-area-inset-top))]">
+      <div className="flex h-full flex-col text-fg/80 overflow-hidden pb-6 pt-[calc(72px+var(--lettuce-safe-area-inset-top))]">
         {/* Search */}
         {entries.length > 0 && (
           <div className="flex items-center gap-2 px-4 py-3">

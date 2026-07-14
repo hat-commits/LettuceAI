@@ -71,6 +71,7 @@ export function ChatPage() {
     processedMessages: number | null;
     totalMessages: number | null;
   } | null>(null);
+  const [importMemoryError, setImportMemoryError] = useState<string | null>(null);
   const [latestSessionByCharacter, setLatestSessionByCharacter] = useState<
     Record<string, { id: string; updatedAt: number; archived: boolean }>
   >(() => chatsPageCache?.latestSessionByCharacter ?? {});
@@ -265,10 +266,29 @@ export function ChatPage() {
   ) => {
     let importedSessionId: string | null = null;
     let unlistenProgress: UnlistenFn | null = null;
+    const terminalUnlisteners: UnlistenFn[] = [];
+    let backgroundTaskStarted = false;
+    let backgroundTaskFinished = false;
+    const finishBackgroundTask = () => {
+      if (backgroundTaskFinished) return;
+      backgroundTaskFinished = true;
+      unlistenProgress?.();
+      terminalUnlisteners.forEach((unlisten) => unlisten());
+      setImportMemoryProgress(null);
+      setImportMemoryError(null);
+      setImportingChatpkg(false);
+      if (picked.temporary) {
+        void storageBridge.jsonlDiscardUpload(picked.path);
+      }
+      if (importedSessionId) {
+        navigate(`/chat/${character.id}?sessionId=${encodeURIComponent(importedSessionId)}`);
+      }
+    };
     setPendingChatImport(null);
     setSelectedCharacter(null);
     setImportingChatpkg(true);
     setImportMemoryProgress(null);
+    setImportMemoryError(null);
     try {
       const result = await storageBridge.jsonlImport(picked.path, {
         targetCharacterId: character.id,
@@ -276,6 +296,7 @@ export function ChatPage() {
       importedSessionId = typeof result?.sessionId === "string" ? result.sessionId : null;
 
       if (initializeMemory && importedSessionId) {
+        backgroundTaskStarted = true;
         setImportMemoryProgress({
           sessionId: importedSessionId,
           step: null,
@@ -299,22 +320,62 @@ export function ChatPage() {
             totalMessages: typeof payload.totalMessages === "number" ? payload.totalMessages : null,
           });
         });
-        await storageBridge.initializeImportedChatMemory(importedSessionId, memoryWindowSize);
+        for (const eventName of [
+          "dynamic-memory:success",
+          "dynamic-memory:error",
+          "dynamic-memory:cancelled",
+        ]) {
+          const unlisten = await listen(eventName, (event: any) => {
+            if (event.payload?.sessionId !== importedSessionId) return;
+            if (eventName === "dynamic-memory:success") {
+              finishBackgroundTask();
+              return;
+            }
+            const error = String(event.payload?.error ?? "Memory extraction was interrupted");
+            console.error("Imported memory initialization failed:", error);
+            setImportMemoryError(error);
+            setImportingChatpkg(false);
+          });
+          terminalUnlisteners.push(unlisten);
+        }
+        void storageBridge.initializeImportedChatMemory(importedSessionId, memoryWindowSize).catch((error) => {
+          console.error("Failed to start imported memory initialization:", error);
+          setImportMemoryError(
+            typeof error === "string" ? error : t("chats.settings.failedImportChat"),
+          );
+          setImportingChatpkg(false);
+        });
       }
     } catch (err) {
       console.error("Failed to import chat:", err);
       alert(typeof err === "string" ? err : t("chats.settings.failedImportChat"));
     } finally {
-      if (unlistenProgress) unlistenProgress();
-      setImportMemoryProgress(null);
-      setImportingChatpkg(false);
-      if (picked.temporary) {
-        void storageBridge.jsonlDiscardUpload(picked.path);
-      }
-      if (importedSessionId) {
-        navigate(`/chat/${character.id}?sessionId=${encodeURIComponent(importedSessionId)}`);
+      if (!backgroundTaskStarted) {
+        unlistenProgress?.();
+        terminalUnlisteners.forEach((unlisten) => unlisten());
+        setImportMemoryProgress(null);
+        setImportMemoryError(null);
+        setImportingChatpkg(false);
+        if (picked.temporary) {
+          void storageBridge.jsonlDiscardUpload(picked.path);
+        }
+        if (importedSessionId) {
+          navigate(`/chat/${character.id}?sessionId=${encodeURIComponent(importedSessionId)}`);
+        }
       }
     }
+  };
+
+  const handleResumeImportedMemory = () => {
+    const sessionId = importMemoryProgress?.sessionId;
+    if (!sessionId) return;
+    setImportMemoryError(null);
+    setImportingChatpkg(true);
+    void storageBridge.resumeImportedMemoryJob(sessionId).catch((error) => {
+      console.error("Failed to resume imported memory initialization:", error);
+      setImportMemoryError(typeof error === "string" ? error : t("chats.settings.failedImportChat"));
+      setImportingChatpkg(false);
+    });
   };
 
   const openImportChatpkg = async (character: Character) => {
@@ -590,7 +651,12 @@ export function ChatPage() {
       >
         <div className="space-y-3">
           <div className="flex items-center gap-3">
-            <Loader2 className="h-5 w-5 animate-spin text-emerald-300" />
+            <Loader2
+              className={cn(
+                "h-5 w-5 text-emerald-300",
+                !importMemoryError && "animate-spin",
+              )}
+            />
             <div className="min-w-0">
               <div className="text-sm font-medium text-white">
                 {t("chats.settings.extractingImportedMemory")}
@@ -631,6 +697,24 @@ export function ChatPage() {
                 current: importMemoryProgress.step,
                 total: importMemoryProgress.totalSteps,
               })}
+            </div>
+          ) : null}
+          {importMemoryError ? (
+            <div className="space-y-3 rounded-lg border border-red-400/25 bg-red-400/10 p-3">
+              <div className="text-xs font-medium text-red-200">
+                {t("chats.settings.failedImportChat")}
+              </div>
+              <div className="max-h-28 overflow-y-auto whitespace-pre-wrap break-words text-xs leading-relaxed text-red-100/80">
+                {importMemoryError}
+              </div>
+              <button
+                type="button"
+                onClick={handleResumeImportedMemory}
+                disabled={importingChatpkg}
+                className="w-full rounded-lg bg-emerald-400 px-3 py-2 text-sm font-medium text-emerald-950 transition hover:bg-emerald-300 disabled:opacity-50"
+              >
+                {importingChatpkg ? t("common.labels.processing") : t("common.buttons.continue")}
+              </button>
             </div>
           ) : null}
         </div>

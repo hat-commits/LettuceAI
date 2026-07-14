@@ -132,7 +132,7 @@ export function WhatsNewDrawer({
             exit={{ x: "-100%" }}
             transition={{ type: "spring", damping: 32, stiffness: 320, mass: 0.8 }}
           >
-            <header className="shrink-0 border-b border-fg/8 px-5 pb-4 pt-[env(safe-area-inset-top)] sm:px-6">
+            <header className="shrink-0 border-b border-fg/8 px-5 pb-4 pt-[var(--lettuce-safe-area-inset-top)] sm:px-6">
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-accent/30 bg-accent/15">
                   <Sparkles className="h-4 w-4 text-accent" />

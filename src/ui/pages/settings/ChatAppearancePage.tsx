@@ -758,7 +758,7 @@ export function ChatAppearancePage() {
         {isMobileViewport && mobilePreviewOpen && (
           <motion.div
             className="fixed inset-x-0 bottom-0 top-[var(--titlebar-h,0px)] z-50 flex flex-col bg-surface"
-            style={{ paddingTop: "env(safe-area-inset-top)" }}
+            style={{ paddingTop: "var(--lettuce-safe-area-inset-top)" }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}

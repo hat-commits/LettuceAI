@@ -141,7 +141,6 @@ const SCROLL_THRESHOLD = 10; // pixels of movement to cancel long press
 const AUTOLOAD_TOP_THRESHOLD_PX = 120;
 const STICKY_BOTTOM_THRESHOLD_PX = 80;
 const MAX_AUDIO_CACHE_ENTRIES = 50;
-const MOBILE_KEYBOARD_THRESHOLD_PX = 120;
 
 function mergeFloat32Chunks(chunks: Float32Array[]) {
   const total = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
@@ -247,7 +246,7 @@ export function ChatConversationPage() {
   const [selectedImagePromptExpanded, setSelectedImagePromptExpanded] = useState(false);
   const [supportsImageInput, setSupportsImageInput] = useState(false);
   const [supportsAudioInput, setSupportsAudioInput] = useState(false);
-  const [keyboardInset, setKeyboardInset] = useState(0);
+  const [statusBarInset, setStatusBarInset] = useState(0);
   const audioCacheRef = useRef<{
     providers: AudioProvider[] | null;
     userVoices: UserVoice[] | null;
@@ -321,6 +320,7 @@ export function ChatConversationPage() {
   const [savingSessionBackground, setSavingSessionBackground] = useState(false);
   const [personas, setPersonas] = useState<Persona[]>([]);
   const isMobile = useMemo(() => getPlatform().type === "mobile", []);
+  const isAndroid = useMemo(() => getPlatform().os === "android", []);
   const [settingsDrawerOpen, setSettingsDrawerOpen] = useState(false);
   const footerTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const footerRecorderRef = useRef<FooterRecorderSession | null>(null);
@@ -2098,65 +2098,33 @@ export function ChatConversationPage() {
   }, [updateIsAtBottom]);
 
   useEffect(() => {
-    if (!isMobile) {
-      setKeyboardInset(0);
+    if (!isAndroid) {
+      document.documentElement.style.setProperty("--lettuce-keyboard-inset", "0px");
       return;
     }
 
-    const visualViewport = window.visualViewport;
-    let focusTimer: number | null = null;
-
-    const updateKeyboardInset = () => {
-      // A keyboard resize reduces the scroll container's clientHeight. Capture
-      // the user's intent before recalculating, otherwise a bottom-pinned chat
-      // is briefly mistaken for a manually scrolled-up chat.
-      const wasAtBottomBeforeResize = isAtBottomRef.current;
-      const baseHeight = window.innerHeight;
-      const viewportHeight = visualViewport?.height ?? baseHeight;
-      const viewportOffsetTop = visualViewport?.offsetTop ?? 0;
-      const rawInset = Math.max(0, baseHeight - viewportHeight - viewportOffsetTop);
-      const nextInset = rawInset > MOBILE_KEYBOARD_THRESHOLD_PX ? Math.round(rawInset) : 0;
-
-      setKeyboardInset((prev) => (prev === nextInset ? prev : nextInset));
-
-      window.requestAnimationFrame(() => {
-        updateIsAtBottom();
-        const activeElement = document.activeElement;
-        if (
-          activeElement instanceof HTMLTextAreaElement &&
-          (wasAtBottomBeforeResize || isAtBottomRef.current)
-        ) {
-          scrollToBottom("auto");
-        }
-      });
-    };
-
-    const handleFocusChange = () => {
-      updateKeyboardInset();
-      if (focusTimer !== null) {
-        window.clearTimeout(focusTimer);
+    const applyWindowInsets = (detail: { imeBottomPx?: unknown; statusBarTopPx?: unknown }) => {
+      const statusTopPx = detail?.statusBarTopPx;
+      if (typeof statusTopPx === "number" && Number.isFinite(statusTopPx)) {
+        setStatusBarInset(Math.max(0, Math.round(statusTopPx / window.devicePixelRatio)));
       }
-      focusTimer = window.setTimeout(updateKeyboardInset, 180);
     };
 
-    updateKeyboardInset();
-    visualViewport?.addEventListener("resize", updateKeyboardInset);
-    visualViewport?.addEventListener("scroll", updateKeyboardInset);
-    window.addEventListener("resize", updateKeyboardInset);
-    document.addEventListener("focusin", handleFocusChange);
-    document.addEventListener("focusout", handleFocusChange);
-
-    return () => {
-      if (focusTimer !== null) {
-        window.clearTimeout(focusTimer);
-      }
-      visualViewport?.removeEventListener("resize", updateKeyboardInset);
-      visualViewport?.removeEventListener("scroll", updateKeyboardInset);
-      window.removeEventListener("resize", updateKeyboardInset);
-      document.removeEventListener("focusin", handleFocusChange);
-      document.removeEventListener("focusout", handleFocusChange);
+    const handleWindowInsets = (event: Event) => {
+      applyWindowInsets(
+        (event as CustomEvent<{ imeBottomPx?: unknown; statusBarTopPx?: unknown }>).detail ?? {},
+      );
     };
-  }, [isMobile, scrollToBottom, updateIsAtBottom]);
+
+    window.addEventListener("lettuce:window-insets", handleWindowInsets);
+    const initialInsets = (window as Window & {
+      __lettuceWindowInsets?: { imeBottomPx?: unknown; statusBarTopPx?: unknown };
+    }).__lettuceWindowInsets;
+    if (initialInsets) {
+      applyWindowInsets(initialInsets);
+    }
+    return () => window.removeEventListener("lettuce:window-insets", handleWindowInsets);
+  }, [isAndroid, scrollToBottom]);
 
   const handleContextMenu = useCallback(
     (message: StoredMessage) => (event: React.MouseEvent<HTMLDivElement>) => {
@@ -2713,11 +2681,12 @@ export function ChatConversationPage() {
     return <EmptyState title={t("chats.characterNotFound")} />;
   }
 
-  const footerBottomOffset = `calc(env(safe-area-inset-bottom) + ${keyboardInset}px)`;
+  const footerBottomOffset = "env(safe-area-inset-bottom)";
+  const footerTransform = "translate3d(0, calc(var(--lettuce-keyboard-inset, 0px) * -1), 0)";
   const scrollButtonBottomOffset =
     footerHeight > 0
-      ? `${footerHeight + 12}px`
-      : `calc(env(safe-area-inset-bottom) + ${keyboardInset}px + 88px)`;
+      ? `calc(${footerHeight + 12}px + var(--lettuce-keyboard-inset, 0px))`
+      : "calc(env(safe-area-inset-bottom) + var(--lettuce-keyboard-inset, 0px) + 88px)";
 
   return (
     <div
@@ -2772,6 +2741,7 @@ export function ChatConversationPage() {
           hasBackgroundImage={!!backgroundImageData}
           headerOverlayClassName={theme.headerOverlay}
           transparentHeader={chatAppearance.transparentHeader}
+          statusBarInset={statusBarInset}
           onSessionUpdate={handleSessionUpdate}
           onBeforeSettingsOpen={!isMobile ? captureFooterFocusForDrawer : undefined}
           onSettingsOpen={!isMobile ? () => setSettingsDrawerOpen(true) : undefined}
@@ -2815,6 +2785,7 @@ export function ChatConversationPage() {
           hasBackgroundImage={!!backgroundImageData}
           headerOverlayClassName={theme.headerOverlay}
           transparentHeader={chatAppearance.transparentHeader}
+          statusBarInset={statusBarInset}
           onSessionUpdate={handleSessionUpdate}
           onBeforeSettingsOpen={!isMobile ? captureFooterFocusForDrawer : undefined}
           onSettingsOpen={!isMobile ? () => setSettingsDrawerOpen(true) : undefined}
@@ -2866,6 +2837,9 @@ export function ChatConversationPage() {
           className={`${getChatColumnLayout(chatAppearance).className} ${chatAppearance.messageGap === "tight" ? "space-y-2" : chatAppearance.messageGap === "relaxed" ? "space-y-6" : "space-y-4"} px-3 pb-8 pt-4`}
           style={{
             ...getChatColumnLayout(chatAppearance).style,
+            paddingBottom: "32px",
+            transform: "translate3d(0, calc(var(--lettuce-keyboard-inset, 0px) * -1), 0)",
+            willChange: "transform",
             backgroundColor: backgroundImageData
               ? swapPlaces
                 ? isBackgroundLight
@@ -3065,7 +3039,11 @@ export function ChatConversationPage() {
       <div
         ref={footerRef}
         className="relative z-10"
-        style={{ paddingBottom: footerBottomOffset }}
+        style={{
+          paddingBottom: footerBottomOffset,
+          transform: footerTransform,
+          willChange: "transform",
+        }}
       >
         <ChatFooter
           inlinePanel={footerInlinePanel}
@@ -3130,6 +3108,8 @@ export function ChatConversationPage() {
         className={`relative z-10 ${applyFooterColumnClass ? getChatColumnLayout(chatAppearance).className : ""}`}
         style={{
           paddingBottom: footerBottomOffset,
+          transform: footerTransform,
+          willChange: "transform",
           ...(applyFooterColumnClass ? getChatColumnLayout(chatAppearance).style : {}),
         }}
       >

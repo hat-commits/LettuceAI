@@ -166,7 +166,7 @@ export function OnboardingPage() {
         className={cn(
           "fixed top-[var(--titlebar-h,0px)] left-0 right-0 z-30 flex items-center justify-between",
           "bg-[linear-gradient(180deg,rgba(5,5,5,0.7)_0%,rgba(5,5,5,0.4)_70%,rgba(5,5,5,0)_100%)]",
-          isDesktop ? "px-8 py-6 pb-10" : "px-4 py-4 pb-8 pt-[calc(env(safe-area-inset-top)+16px)]",
+          isDesktop ? "px-8 py-6 pb-10" : "px-4 py-4 pb-8 pt-[calc(var(--lettuce-safe-area-inset-top)+16px)]",
           isStandaloneStep && "hidden",
         )}
       >
@@ -202,7 +202,7 @@ export function OnboardingPage() {
           !isStandaloneStep &&
             (isDesktop
               ? "pt-[88px] pb-6"
-              : "pt-[calc(env(safe-area-inset-top)+92px)] px-4 pb-[calc(env(safe-area-inset-bottom)+16px)]"),
+              : "pt-[calc(var(--lettuce-safe-area-inset-top)+92px)] px-4 pb-[calc(env(safe-area-inset-bottom)+16px)]"),
         )}
       >
         {showRecommendations ? (

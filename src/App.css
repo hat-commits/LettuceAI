@@ -139,6 +139,7 @@
 }
 
 :root {
+  --lettuce-safe-area-inset-top: var(--lettuce-safe-area-inset-top);
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 24px;

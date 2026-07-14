@@ -235,7 +235,7 @@ export function ChatHistoryPage() {
       <header
         className={cn("z-20 shrink-0 border-b border-fg/10 bg-surface pl-4 pb-3", "pr-4")}
         style={{
-          paddingTop: "calc(env(safe-area-inset-top) + 12px)",
+          paddingTop: "calc(var(--lettuce-safe-area-inset-top) + 12px)",
         }}
       >
         <div className="flex items-center justify-between gap-3">

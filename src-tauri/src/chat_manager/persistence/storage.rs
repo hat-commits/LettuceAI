@@ -11,6 +11,7 @@ use crate::storage_manager::{
     },
     settings::{read_settings_typed, write_settings_typed},
 };
+use crate::utils::log_info;
 
 use crate::chat_manager::prompt_engine;
 use crate::chat_manager::types::{
@@ -362,6 +363,32 @@ pub fn save_session(app: &AppHandle, session: &Session) -> Result<(), String> {
             app,
             &session.id,
         )?;
+    save_session_metadata(app, session, owner.shared)
+}
+
+/// Persist the dynamic-memory state together with the session metadata that
+/// describes it. This is intentionally separate from [`save_session`]: chat
+/// flows often hold an older session snapshot and must never replace the
+/// canonical memory-embedding rows as a side effect of saving a message.
+pub fn save_session_memory_state(app: &AppHandle, session: &Session) -> Result<(), String> {
+    let owner =
+        crate::storage_manager::companion_shared_memory::resolve_effective_memory_owner_for_session_app(
+            app,
+            &session.id,
+        )?;
+    log_info(
+        app,
+        "dynamic_memory",
+        format!(
+            "persisting memory state: session_id={} owner_id={} owner_kind={} shared={} embeddings={} events={}",
+            session.id,
+            owner.owner_id,
+            owner.kind.as_str(),
+            owner.shared,
+            session.memory_embeddings.len(),
+            session.memory_tool_events.len(),
+        ),
+    );
     memory_embeddings::replace_all_app(
         app,
         &owner.owner_id,
@@ -369,9 +396,17 @@ pub fn save_session(app: &AppHandle, session: &Session) -> Result<(), String> {
         &session.memory_embeddings,
     )?;
 
+    save_session_metadata(app, session, owner.shared)
+}
+
+fn save_session_metadata(
+    app: &AppHandle,
+    session: &Session,
+    shared_memory: bool,
+) -> Result<(), String> {
     let mut meta = session.clone();
     meta.messages = Vec::new();
-    if !owner.shared {
+    if !shared_memory {
         meta.memory_embeddings = Vec::new();
     }
 

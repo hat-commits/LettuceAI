@@ -572,7 +572,7 @@ export function LorebookEntryGeneratorFlowPage() {
 
   if (!context) {
     return (
-      <div className="flex h-full flex-col bg-surface pt-[calc(72px+env(safe-area-inset-top))]">
+      <div className="flex h-full flex-col bg-surface pt-[calc(72px+var(--lettuce-safe-area-inset-top))]">
         <TopNav
           currentPath={location.pathname + location.search}
           titleOverride={t("lorebookGen.flow.pageTitle")}
@@ -590,7 +590,7 @@ export function LorebookEntryGeneratorFlowPage() {
     : t("lorebookGen.flow.pageTitle");
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-surface pt-[calc(72px+env(safe-area-inset-top))] pb-[env(safe-area-inset-bottom)]">
+    <div className="flex h-dvh flex-col overflow-hidden bg-surface pt-[calc(72px+var(--lettuce-safe-area-inset-top))] pb-[env(safe-area-inset-bottom)]">
       <TopNav
         currentPath={location.pathname + location.search}
         titleOverride={pageTitle}
@@ -1579,7 +1579,7 @@ function ReviewOverlay({
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 28, stiffness: 260 }}
-        className="absolute inset-x-0 bottom-0 top-[max(48px,calc(72px+env(safe-area-inset-top)))] z-40 flex flex-col overflow-hidden rounded-t-2xl border-t border-fg/15 bg-surface shadow-2xl"
+        className="absolute inset-x-0 bottom-0 top-[max(48px,calc(72px+var(--lettuce-safe-area-inset-top)))] z-40 flex flex-col overflow-hidden rounded-t-2xl border-t border-fg/15 bg-surface shadow-2xl"
       >
         <div className="flex items-center gap-2 border-b border-fg/10 px-4 py-3">
           <Sparkles className="h-4 w-4 text-accent" />

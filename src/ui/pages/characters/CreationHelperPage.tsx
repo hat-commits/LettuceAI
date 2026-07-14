@@ -1372,7 +1372,7 @@ export function CreationHelperPage() {
       />
 
       {/* Messages Container */}
-      <main className="flex-1 overflow-y-auto px-4 pt-[calc(72px+env(safe-area-inset-top))] pb-32">
+      <main className="flex-1 overflow-y-auto px-4 pt-[calc(72px+var(--lettuce-safe-area-inset-top))] pb-32">
         <div className="mx-auto max-w-2xl space-y-4 py-4">
           <div className="flex justify-center">
             <div className="rounded-full border border-fg/10 bg-fg/5 px-3 py-1 text-[10px] uppercase tracking-wider text-fg/50">

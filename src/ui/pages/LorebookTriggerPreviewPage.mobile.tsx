@@ -318,7 +318,7 @@ export function LorebookTriggerPreviewPageMobile() {
 
   if (!context || !lorebookId) {
     return (
-      <div className="flex h-full flex-col bg-surface pt-[calc(72px+env(safe-area-inset-top))] pb-[env(safe-area-inset-bottom)]">
+      <div className="flex h-full flex-col bg-surface pt-[calc(72px+var(--lettuce-safe-area-inset-top))] pb-[env(safe-area-inset-bottom)]">
         <TopNav
           currentPath={location.pathname + location.search}
           titleOverride={t("characters.lorebook.preview.title")}
@@ -339,7 +339,7 @@ export function LorebookTriggerPreviewPageMobile() {
   const selectedSession = sessions.find((s) => s.id === selectedSessionId) ?? null;
 
   return (
-    <div className="flex h-[100dvh] flex-col overflow-hidden bg-surface pt-[calc(72px+env(safe-area-inset-top))] pb-[env(safe-area-inset-bottom)]">
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-surface pt-[calc(72px+var(--lettuce-safe-area-inset-top))] pb-[env(safe-area-inset-bottom)]">
       <TopNav
         currentPath={location.pathname + location.search}
         titleOverride={pageTitle}

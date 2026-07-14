@@ -67,7 +67,7 @@ export function ModelRecommendations({ onBack }: ModelRecommendationsProps) {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col bg-black text-white px-4 pb-8 pt-[calc(env(safe-area-inset-top)+12px)]">
+    <div className="flex min-h-screen flex-col bg-black text-white px-4 pb-8 pt-[calc(var(--lettuce-safe-area-inset-top)+12px)]">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <button

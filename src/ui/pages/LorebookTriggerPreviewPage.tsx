@@ -623,7 +623,7 @@ export function LorebookTriggerPreviewPageDesktop() {
 
   if (!context || !lorebookId) {
     return (
-      <div className="flex h-full flex-col bg-surface pt-[calc(72px+env(safe-area-inset-top))]">
+      <div className="flex h-full flex-col bg-surface pt-[calc(72px+var(--lettuce-safe-area-inset-top))]">
         <TopNav
           currentPath={location.pathname + location.search}
           titleOverride={t("characters.lorebook.preview.title")}
@@ -648,7 +648,7 @@ export function LorebookTriggerPreviewPageDesktop() {
       : composerContext.split(/\r?\n/).filter(Boolean).length;
 
   return (
-    <div className="flex h-[100dvh] flex-col overflow-hidden bg-surface pt-[calc(72px+env(safe-area-inset-top))]">
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-surface pt-[calc(72px+var(--lettuce-safe-area-inset-top))]">
       <TopNav
         currentPath={location.pathname + location.search}
         titleOverride={pageTitle}

@@ -170,7 +170,7 @@ export function BottomMenu({
   const bottomMenuStyle = isBottomMenu
     ? {
         bottom: `${keyboardInset}px`,
-        maxHeight: `calc(100dvh - env(safe-area-inset-top) - 8px - ${keyboardInset}px)`,
+        maxHeight: `calc(100dvh - var(--lettuce-safe-area-inset-top) - 8px - ${keyboardInset}px)`,
       }
     : undefined;
 

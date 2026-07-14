@@ -182,7 +182,7 @@ export function GroupChatCreatePage() {
     <div className="flex h-full min-h-0 flex-col bg-surface text-fg">
       <TopNav currentPath={location.pathname + location.search} onBackOverride={handleBack} />
 
-      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-6 pt-[calc(72px+env(safe-area-inset-top))]">
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-6 pt-[calc(72px+var(--lettuce-safe-area-inset-top))]">
         <div className="flex w-full flex-1 flex-col">
           <AnimatePresence mode="wait">
             {state.step === Step.SelectCharacters ? (

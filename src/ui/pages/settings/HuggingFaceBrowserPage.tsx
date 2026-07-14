@@ -3101,7 +3101,7 @@ export function HuggingFaceBrowserPage() {
                       <div
                         className={cn(
                           isMobilePlatform
-                            ? "fixed bottom-0 right-0 top-[var(--titlebar-h,0px)] z-110 flex w-[min(90vw,24rem)] flex-col border-l border-fg/10 bg-surface-el pt-[env(safe-area-inset-top)] transition-transform duration-300 ease-out"
+                            ? "fixed bottom-0 right-0 top-[var(--titlebar-h,0px)] z-110 flex w-[min(90vw,24rem)] flex-col border-l border-fg/10 bg-surface-el pt-[var(--lettuce-safe-area-inset-top)] transition-transform duration-300 ease-out"
                             : "w-84 shrink-0 border-l border-fg/10 bg-surface/50 relative",
                           isMobilePlatform && !filesDrawerOpen && "translate-x-full",
                         )}

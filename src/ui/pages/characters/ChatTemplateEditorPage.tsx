@@ -787,7 +787,7 @@ export default function ChatTemplateEditorPage() {
     <>
       <div
         className="flex overflow-hidden"
-        style={{ height: "calc(100dvh - 72px - env(safe-area-inset-top))" }}
+        style={{ height: "calc(100dvh - 72px - var(--lettuce-safe-area-inset-top))" }}
       >
         {/* Left panel (settings) — desktop only */}
         <div className="hidden lg:flex lg:w-70 lg:shrink-0 lg:flex-col lg:overflow-y-auto lg:border-r lg:border-fg/10">

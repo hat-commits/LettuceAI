@@ -91,7 +91,7 @@ export function SearchPage() {
       {/* Minimal Header */}
       <header
         className={cn("shrink-0 pl-3", "px-3")}
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}
+        style={{ paddingTop: "calc(var(--lettuce-safe-area-inset-top) + 8px)" }}
       >
         {/* Search Bar Row */}
         <div className="flex items-center gap-2">

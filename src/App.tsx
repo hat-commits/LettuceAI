@@ -591,7 +591,7 @@ function App() {
               expand={true}
               offset={{ top: "calc(var(--titlebar-h, 0px) + 16px)" }}
               mobileOffset={{
-                top: "calc(env(safe-area-inset-top) + 80px)",
+                top: "calc(var(--lettuce-safe-area-inset-top) + 80px)",
                 left: 8,
                 right: 8,
               }}
@@ -1007,7 +1007,7 @@ function AppContent() {
             : isSettingRoute
               ? "max-w-md min-h-[calc(100dvh-var(--titlebar-h,0px))] lg:max-w-none lg:h-[calc(100dvh-var(--titlebar-h,0px))] lg:min-h-0"
               : "max-w-md lg:max-w-none min-h-[calc(100dvh-var(--titlebar-h,0px))]"
-        } flex-col ${showBottomNav ? "pb-[calc(72px+env(safe-area-inset-bottom))]" : "pb-0"}`}
+        } flex-col ${showBottomNav ? "pb-[calc(77px+env(safe-area-inset-bottom))]" : "pb-0"}`}
       >
         {showTopNav && (
           <TopNav
@@ -1069,7 +1069,7 @@ function AppContent() {
                                 ? "overflow-hidden px-0 pt-0 pb-0"
                                 : isSettingRoute
                                   ? "overflow-y-auto px-4 pt-4 pb-6 lg:overflow-hidden lg:p-0 lg:mt-(--topnav-h,72px)"
-                                  : `overflow-y-auto px-4 pt-4 ${showBottomNav ? "pb-[calc(96px+env(safe-area-inset-bottom))]" : "pb-6"}`
+                                  : `overflow-y-auto px-4 pt-4 ${showBottomNav ? "pb-[calc(101px+env(safe-area-inset-bottom))]" : "pb-6"}`
           }`}
         >
           <div

@@ -28,7 +28,7 @@ function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
       <button
         type="button"
         onClick={onClose}
-        className="fixed right-4 top-[calc(var(--titlebar-h,0px)+env(safe-area-inset-top)+1rem)] z-[310] flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white/80 transition hover:bg-white/20 active:scale-95 sm:right-8 sm:top-[calc(var(--titlebar-h,0px)+1.5rem)] sm:h-11 sm:w-11"
+        className="fixed right-4 top-[calc(var(--titlebar-h,0px)+var(--lettuce-safe-area-inset-top)+1rem)] z-[310] flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white/80 transition hover:bg-white/20 active:scale-95 sm:right-8 sm:top-[calc(var(--titlebar-h,0px)+1.5rem)] sm:h-11 sm:w-11"
       >
         <X size={20} />
       </button>

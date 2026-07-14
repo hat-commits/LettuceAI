@@ -43,7 +43,7 @@ export function BottomNav({ onCreateClick }: { onCreateClick: () => void }) {
   };
   return (
     <div
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-30 px-[max(12px,env(safe-area-inset-left))] pb-[calc(env(safe-area-inset-bottom)+10px)] text-fg"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-30 px-[max(12px,env(safe-area-inset-left))] pb-[calc(env(safe-area-inset-bottom)+15px)] text-fg"
       style={{ paddingRight: "max(12px, env(safe-area-inset-right))" }}
     >
       <div

@@ -293,7 +293,7 @@ export function OnboardingSyncStep() {
   return (
     <div className="relative flex flex-1 flex-col text-gray-200">
       {/* Header — inline, transparent so the shared onboarding background shows through */}
-      <div className="relative z-30 flex items-center justify-between px-4 py-4 pt-[calc(env(safe-area-inset-top)+16px)] lg:px-8 lg:py-6">
+      <div className="relative z-30 flex items-center justify-between px-4 py-4 pt-[calc(var(--lettuce-safe-area-inset-top)+16px)] lg:px-8 lg:py-6">
         <button
           onClick={() => void handleBack()}
           disabled={isSyncing || completing}

@@ -165,7 +165,7 @@ export function GroupSettingsPage() {
   return (
     <div className="relative flex h-full flex-col text-fg bg-surface">
       {/* Header */}
-      <header className="relative z-20 shrink-0 border-b border-fg/10 bg-surface px-4 pb-3 pt-[calc(env(safe-area-inset-top)+12px)]">
+      <header className="relative z-20 shrink-0 border-b border-fg/10 bg-surface px-4 pb-3 pt-[calc(var(--lettuce-safe-area-inset-top)+12px)]">
         <div className="flex items-center gap-3">
           <button
             onClick={handleBack}

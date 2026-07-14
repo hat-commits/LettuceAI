@@ -14,7 +14,7 @@ export function CreatePersonaPage() {
 
       <main
         aria-label={t("common.nav.personas")}
-        className="flex-1 overflow-y-auto px-4 pb-20 pt-[calc(72px+env(safe-area-inset-top))]"
+        className="flex-1 overflow-y-auto px-4 pb-20 pt-[calc(72px+var(--lettuce-safe-area-inset-top))]"
       >
         <CreatePersonaForm
           state={state}

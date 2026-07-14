@@ -93,7 +93,7 @@ export function WelcomePage({ onContinue, onGoToSync }: WelcomePageProps = {}) {
   };
 
   return (
-    <div className="relative flex h-[calc(100dvh-var(--titlebar-h,0px))] flex-col overflow-hidden text-white antialiased pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] font-['Noto_Sans',ui-sans-serif,system-ui,sans-serif]">
+    <div className="relative flex h-[calc(100dvh-var(--titlebar-h,0px))] flex-col overflow-hidden text-white antialiased pt-[var(--lettuce-safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] font-['Noto_Sans',ui-sans-serif,system-ui,sans-serif]">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-3/4 bg-[linear-gradient(180deg,transparent_0%,rgba(5,5,5,0.12)_40%,rgba(5,5,5,0.68)_100%)] lg:hidden"

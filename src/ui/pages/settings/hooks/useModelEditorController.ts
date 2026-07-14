@@ -20,7 +20,10 @@ import {
   toCamel,
   type ProviderCapabilitiesCamel,
 } from "../../../../core/providers/capabilities";
-import { createDefaultAdvancedModelSettings } from "../../../../core/storage/schemas";
+import {
+  createDefaultAdvancedModelSettings,
+  getProviderDefaultReasoningEnabled,
+} from "../../../../core/storage/schemas";
 import { sanitizeAdvancedModelSettings } from "../../../components/AdvancedModelSettingsForm";
 import {
   initialModelEditorState,
@@ -312,6 +315,16 @@ export function useModelEditorController(): ControllerReturn {
               ...hardCappedScopes,
             };
           }
+
+          const defaultReasoningEnabled = getProviderDefaultReasoningEnabled(
+            nextEditorModel.providerId,
+          );
+          if (nextDraft.reasoningEnabled == null && defaultReasoningEnabled != null) {
+            nextDraft = sanitizeAdvancedModelSettings({
+              ...nextDraft,
+              reasoningEnabled: defaultReasoningEnabled,
+            });
+          }
         }
 
         if (!cancelled) {
@@ -505,8 +518,18 @@ export function useModelEditorController(): ControllerReturn {
             : {}),
         },
       });
+      const defaultReasoningEnabled = getProviderDefaultReasoningEnabled(providerId);
+      if (state.modelAdvancedDraft.reasoningEnabled == null && defaultReasoningEnabled != null) {
+        dispatch({
+          type: "set_model_advanced_draft",
+          payload: sanitizeAdvancedModelSettings({
+            ...state.modelAdvancedDraft,
+            reasoningEnabled: defaultReasoningEnabled,
+          }),
+        });
+      }
     },
-    [dispatch, state.editorModel],
+    [dispatch, state.editorModel, state.modelAdvancedDraft],
   );
 
   const setModelAdvancedDraft = useCallback(

@@ -48,7 +48,7 @@ use crate::chat_manager::prompts::{
 use crate::chat_manager::request::{extract_error_message, extract_text, extract_usage};
 use crate::chat_manager::request_builder;
 use crate::chat_manager::service::{record_usage_if_available, require_api_key, ChatContext};
-use crate::chat_manager::storage::save_session;
+use crate::chat_manager::storage::save_session_memory_state as save_session;
 use crate::chat_manager::temporal::{
     companion_effective_now, companion_time_awareness_enabled, detect_temporal_query_range,
     format_message_timestamp, memory_matches_temporal_range, TemporalRange,

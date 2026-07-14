@@ -11,7 +11,7 @@ export function CreateCharacterHeader({ onBack }: CreateCharacterHeaderProps) {
   return (
     <header
       className="border-b border-fg/5 bg-surface"
-      style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}
+      style={{ paddingTop: "calc(var(--lettuce-safe-area-inset-top) + 8px)" }}
     >
       <div className="relative mx-auto flex h-14 w-full items-center justify-center px-4">
         <button

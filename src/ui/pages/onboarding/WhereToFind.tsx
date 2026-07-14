@@ -126,7 +126,7 @@ export function WhereToFindPage() {
   const openLink = (url: string) => openExternalUrl(url);
 
   return (
-    <div className="flex min-h-screen flex-col bg-black text-white px-4 pb-12 pt-[calc(env(safe-area-inset-top)+12px)]">
+    <div className="flex min-h-screen flex-col bg-black text-white px-4 pb-12 pt-[calc(var(--lettuce-safe-area-inset-top)+12px)]">
       <div className="mb-6 flex items-center justify-between">
         <button
           onClick={() => navigate(-1)}

@@ -7,6 +7,11 @@ const androidOverridesDir = path.join(repoRoot, "src-tauri", "android-overrides"
 const tauriConfigPath = path.join(repoRoot, "src-tauri", "tauri.conf.json");
 const javaRootDir = path.join(androidAppDir, "src", "main", "java");
 const manifestPath = path.join(androidAppDir, "src", "main", "AndroidManifest.xml");
+const stringsPath = path.join(androidAppDir, "src", "main", "res", "values", "strings.xml");
+const valuesDir = path.join(androidAppDir, "src", "main", "res", "values");
+const valuesNightDir = path.join(androidAppDir, "src", "main", "res", "values-night");
+const drawableDir = path.join(androidAppDir, "src", "main", "res", "drawable");
+const proguardRulesPath = path.join(androidAppDir, "proguard-rules.pro");
 const buildGradlePath = path.join(androidAppDir, "build.gradle.kts");
 
 async function main() {
@@ -19,6 +24,7 @@ async function main() {
     "MainActivity.kt",
     "CrashMonitorService.kt",
     "KokoroPhonemizerBridge.kt",
+    "PcmAudioTrackBridge.kt",
   ]);
 
   await applyTemplate("MainActivity.kt.template", path.join(targetJavaDir, "MainActivity.kt"), {
@@ -38,9 +44,27 @@ async function main() {
       __PACKAGE__: packageName,
     },
   );
+  await applyTemplate(
+    "PcmAudioTrackBridge.kt.template",
+    path.join(targetJavaDir, "PcmAudioTrackBridge.kt"),
+    {
+      __PACKAGE__: packageName,
+    },
+  );
   await applyTemplate("AndroidManifest.xml", manifestPath, {
     __PACKAGE__: packageName,
   });
+  await applyTemplate("proguard-rules.pro", proguardRulesPath, {
+    __PACKAGE__: packageName,
+  });
+  await applyTemplate("strings.xml", stringsPath, {});
+  await applyTemplate("themes.xml", path.join(valuesDir, "themes.xml"), {});
+  await applyTemplate("themes-night.xml", path.join(valuesNightDir, "themes.xml"), {});
+  await applyTemplate(
+    "transparent_splash_icon.xml",
+    path.join(drawableDir, "transparent_splash_icon.xml"),
+    {},
+  );
   await applyTemplate("app.build.gradle.kts.template", buildGradlePath, {
     __PACKAGE__: packageName,
   });

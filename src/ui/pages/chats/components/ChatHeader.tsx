@@ -28,6 +28,7 @@ interface ChatHeaderProps {
   hasBackgroundImage?: boolean;
   headerOverlayClassName?: string;
   transparentHeader?: boolean;
+  statusBarInset?: number;
   onSessionUpdate?: () => void;
   onBeforeSettingsOpen?: () => void;
   onSettingsOpen?: () => void;
@@ -48,6 +49,7 @@ export function ChatHeader({
   hasBackgroundImage,
   headerOverlayClassName,
   transparentHeader = false,
+  statusBarInset = 0,
   onSessionUpdate,
   onBeforeSettingsOpen,
   onSettingsOpen,
@@ -181,7 +183,10 @@ export function ChatHeader({
             : "bg-surface",
         )}
         style={{
-          paddingTop: "calc(env(safe-area-inset-top) + 12px)",
+          paddingTop:
+            statusBarInset > 0
+              ? `${statusBarInset + 12}px`
+              : "calc(var(--lettuce-safe-area-inset-top) + 12px)",
           paddingBottom: "12px",
         }}
       >
