@@ -38,19 +38,17 @@ import {
 } from "../../../core/storage/schemas";
 import {
   abortAudioPreview,
+  generateTtsForMessage,
   listAudioModels,
   listAudioProviders,
   listUserVoices,
+  playAudioFromBase64,
   type AudioModel,
   type AudioProvider,
   type AudioProviderType,
   type TtsPreviewResponse,
   type UserVoice,
 } from "../../../core/storage/audioProviders";
-import {
-  startMessageAudioPlayback,
-  type MessageAudioPlayback,
-} from "./audio/messageAudioPlayer";
 import { useChatLayoutContext } from "./ChatLayout";
 import {
   createBranchedGroupSession,
@@ -72,8 +70,6 @@ import { playAccessibilitySound } from "../../../core/utils/accessibilityAudio";
 import { replacePlaceholders } from "../../../core/utils/placeholders";
 import { splitThinkTags } from "../../../core/utils/thinkTags";
 import { getPlatform } from "../../../core/utils/platform";
-import { buildDoubaoVoicePrompt } from "../../../core/voice/doubaoVoiceSettings";
-import { getCachedDoubaoVoicePreviewMetadata } from "../../../core/voice/doubaoVoicePreview";
 import {
   ChatHeader,
   ChatFooter,
@@ -124,7 +120,6 @@ import {
   SCENE_PROMPT_APPROVAL_EVENT,
   type ScenePromptApprovalDetail,
 } from "./hooks/useChatEnhancementsController";
-import { CHAT_ASSISTANT_FINALIZED_EVENT } from "./hooks/useChatStreamingController";
 import {
   asrCorrectionUpsert,
   asrIgnoreSuggestion,
@@ -141,6 +136,39 @@ const SCROLL_THRESHOLD = 10; // pixels of movement to cancel long press
 const AUTOLOAD_TOP_THRESHOLD_PX = 120;
 const STICKY_BOTTOM_THRESHOLD_PX = 80;
 const MAX_AUDIO_CACHE_ENTRIES = 50;
+const MOBILE_KEYBOARD_THRESHOLD_PX = 120;
+
+/** Lightweight sentence splitter for TTS chunking (reduces TTFB dramatically) */
+function splitTextForTts(text: string): string[] {
+  if (!text || text.trim().length === 0) return [];
+
+  // Split on sentence-ending punctuation followed by whitespace
+  const sentences = text
+    .replace(/([.!?。！？])\s+/g, "$1|")
+    .split("|")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+
+  if (sentences.length <= 1) {
+    return [text.trim()];
+  }
+
+  // Merge very short sentences to avoid tiny TTS calls
+  const merged: string[] = [];
+  let current = "";
+
+  for (const sentence of sentences) {
+    if (current.length > 0 && (current.length + sentence.length < 280)) {
+      current = (current + " " + sentence).trim();
+    } else {
+      if (current) merged.push(current);
+      current = sentence;
+    }
+  }
+  if (current) merged.push(current);
+
+  return merged.length > 0 ? merged : [text.trim()];
+}
 
 function mergeFloat32Chunks(chunks: Float32Array[]) {
   const total = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
@@ -214,7 +242,6 @@ export function ChatConversationPage() {
     : [];
 
   const scrollContainerRef = useRef<HTMLElement | null>(null);
-  const messageListRef = useRef<HTMLDivElement | null>(null);
   const footerRef = useRef<HTMLDivElement | null>(null);
   const [footerHeight, setFooterHeight] = useState(0);
   useEffect(() => {
@@ -246,7 +273,7 @@ export function ChatConversationPage() {
   const [selectedImagePromptExpanded, setSelectedImagePromptExpanded] = useState(false);
   const [supportsImageInput, setSupportsImageInput] = useState(false);
   const [supportsAudioInput, setSupportsAudioInput] = useState(false);
-  const [statusBarInset, setStatusBarInset] = useState(0);
+  const [keyboardInset, setKeyboardInset] = useState(0);
   const audioCacheRef = useRef<{
     providers: AudioProvider[] | null;
     userVoices: UserVoice[] | null;
@@ -263,10 +290,11 @@ export function ChatConversationPage() {
   const [audioStatusByMessage, setAudioStatusByMessage] = useState<
     Record<string, "loading" | "playing">
   >({});
-  const audioPlaybackRef = useRef<MessageAudioPlayback | null>(null);
+  const audioPlaybackRef = useRef<HTMLAudioElement | null>(null);
   const audioPlayingMessageIdRef = useRef<string | null>(null);
   const audioRequestRef = useRef<{ requestId: string; messageId: string } | null>(null);
   const cancelledAudioRequestsRef = useRef<Set<string>>(new Set());
+  const audioStoppedRef = useRef(false); // used to break out of chunked playback loop
   const abortRequestedRef = useRef(false);
   const abortSoundRef = useRef(false);
   const wasGeneratingRef = useRef(false);
@@ -320,7 +348,6 @@ export function ChatConversationPage() {
   const [savingSessionBackground, setSavingSessionBackground] = useState(false);
   const [personas, setPersonas] = useState<Persona[]>([]);
   const isMobile = useMemo(() => getPlatform().type === "mobile", []);
-  const isAndroid = useMemo(() => getPlatform().os === "android", []);
   const [settingsDrawerOpen, setSettingsDrawerOpen] = useState(false);
   const footerTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const footerRecorderRef = useRef<FooterRecorderSession | null>(null);
@@ -1234,9 +1261,42 @@ export function ChatConversationPage() {
     }
   }, []);
 
+  const startAudioPlayback = useCallback(
+    (messageId: string, response: TtsPreviewResponse) => {
+      setAudioStatus(messageId, "playing");
+      const audio = playAudioFromBase64(response.audioBase64, response.format);
+      audioPlaybackRef.current = audio;
+      audioPlayingMessageIdRef.current = messageId;
+      audio.onended = () => {
+        if (audioPlaybackRef.current === audio) {
+          audioPlaybackRef.current = null;
+          audioPlayingMessageIdRef.current = null;
+          setAudioStatus(messageId, null);
+        }
+      };
+      audio.onerror = () => {
+        if (audioPlaybackRef.current === audio) {
+          audioPlaybackRef.current = null;
+          audioPlayingMessageIdRef.current = null;
+          setAudioStatus(messageId, null);
+        }
+      };
+    },
+    [setAudioStatus],
+  );
+
   const stopAudioPlayback = useCallback(() => {
-    audioPlaybackRef.current?.stop();
+    audioStoppedRef.current = true;
+
+    const audio = audioPlaybackRef.current;
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.onended = null;
+      audio.onerror = null;
+    }
     audioPlaybackRef.current = null;
+
     const messageId = audioPlayingMessageIdRef.current;
     if (messageId) {
       audioPlayingMessageIdRef.current = null;
@@ -1249,11 +1309,6 @@ export function ChatConversationPage() {
     if (!pending) return;
     audioRequestRef.current = null;
     cancelledAudioRequestsRef.current.add(pending.requestId);
-    audioPlaybackRef.current?.stop();
-    audioPlaybackRef.current = null;
-    if (audioPlayingMessageIdRef.current === pending.messageId) {
-      audioPlayingMessageIdRef.current = null;
-    }
     setAudioStatus(pending.messageId, null);
     try {
       await abortAudioPreview(pending.requestId);
@@ -1308,6 +1363,16 @@ export function ChatConversationPage() {
       const trimmedText = text.trim();
       if (!trimmedText) return;
 
+      // Always stop any currently playing audio before starting a new one.
+      // This is critical for Autoplay + long responses (chunked playback)
+      // to prevent overlapping voices.
+      if (audioPlaybackRef.current) {
+        stopAudioPlayback();
+      }
+      if (audioRequestRef.current) {
+        await cancelAudioGeneration();
+      }
+
       if (audioRequestRef.current?.messageId === message.id) {
         await cancelAudioGeneration();
         return;
@@ -1315,13 +1380,6 @@ export function ChatConversationPage() {
       if (audioPlayingMessageIdRef.current === message.id) {
         stopAudioPlayback();
         return;
-      }
-
-      if (audioRequestRef.current) {
-        await cancelAudioGeneration();
-      }
-      if (audioPlaybackRef.current) {
-        stopAudioPlayback();
       }
 
       const requestId = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
@@ -1344,6 +1402,12 @@ export function ChatConversationPage() {
         throw error;
       }
 
+      // Resolve provider + voice config (same as before)
+      let providerId: string;
+      let modelId: string;
+      let voiceId: string;
+      let prompt: string | undefined;
+
       if (character.voiceConfig.source === "user" && character.voiceConfig.userVoiceId) {
         let voices = await ensureUserVoices();
         let voice = voices.find((v) => v.id === character.voiceConfig?.userVoiceId);
@@ -1359,58 +1423,87 @@ export function ChatConversationPage() {
         if (!provider) {
           throw new Error(t("chats.errors.assignedProviderNotFound"));
         }
+        providerId = voice.providerId;
+        modelId = voice.modelId;
+        voiceId = voice.voiceId;
+        prompt = voice.prompt;
+      } else if (character.voiceConfig.source === "provider") {
+        providerId = character.voiceConfig.providerId!;
+        voiceId = character.voiceConfig.voiceId!;
+        if (!providerId || !voiceId) {
+          throw new Error(t("chats.errors.voiceMissingProviderDetails"));
+        }
+        const provider = providers.find((p) => p.id === providerId);
+        if (!provider) {
+          throw new Error(t("chats.errors.assignedProviderNotFound"));
+        }
+        modelId = character.voiceConfig.modelId || "";
+        if (!modelId) {
+          if (provider.providerType === "kokoro" && provider.kokoroVariant) {
+            modelId = provider.kokoroVariant;
+          } else {
+            const models = await ensureAudioModels(provider.providerType as AudioProviderType);
+            modelId = models[0]?.id || "";
+          }
+        }
+        if (!modelId) {
+          throw new Error(t("chats.errors.noAudioModelsForProvider"));
+        }
+      } else {
+        setAudioStatus(message.id, null);
+        audioRequestRef.current = null;
+        return;
+      }
 
+      // === CHUNKED TTS (key change for low TTFB) ===
+      const chunks = splitTextForTts(trimmedText);
+
+      // If only one chunk (or very short message), use original single-call behavior
+      if (chunks.length <= 1) {
         const cacheKey = buildAudioCacheKey({
-          providerId: voice.providerId,
-          modelId: voice.modelId,
-          voiceId: voice.voiceId,
+          providerId,
+          modelId,
+          voiceId,
           text: trimmedText,
-          prompt: voice.prompt,
+          prompt,
         });
         const cached = audioPreviewCacheRef.current.get(cacheKey);
-
-        try {
-          const playback = await startMessageAudioPlayback({
-            providerId: voice.providerId,
-            providerType: provider.providerType as AudioProviderType,
-            modelId: voice.modelId,
-            voiceId: voice.voiceId,
-            text: trimmedText,
-            prompt: voice.prompt,
-            requestId,
-            cached,
-            onCache: (response) => cacheAudioPreview(cacheKey, response),
-            onPlaybackStart: () => {
-              if (audioRequestRef.current?.requestId === requestId) {
-                audioRequestRef.current = null;
-              }
-              setAudioStatus(message.id, "playing");
-            },
-          });
-          if (audioRequestRef.current && audioRequestRef.current.requestId !== requestId) {
-            playback.stop();
+        if (cached) {
+          if (audioRequestRef.current?.requestId !== requestId) {
             cancelledAudioRequestsRef.current.delete(requestId);
             return;
           }
+          audioRequestRef.current = null;
           if (cancelledAudioRequestsRef.current.has(requestId)) {
-            playback.stop();
             cancelledAudioRequestsRef.current.delete(requestId);
             setAudioStatus(message.id, null);
             return;
           }
-          audioPlaybackRef.current = playback;
-          audioPlayingMessageIdRef.current = message.id;
-          void playback.done
-            .catch((error) => {
-              console.warn("Message audio playback ended with an error:", error);
-            })
-            .finally(() => {
-              if (audioPlaybackRef.current === playback) {
-                audioPlaybackRef.current = null;
-                audioPlayingMessageIdRef.current = null;
-                setAudioStatus(message.id, null);
-              }
-            });
+          startAudioPlayback(message.id, cached);
+          return;
+        }
+
+        try {
+          const response = await generateTtsForMessage(
+            providerId,
+            modelId,
+            voiceId,
+            trimmedText,
+            prompt,
+            requestId,
+          );
+          if (audioRequestRef.current?.requestId !== requestId) {
+            cancelledAudioRequestsRef.current.delete(requestId);
+            return;
+          }
+          audioRequestRef.current = null;
+          if (cancelledAudioRequestsRef.current.has(requestId)) {
+            cancelledAudioRequestsRef.current.delete(requestId);
+            setAudioStatus(message.id, null);
+            return;
+          }
+          cacheAudioPreview(cacheKey, response);
+          startAudioPlayback(message.id, response);
           return;
         } catch (error) {
           if (audioRequestRef.current?.requestId === requestId) {
@@ -1426,108 +1519,176 @@ export function ChatConversationPage() {
         }
       }
 
-      if (character.voiceConfig.source === "provider") {
-        const providerId = character.voiceConfig.providerId;
-        const voiceId = character.voiceConfig.voiceId;
-        if (!providerId || !voiceId) {
-          throw new Error(t("chats.errors.voiceMissingProviderDetails"));
-        }
-        const provider = providers.find((p) => p.id === providerId);
-        if (!provider) {
-          throw new Error(t("chats.errors.assignedProviderNotFound"));
-        }
+      // === MULTI-CHUNK PATH: Prefetch next chunk while current is playing ===
+      audioRequestRef.current = null; // release request lock early
+      setAudioStatus(message.id, "playing"); // show playing state immediately for the whole message
 
-        let modelId = character.voiceConfig.modelId;
-        if (!modelId) {
-          if (provider.providerType === "kokoro" && provider.kokoroVariant) {
-            modelId = provider.kokoroVariant;
-          } else {
-            const models = await ensureAudioModels(provider.providerType as AudioProviderType);
-            modelId = models[0]?.id;
-          }
-        }
-        if (!modelId) {
-          throw new Error(t("chats.errors.noAudioModelsForProvider"));
-        }
+      let firstChunkPlayed = false;
+      let nextChunkPromise: Promise<TtsPreviewResponse | null> | null = null;
+      let currentAudioEl: HTMLAudioElement | null = null;
 
-        const cloneSampleRate =
-          provider.resourceId === "seed-icl-2.0"
-            ? getCachedDoubaoVoicePreviewMetadata(providerId, voiceId)?.sampleRate
-            : undefined;
-        const prompt =
-          provider.providerType === "doubao_tts"
-            ? buildDoubaoVoicePrompt(
-                character.voiceConfig.doubaoVoiceSettings,
-                cloneSampleRate,
-              )
-            : undefined;
-        const cacheKey = buildAudioCacheKey({
+      // Reset stop flag at the beginning of a new playback
+      audioStoppedRef.current = false;
+
+      const playChunk = async (chunkText: string): Promise<TtsPreviewResponse | null> => {
+        const chunkCacheKey = buildAudioCacheKey({
           providerId,
           modelId,
           voiceId,
-          text: trimmedText,
+          text: chunkText,
           prompt,
         });
-        const cached = audioPreviewCacheRef.current.get(cacheKey);
 
-        try {
-          const playback = await startMessageAudioPlayback({
-            providerId,
-            providerType: provider.providerType as AudioProviderType,
-            modelId,
-            voiceId,
-            text: trimmedText,
-            prompt,
-            requestId,
-            sampleRate: cloneSampleRate,
-            // Keep the buffered MP3 path available as a fallback, but test
-            // clone voices through the sample-rate-aware PCM stream first.
-            streamDoubao: true,
-            cached,
-            onCache: (response) => cacheAudioPreview(cacheKey, response),
-            onPlaybackStart: () => {
-              if (audioRequestRef.current?.requestId === requestId) {
-                audioRequestRef.current = null;
-              }
-              setAudioStatus(message.id, "playing");
-            },
-          });
-          if (audioRequestRef.current && audioRequestRef.current.requestId !== requestId) {
-            playback.stop();
-            cancelledAudioRequestsRef.current.delete(requestId);
-            return;
+        let chunkResponse: TtsPreviewResponse | null =
+          audioPreviewCacheRef.current.get(chunkCacheKey) || null;
+
+        if (!chunkResponse) {
+          try {
+            chunkResponse = await generateTtsForMessage(
+              providerId,
+              modelId,
+              voiceId,
+              chunkText,
+              prompt,
+              undefined,
+            );
+            if (chunkResponse) {
+              cacheAudioPreview(chunkCacheKey, chunkResponse);
+            }
+          } catch (err) {
+            console.warn("TTS chunk failed:", err);
+            return null;
           }
-          if (cancelledAudioRequestsRef.current.has(requestId)) {
-            playback.stop();
-            cancelledAudioRequestsRef.current.delete(requestId);
-            setAudioStatus(message.id, null);
-            return;
-          }
-          audioPlaybackRef.current = playback;
-          audioPlayingMessageIdRef.current = message.id;
-          void playback.done
-            .catch((error) => {
-              console.warn("Message audio playback ended with an error:", error);
-            })
-            .finally(() => {
-              if (audioPlaybackRef.current === playback) {
-                audioPlaybackRef.current = null;
-                audioPlayingMessageIdRef.current = null;
-                setAudioStatus(message.id, null);
-              }
-            });
-        } catch (error) {
-          if (audioRequestRef.current?.requestId === requestId) {
-            audioRequestRef.current = null;
-          }
-          setAudioStatus(message.id, null);
-          const messageText = error instanceof Error ? error.message : String(error);
-          const isAbort =
-            messageText.toLowerCase().includes("aborted") ||
-            messageText.toLowerCase().includes("cancel");
-          if (isAbort) return;
-          throw error;
         }
+        return chunkResponse;
+      };
+
+      for (let i = 0; i < chunks.length; i++) {
+        // Check if user clicked Stop before starting the next chunk
+        if (audioStoppedRef.current) {
+          break;
+        }
+
+        const chunkText = chunks[i];
+
+        // Use prefetched chunk if available
+        let chunkResponse: TtsPreviewResponse | null = null;
+
+        if (nextChunkPromise) {
+          chunkResponse = await nextChunkPromise;
+          nextChunkPromise = null;
+        } else {
+          chunkResponse = await playChunk(chunkText);
+        }
+
+        // Check again after prefetch/generation (in case user stopped during generation)
+        if (audioStoppedRef.current) {
+          break;
+        }
+
+        if (!chunkResponse) {
+          if (i === 0) setAudioStatus(message.id, null);
+          continue;
+        }
+
+        // Prefetch the next chunk in the background
+        if (i + 1 < chunks.length && !audioStoppedRef.current) {
+          const nextText = chunks[i + 1];
+          nextChunkPromise = playChunk(nextText);
+        }
+
+        // Stop any currently playing audio before starting the next chunk
+        // This prevents overlapping voices when autoplay triggers chunked playback
+        if (audioPlaybackRef.current) {
+          const prevAudio = audioPlaybackRef.current;
+          prevAudio.pause();
+          prevAudio.onended = null;
+          prevAudio.onerror = null;
+        }
+
+        // Play the current chunk
+        const audioEl = playAudioFromBase64(chunkResponse.audioBase64, chunkResponse.format);
+        currentAudioEl = audioEl;
+
+        // Always update the global playback ref so Stop works on the current chunk
+        audioPlaybackRef.current = audioEl;
+        audioPlayingMessageIdRef.current = message.id;
+
+        if (i === 0) {
+          firstChunkPlayed = true;
+        }
+
+        // Only the *last* chunk should clear the global playing state
+        const isLastChunk = i === chunks.length - 1;
+
+        audioEl.onended = () => {
+          if (audioPlaybackRef.current === audioEl) {
+            audioPlaybackRef.current = null;
+            currentAudioEl = null;
+
+            if (isLastChunk && !audioStoppedRef.current) {
+              audioPlayingMessageIdRef.current = null;
+              setAudioStatus(message.id, null);
+            }
+          }
+        };
+
+        audioEl.onerror = () => {
+          if (audioPlaybackRef.current === audioEl) {
+            audioPlaybackRef.current = null;
+            currentAudioEl = null;
+
+            if (isLastChunk && !audioStoppedRef.current) {
+              audioPlayingMessageIdRef.current = null;
+              setAudioStatus(message.id, null);
+            }
+          }
+        };
+
+        // Wait for this chunk to finish (or until stopped)
+        await new Promise<void>((resolve) => {
+          const done = () => resolve();
+          const originalOnEnd = audioEl.onended;
+          const originalOnError = audioEl.onerror;
+
+          audioEl.onended = () => {
+            if (originalOnEnd) originalOnEnd.call(audioEl as any);
+            done();
+          };
+          audioEl.onerror = () => {
+            if (originalOnError) originalOnError.call(audioEl as any);
+            done();
+          };
+
+          // Poll for stop signal every 100ms
+          const stopCheckInterval = setInterval(() => {
+            if (audioStoppedRef.current) {
+              clearInterval(stopCheckInterval);
+              done();
+            }
+          }, 100);
+
+          setTimeout(() => {
+            clearInterval(stopCheckInterval);
+            done();
+          }, 120000); // safety timeout
+        });
+
+        // If user stopped during playback, clean up and exit
+        if (audioStoppedRef.current) {
+          if (currentAudioEl) {
+            currentAudioEl.pause();
+            currentAudioEl.onended = null;
+            currentAudioEl.onerror = null;
+          }
+          audioPlaybackRef.current = null;
+          currentAudioEl = null;
+          break;
+        }
+      }
+
+      if (!firstChunkPlayed) {
+        setAudioStatus(message.id, null);
       }
     },
     [
@@ -1539,58 +1700,15 @@ export function ChatConversationPage() {
       ensureAudioProviders,
       ensureUserVoices,
       setAudioStatus,
+      startAudioPlayback,
       stopAudioPlayback,
+      t,
     ],
   );
 
   const effectiveVoiceAutoplay = useMemo(() => {
     return session?.voiceAutoplay ?? character?.voiceAutoplay ?? false;
   }, [character?.voiceAutoplay, session?.voiceAutoplay]);
-
-  useEffect(() => {
-    const handleFinalAssistantMessage = (event: Event) => {
-      const detail = (event as CustomEvent<{ sessionId?: string; message?: StoredMessage }>)
-        .detail;
-      const message = detail?.message;
-      if (!message || detail?.sessionId !== session?.id) return;
-      if (!effectiveVoiceAutoplay) return;
-      if (abortRequestedRef.current) return;
-      if (autoPlayInFlightRef.current) return;
-      if (message.id.startsWith("placeholder")) return;
-      if (message.role !== "assistant" && message.role !== "scene") return;
-      if (!message.content.trim()) return;
-
-      const displayText = replacePlaceholders(
-        message.content,
-        character?.name ?? "",
-        persona?.title ?? "",
-      );
-      const signature = `${message.id}:${displayText}`;
-      if (signature === sendStartSignatureRef.current) return;
-      if (signature === autoPlaySignatureRef.current) return;
-
-      autoPlaySignatureRef.current = signature;
-      autoPlayInFlightRef.current = true;
-      void handlePlayMessageAudio(message, displayText)
-        .catch((error) => {
-          console.error("Failed to autoplay finalized message audio:", error);
-        })
-        .finally(() => {
-          autoPlayInFlightRef.current = false;
-        });
-    };
-
-    window.addEventListener(CHAT_ASSISTANT_FINALIZED_EVENT, handleFinalAssistantMessage);
-    return () => {
-      window.removeEventListener(CHAT_ASSISTANT_FINALIZED_EVENT, handleFinalAssistantMessage);
-    };
-  }, [
-    character?.name,
-    effectiveVoiceAutoplay,
-    handlePlayMessageAudio,
-    persona?.title,
-    session?.id,
-  ]);
 
   const handleAbortWithFlag = useCallback(async () => {
     abortRequestedRef.current = true;
@@ -2080,51 +2198,59 @@ export function ChatConversationPage() {
     container.scrollTo({ top: container.scrollHeight, behavior });
   }, []);
 
-  // Message height can change after the initial render (streaming markdown,
-  // images, and layout animations). Keep following the bottom in those cases
-  // when the user was already there, while preserving manual scroll position.
   useEffect(() => {
-    const list = messageListRef.current;
-    if (!list) return;
-
-    const observer = new ResizeObserver(() => {
-      const container = scrollContainerRef.current;
-      if (!container || !isAtBottomRef.current) return;
-      container.scrollTop = container.scrollHeight;
-      updateIsAtBottom();
-    });
-    observer.observe(list);
-    return () => observer.disconnect();
-  }, [updateIsAtBottom]);
-
-  useEffect(() => {
-    if (!isAndroid) {
-      document.documentElement.style.setProperty("--lettuce-keyboard-inset", "0px");
+    if (!isMobile) {
+      setKeyboardInset(0);
       return;
     }
 
-    const applyWindowInsets = (detail: { imeBottomPx?: unknown; statusBarTopPx?: unknown }) => {
-      const statusTopPx = detail?.statusBarTopPx;
-      if (typeof statusTopPx === "number" && Number.isFinite(statusTopPx)) {
-        setStatusBarInset(Math.max(0, Math.round(statusTopPx / window.devicePixelRatio)));
+    const visualViewport = window.visualViewport;
+    let focusTimer: number | null = null;
+
+    const updateKeyboardInset = () => {
+      const baseHeight = window.innerHeight;
+      const viewportHeight = visualViewport?.height ?? baseHeight;
+      const viewportOffsetTop = visualViewport?.offsetTop ?? 0;
+      const rawInset = Math.max(0, baseHeight - viewportHeight - viewportOffsetTop);
+      const nextInset = rawInset > MOBILE_KEYBOARD_THRESHOLD_PX ? Math.round(rawInset) : 0;
+
+      setKeyboardInset((prev) => (prev === nextInset ? prev : nextInset));
+
+      window.requestAnimationFrame(() => {
+        updateIsAtBottom();
+        const activeElement = document.activeElement;
+        if (activeElement instanceof HTMLTextAreaElement && isAtBottomRef.current) {
+          scrollToBottom("auto");
+        }
+      });
+    };
+
+    const handleFocusChange = () => {
+      updateKeyboardInset();
+      if (focusTimer !== null) {
+        window.clearTimeout(focusTimer);
       }
+      focusTimer = window.setTimeout(updateKeyboardInset, 180);
     };
 
-    const handleWindowInsets = (event: Event) => {
-      applyWindowInsets(
-        (event as CustomEvent<{ imeBottomPx?: unknown; statusBarTopPx?: unknown }>).detail ?? {},
-      );
-    };
+    updateKeyboardInset();
+    visualViewport?.addEventListener("resize", updateKeyboardInset);
+    visualViewport?.addEventListener("scroll", updateKeyboardInset);
+    window.addEventListener("resize", updateKeyboardInset);
+    document.addEventListener("focusin", handleFocusChange);
+    document.addEventListener("focusout", handleFocusChange);
 
-    window.addEventListener("lettuce:window-insets", handleWindowInsets);
-    const initialInsets = (window as Window & {
-      __lettuceWindowInsets?: { imeBottomPx?: unknown; statusBarTopPx?: unknown };
-    }).__lettuceWindowInsets;
-    if (initialInsets) {
-      applyWindowInsets(initialInsets);
-    }
-    return () => window.removeEventListener("lettuce:window-insets", handleWindowInsets);
-  }, [isAndroid, scrollToBottom]);
+    return () => {
+      if (focusTimer !== null) {
+        window.clearTimeout(focusTimer);
+      }
+      visualViewport?.removeEventListener("resize", updateKeyboardInset);
+      visualViewport?.removeEventListener("scroll", updateKeyboardInset);
+      window.removeEventListener("resize", updateKeyboardInset);
+      document.removeEventListener("focusin", handleFocusChange);
+      document.removeEventListener("focusout", handleFocusChange);
+    };
+  }, [isMobile, scrollToBottom, updateIsAtBottom]);
 
   const handleContextMenu = useCallback(
     (message: StoredMessage) => (event: React.MouseEvent<HTMLDivElement>) => {
@@ -2359,7 +2485,6 @@ export function ChatConversationPage() {
     if (hasContent) {
       const content = draft.trim();
       playAccessibilitySound("send", accessibilitySettings);
-      scrollToBottom("auto");
       await handleSend(content, undefined, { swapPlaces });
       setFooterAsrMode("idle");
       setFooterAsrRawText("");
@@ -2367,7 +2492,6 @@ export function ChatConversationPage() {
       setFooterAsrSuggestions([]);
     } else {
       playAccessibilitySound("send", accessibilitySettings);
-      scrollToBottom("auto");
       await handleContinue({ swapPlaces });
     }
   }, [
@@ -2377,7 +2501,6 @@ export function ChatConversationPage() {
     setDraft,
     handleSend,
     handleContinue,
-    scrollToBottom,
     pendingAttachments,
     accessibilitySettings,
     swapPlaces,
@@ -2388,7 +2511,6 @@ export function ChatConversationPage() {
     if (sending) return;
     setError(null);
     playAccessibilitySound("send", accessibilitySettings);
-    scrollToBottom("auto");
     await handleSendSystemMessage(draft, undefined);
     setFooterAsrMode("idle");
     setFooterAsrRawText("");
@@ -2398,7 +2520,6 @@ export function ChatConversationPage() {
     accessibilitySettings,
     draft,
     handleSendSystemMessage,
-    scrollToBottom,
     sending,
     setError,
   ]);
@@ -2408,8 +2529,12 @@ export function ChatConversationPage() {
   }, []);
 
   const handleRegenerateMessage = useCallback(
-    async (message: StoredMessage, options?: { guidance?: string }) => {
-      await handleRegenerate(message, { swapPlaces, guidance: options?.guidance });
+    async (message: StoredMessage, options?: { guidance?: string; modelId?: string }) => {
+      await handleRegenerate(message, {
+        swapPlaces,
+        guidance: options?.guidance,
+        modelId: options?.modelId,
+      });
     },
     [handleRegenerate, swapPlaces],
   );
@@ -2681,12 +2806,11 @@ export function ChatConversationPage() {
     return <EmptyState title={t("chats.characterNotFound")} />;
   }
 
-  const footerBottomOffset = "env(safe-area-inset-bottom)";
-  const footerTransform = "translate3d(0, calc(var(--lettuce-keyboard-inset, 0px) * -1), 0)";
+  const footerBottomOffset = `calc(env(safe-area-inset-bottom) + ${keyboardInset}px)`;
   const scrollButtonBottomOffset =
     footerHeight > 0
-      ? `calc(${footerHeight + 12}px + var(--lettuce-keyboard-inset, 0px))`
-      : "calc(env(safe-area-inset-bottom) + var(--lettuce-keyboard-inset, 0px) + 88px)";
+      ? `${footerHeight + 12}px`
+      : `calc(env(safe-area-inset-bottom) + ${keyboardInset}px + 88px)`;
 
   return (
     <div
@@ -2741,7 +2865,6 @@ export function ChatConversationPage() {
           hasBackgroundImage={!!backgroundImageData}
           headerOverlayClassName={theme.headerOverlay}
           transparentHeader={chatAppearance.transparentHeader}
-          statusBarInset={statusBarInset}
           onSessionUpdate={handleSessionUpdate}
           onBeforeSettingsOpen={!isMobile ? captureFooterFocusForDrawer : undefined}
           onSettingsOpen={!isMobile ? () => setSettingsDrawerOpen(true) : undefined}
@@ -2785,7 +2908,6 @@ export function ChatConversationPage() {
           hasBackgroundImage={!!backgroundImageData}
           headerOverlayClassName={theme.headerOverlay}
           transparentHeader={chatAppearance.transparentHeader}
-          statusBarInset={statusBarInset}
           onSessionUpdate={handleSessionUpdate}
           onBeforeSettingsOpen={!isMobile ? captureFooterFocusForDrawer : undefined}
           onSettingsOpen={!isMobile ? () => setSettingsDrawerOpen(true) : undefined}
@@ -2833,13 +2955,9 @@ export function ChatConversationPage() {
         onScroll={handleScroll}
       >
         <div
-          ref={messageListRef}
           className={`${getChatColumnLayout(chatAppearance).className} ${chatAppearance.messageGap === "tight" ? "space-y-2" : chatAppearance.messageGap === "relaxed" ? "space-y-6" : "space-y-4"} px-3 pb-8 pt-4`}
           style={{
             ...getChatColumnLayout(chatAppearance).style,
-            paddingBottom: "32px",
-            transform: "translate3d(0, calc(var(--lettuce-keyboard-inset, 0px) * -1), 0)",
-            willChange: "transform",
             backgroundColor: backgroundImageData
               ? swapPlaces
                 ? isBackgroundLight
@@ -2978,6 +3096,7 @@ export function ChatConversationPage() {
                     reasoning={streamingReasoning[message.id] || combinedReasoning || undefined}
                     swapPlaces={swapPlaces}
                     modelName={resolveModelName(message.modelId)}
+                    models={widgetModels}
                     scenePromptStreaming={
                       scenePromptStreaming &&
                       message.role === "assistant" &&
@@ -3039,11 +3158,7 @@ export function ChatConversationPage() {
       <div
         ref={footerRef}
         className="relative z-10"
-        style={{
-          paddingBottom: footerBottomOffset,
-          transform: footerTransform,
-          willChange: "transform",
-        }}
+        style={{ paddingBottom: footerBottomOffset }}
       >
         <ChatFooter
           inlinePanel={footerInlinePanel}
@@ -3108,8 +3223,6 @@ export function ChatConversationPage() {
         className={`relative z-10 ${applyFooterColumnClass ? getChatColumnLayout(chatAppearance).className : ""}`}
         style={{
           paddingBottom: footerBottomOffset,
-          transform: footerTransform,
-          willChange: "transform",
           ...(applyFooterColumnClass ? getChatColumnLayout(chatAppearance).style : {}),
         }}
       >
